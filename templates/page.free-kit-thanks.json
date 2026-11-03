@@ -14,17 +14,17 @@
         "next2": {
           "type": "step",
           "settings": {
-            "tag": "7-9 business days",
-            "title": "Your kit ships",
-            "text": "<p>A sample tee, color catalogs for everyone selling and a one-page guide to how your group earns.</p>"
+            "tag": "In about a week",
+            "title": "Your kit arrives",
+            "text": "<p>Your sample tee and catalogs for your team, ready to show at your next meeting.</p>"
           }
         },
         "next3": {
           "type": "step",
           "settings": {
-            "tag": "Launch day",
-            "title": "Start selling",
-            "text": "<p>Sellers share your fundraiser link, supporters order online and your group earns $5 on every tee.</p>"
+            "tag": "When you're ready",
+            "title": "You launch",
+            "text": "<p>We set up your online store together and your team starts sharing.</p>"
           }
         }
       },
