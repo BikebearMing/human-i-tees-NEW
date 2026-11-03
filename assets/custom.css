@@ -223,7 +223,7 @@ span.custom-header__cart-count {
    script). The custom sections listed here already clear the bar themselves.
    has-header-offset is added on every page except the homepage (theme.liquid). */
 main.has-header-offset
-  > .shopify-section:first-child:not(.custom-product-section):not(.custom-blog-section):not(.custom-article-section):not(.faq-section):not(.fundraising-hero-section):not(.contact-tabs-section):not(.free-kit-section):not(.free-kit-thanks-section) {
+  > .shopify-section:first-child:not(.custom-product-section):not(.custom-blog-section):not(.custom-article-section):not(.faq-section):not(.fundraising-hero-section):not(.contact-tabs-section):not(.free-kit-section):not(.free-kit-thanks-section):not(.fundraiser-shop-section) {
   padding-top: var(--header-height, 6rem);
 }
 
