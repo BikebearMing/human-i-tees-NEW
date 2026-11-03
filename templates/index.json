@@ -36,7 +36,15 @@
     "brand_is_back": {
       "type": "brand-is-back",
       "name": "Brand Is Back",
-      "settings": {}
+      "settings": {
+        "collage_caption": "Students across the country are already getting involved. And so are others ...",
+        "marquee_text": "FUNDRAISING FOR A CAUSE",
+        "field_eyebrow": "INTRODUCING",
+        "field_heading": "Good Tees.\nGreat Causes.",
+        "field_text": "",
+        "field_cta_label": "EXPLORE FUNDRAISING",
+        "field_cta_url": ""
+      }
     },
     "tv_section": {
       "type": "tv-section",
@@ -59,10 +67,14 @@
             "image": "shopify://shop_images/tv-channel-3-donation-check.jpg"
           }
         },
+        "channel_MW3fVP": {
+          "type": "channel",
+          "settings": {}
+        },
         "channel_4": {
           "type": "channel",
           "settings": {
-            "image": "shopify://shop_images/tv-channel-4-newspaper.jpg"
+            "image": "shopify://shop_images/Screenshot_2026-11-03_112535.png"
           }
         },
         "channel_5": {
@@ -76,30 +88,30 @@
           "settings": {
             "image": "shopify://shop_images/tv-channel-6-kaw.jpg"
           }
-        },
-        "channel_7": {
-          "type": "channel",
-          "settings": {
-            "image": "shopify://shop_images/tv-channel-7-donations-list.jpg"
-          }
         }
       },
       "block_order": [
         "channel_1",
         "channel_2",
         "channel_3",
+        "channel_MW3fVP",
         "channel_4",
         "channel_5",
-        "channel_6",
-        "channel_7"
+        "channel_6"
       ],
       "name": "TV",
-      "settings": {}
+      "settings": {
+        "heading": "Born in\nthe 90s",
+        "marquee_text": "Wildlife Foundation\nBiodiversity Associates\nForest Watch\nCoastal Waters Project\nEarthtrust"
+      }
     },
     "featured_shop_kBUbCy": {
       "type": "featured-shop",
       "name": "Featured Shop",
-      "settings": {}
+      "settings": {
+        "nature_drop_url": "",
+        "wildlife_url": ""
+      }
     },
     "where_your_money_goes_TFYHAD": {
       "type": "where-your-money-goes",
