@@ -196,6 +196,16 @@ These were pushed without anyone looking at them on the page:
   - On a theme **preview**, the `/discount` redirect drops the page link's query entirely. Test the code and the personalised page separately there; on the live site the query comes through (checked in a clean browser).
 - FAQ and the contact thank-you page render fine under our theme; leave them.
 
+**Switched on 3 Nov (~3:40am US Eastern).** Steps 1–3 and 5 below are done; step 4 is waiting on permissions.
+- Live theme: **"Human-i-Tees Launch" #194528936212** (renamed from "(preview)" after publishing).
+- **Rollback:** their old theme "Fundraising Focused Site (cart recommendations)" #194370699540 is unpublished in the theme library, untouched. Online Store → Themes → its "…" → Publish puts it back. A full copy (479 files) was pulled just before the switch to `Desktop\humanitees-old-theme-backup-2026-11-03` and can be pushed back as a new theme if it's ever deleted. If they roll back, show Our Story / Our Impact again, or the redirects will keep sending visitors away from them.
+- Checked live on www.humanitees.com:
+  - Our theme serves every page. Free Kit, Kit Thanks and the fundraiser page use our templates.
+  - `our-story` → `/` and `our-impact` → `/pages/fundraising`. The old `about-us` and `steward-partners` links chain through those.
+  - The full share link lands personalised with 18 tees, and `HUMAN-AMB-10` is in the bag with the green note.
+  - The product page shows $24, add to cart works, and checkout opens.
+- **Step 4 is blocked:** our staff login can only *view* products (no Save, no media upload). Either the client gives Ming Law "Edit products", or someone with that access attaches each `<handle>-artwork` file from Files (product → Media → Select existing). It's optional; the product page works without it.
+
 **Switch-day checklist (in this order):**
 1. Publish "Human-i-Tees Launch (preview)" #194528936212. The old theme stays in the library for rollback.
 2. Pages → Free Starter Kit → Template `free-kit`; Your Kit Is On The Way → `free-kit-thanks`.
