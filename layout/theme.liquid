@@ -9,17 +9,26 @@
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- else -%}
+      {%- comment %} Built-in favicon: the brand H on the site's dark (--black) tile. {%- endcomment %}
+      <link rel="icon" type="image/svg+xml" href="{{ 'favicon.svg' | asset_url }}">
+      <link rel="icon" type="image/png" sizes="32x32" href="{{ 'favicon-32.png' | asset_url }}">
+      <link rel="apple-touch-icon" href="{{ 'apple-touch-icon.png' | asset_url }}">
     {%- endif -%}
 
     {%- unless settings.type_header_font.system? and settings.type_body_font.system? -%}
       <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
     {%- endunless -%}
 
+    {%- comment %} Instrument Serif (Google Fonts) — exposed as the --serif CSS variable {% endcomment -%}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap">
+
     <title>
       {{ page_title }}
       {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
       {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
-      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
     </title>
 
     {% if page_description %}
@@ -34,6 +43,7 @@
     <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'search-form.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'parallax.js' | asset_url }}" defer="defer"></script>
 
     {%- if settings.animations_reveal_on_scroll -%}
       <script src="{{ 'animations.js' | asset_url }}" defer="defer"></script>
@@ -108,6 +118,8 @@
         --font-heading-family: {{ settings.type_header_font.family }}, {{ settings.type_header_font.fallback_families }};
         --font-heading-style: {{ settings.type_header_font.style }};
         --font-heading-weight: {{ settings.type_header_font.weight }};
+
+        --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
 
         --font-body-scale: {{ settings.body_scale | divided_by: 100.0 }};
         --font-heading-scale: {{ settings.heading_scale | times: 1.0 | divided_by: settings.body_scale }};
@@ -256,15 +268,10 @@
     {% endstyle %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'custom.css' | asset_url | stylesheet_tag }}
     <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
 
-    {%- if settings.cart_type == 'drawer' -%}
-      {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
-      {{ 'component-cart.css' | asset_url | stylesheet_tag }}
-      {{ 'component-totals.css' | asset_url | stylesheet_tag }}
-      {{ 'component-price.css' | asset_url | stylesheet_tag }}
-      {{ 'component-discounts.css' | asset_url | stylesheet_tag }}
-    {%- endif -%}
+    {%- comment -%} The cart drawer (snippets/cart-drawer.liquid) carries its own styles. {%- endcomment -%}
 
     {%- unless settings.type_body_font.system? -%}
       {% comment %}theme-check-disable AssetPreload{% endcomment %}
@@ -276,6 +283,11 @@
       <link rel="preload" as="font" href="{{ settings.type_header_font | font_url }}" type="font/woff2" crossorigin>
       {% comment %}theme-check-enable AssetPreload{% endcomment %}
     {%- endunless -%}
+
+    {% comment %} Futura PT Cond (Bold) — used by .h3, which is above the fold (incl. the preloader) {% endcomment %}
+    {% comment %}theme-check-disable AssetPreload{% endcomment %}
+    <link rel="preload" as="font" href="{{ 'futura-pt-cond-bold.woff2' | asset_url }}" type="font/woff2" crossorigin>
+    {% comment %}theme-check-enable AssetPreload{% endcomment %}
 
     {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
       {{ 'component-localization-form.css' | asset_url | stylesheet_tag: preload: true }}
@@ -296,9 +308,40 @@
         document.documentElement.classList.add('shopify-design-mode');
       }
     </script>
+
   </head>
 
   <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
+    <div class="noise-overlay" aria-hidden="true">&nbsp;</div>
+
+    {%- comment -%}
+      GSAP + SplitText load on every page — sections across the site (FAQ, etc.)
+      use them. They used to be bundled inside the preloader snippet, which now
+      only renders on the homepage, so they're loaded here instead.
+    {%- endcomment -%}
+    <script src="{{ 'gsap.min.js' | asset_url }}"></script>
+    <script src="{{ 'ScrollTrigger.min.js' | asset_url }}"></script>
+    <script src="{{ 'SplitText.min.js' | asset_url }}"></script>
+    {%- comment %} After SplitText, before the sections: it holds [data-reveal] text hidden from first paint. {%- endcomment %}
+    <script src="{{ 'text-reveal.js' | asset_url }}"></script>
+    <script>
+      /* One GSAP + one ScrollTrigger for the whole page. The hero and Brand Is
+         Back sections used to pull their own copies from the CDN (different
+         versions), so their pins lived on two ScrollTrigger instances that
+         never refreshed together and Lenis only fed one of them.
+         ignoreMobileResize: a phone's address bar collapsing changes
+         innerHeight; without this every pin re-measured and jumped mid-scroll. */
+      if (window.gsap && window.ScrollTrigger) {
+        gsap.registerPlugin(ScrollTrigger);
+        ScrollTrigger.config({ ignoreMobileResize: true });
+      }
+    </script>
+
+    {%- comment -%} Preloader overlay only on the homepage; every other page loads without it. {%- endcomment -%}
+    {%- if request.page_type == 'index' -%}
+      {% render 'preloader' %}
+    {%- endif -%}
+
     <a class="skip-to-content-link button visually-hidden" href="#MainContent">
       {{ 'accessibility.skip_to_text' | t }}
     </a>
@@ -309,9 +352,12 @@
 
     {% sections 'header-group' %}
 
-    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+    <main id="MainContent" class="content-for-layout focus-none{% unless request.page_type == 'index' %} has-header-offset{% endunless %}" role="main" tabindex="-1">
       {{ content_for_layout }}
     </main>
+
+    {% comment %} Lenis smooth scrolling — after main so ScrollTrigger (homepage hero) is already loaded {% endcomment %}
+    {% render 'smooth-scroll' %}
 
     {% sections 'footer-group' %}
 
@@ -372,5 +418,35 @@
     {%- if settings.cart_type == 'drawer' -%}
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+
+    {%- comment -%}
+      Auto-injects a 3-line .line-overlay into any element with .has-line or
+      .has-line-white. Lines sit at the 25/50/75% column boundaries. Markup is
+      <div class="line-overlay"><i></i><i></i><i></i></div> — styling lives in
+      assets/custom.css.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        function inject(el) {
+          if (el.querySelector(':scope > .line-overlay')) return;
+          var overlay = document.createElement('div');
+          overlay.className = 'line-overlay';
+          overlay.setAttribute('aria-hidden', 'true');
+          for (var i = 0; i < 3; i++) overlay.appendChild(document.createElement('i'));
+          el.insertBefore(overlay, el.firstChild);
+        }
+        function run() {
+          document.querySelectorAll('.has-line, .has-line-white').forEach(inject);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', run);
+        } else {
+          run();
+        }
+        if (window.Shopify && Shopify.designMode) {
+          document.addEventListener('shopify:section:load', run);
+        }
+      })();
+    </script>
   </body>
 </html>

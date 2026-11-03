@@ -1,0 +1,95 @@
+{%- comment -%}
+  404 — big "PAGE NOT FOUND" over the theme's 4-column partition lines, one
+  line of copy and two buttons (home + shop). Shell styles are shared with the
+  other utility pages (assets/section-utility-page.css).
+{%- endcomment -%}
+
+{{ 'section-utility-page.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign shop_url = routes.all_products_collection_url
+  if collections['shop'].products_count > 0
+    assign shop_url = collections['shop'].url
+  endif
+-%}
+
+{%- style -%}
+  #c404-{{ section.id }} {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - var(--header-height, 0px));
+    padding: max(40px, 4.167vw) var(--util-pad);
+    border-bottom: 1px solid var(--util-line);
+  }
+  /* above the auto-injected .line-overlay */
+  #c404-{{ section.id }} .c404__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: max(18px, 1.667vw);
+  }
+  #c404-{{ section.id }} .c404__title {
+    color: var(--black);
+  }
+  #c404-{{ section.id }} .c404__copy {
+    max-width: 36ch;
+  }
+{%- endstyle -%}
+
+<div class="util has-line c404" id="c404-{{ section.id }}">
+  <div class="c404__inner">
+    <p class="body util__crumb">{{ section.settings.crumb | escape }}</p>
+    <h1 class="h2 c404__title">{{ section.settings.heading | escape }}</h1>
+    <p class="body c404__copy">{{ section.settings.text | escape }}</p>
+    <div class="util__actions">
+      <a class="custom-button" href="{{ routes.root_url }}">
+        <span class="button-span body">{{ section.settings.home_label | escape }}</span>
+      </a>
+      <a class="custom-button" href="{{ shop_url }}">
+        <span class="button-span body">{{ section.settings.shop_label | escape }}</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "404",
+  "tag": "section",
+  "class": "custom-404-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "crumb",
+      "label": "Small label",
+      "default": "Error 404"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Page not found"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "This page has moved or never existed. The tees are still right where we left them."
+    },
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Home button label",
+      "default": "BACK HOME"
+    },
+    {
+      "type": "text",
+      "id": "shop_label",
+      "label": "Shop button label",
+      "default": "SHOP ALL"
+    }
+  ]
+}
+{% endschema %}

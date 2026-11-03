@@ -1,0 +1,944 @@
+{%- comment -%}
+  Free fundraising kit — lead form landing page (/pages/free-kit).
+  Left: eyebrow, headline, intro, the kit photo and a row of checked perks.
+  Right: a card holding a two-step form. Continue swaps step 1 (who you are)
+  for step 2 (where to ship) in the same card, with no page reload, and sends
+  step 1 in the background. Step 2 sends to the thank-you page.
+
+  Where leads go: with "Lead endpoint URL" blank, each step is sent through
+  Shopify's contact form, so it lands in the store's contact email (step 1
+  is the partial lead; step 2 repeats it with the shipping details, so it
+  is the complete one). Fill the URL in and both steps POST JSON there
+  instead: { lead_id, step, source, ...fields }, with step 2 carrying every
+  field. Both steps share a lead_id, so the endpoint can upsert.
+
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h1-v2 (headline), .h3 (card titles) and .body (everything else).
+{%- endcomment -%}
+
+{%- style -%}
+  #fk-{{ section.id }} {
+    --fk-line: #d9cdb8; /* same rule colour as the .has-line columns (custom.css) */
+    --fk-card-bg: #f9f7f3; /* the body bg (custom.css) — opaque card */
+    --fk-orange: #ff944d; /* the theme's CTA orange (.custom-button) */
+    --fk-muted: rgba(51, 51, 51, 0.6); /* --black at 60% */
+    --fk-top: 1.944vw; /* 28 under the header line to the eyebrow and card */
+
+    position: relative;
+    width: 100%;
+  }
+
+  /* only the centre column line; the 25/75 ones would cut through the copy */
+  #fk-{{ section.id }} > .line-overlay > i:nth-child(odd) { display: none; }
+
+  /* Carries the header clearance (like .contact__push), and rules the line
+     under the header across the page. */
+  #fk-{{ section.id }} .fk__push {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    /* minmax(0, …): the perks marquee is far wider than its column and must
+       not stretch it */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'intro card'
+      'media card';
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-top: var(--header-height, 6rem);
+    box-sizing: border-box;
+  }
+  #fk-{{ section.id }} .fk__push::before {
+    content: '';
+    position: absolute;
+    top: var(--header-height, 6rem);
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--fk-line);
+  }
+
+  /* ----- Left: eyebrow 7, headline 13, intro ----- */
+  #fk-{{ section.id }} .fk__intro {
+    grid-area: intro;
+    padding: var(--fk-top) 0.972vw 0;
+    color: var(--black);
+  }
+  #fk-{{ section.id }} .fk__title {
+    padding-top: 0.486vw;
+  }
+  #fk-{{ section.id }} .fk__text {
+    max-width: max(260px, 20.417vw);
+    padding-top: 0.903vw;
+  }
+
+  /* ----- Left: photo, 35 under the intro, 2:1 ----- */
+  #fk-{{ section.id }} .fk__media {
+    grid-area: media;
+    padding: 2.431vw 0.972vw 1.389vw;
+  }
+  /* 347 tall at 1440. Set explicitly: the image tag's own height attribute
+     would otherwise win over aspect-ratio and a portrait upload runs tall. */
+  #fk-{{ section.id }} .fk__image {
+    display: block;
+    width: 100%;
+    height: 24.097vw;
+    object-fit: cover;
+    background: var(--beige);
+  }
+  /* Perks: a running row under the photo. Same loop as the header's
+     announcement bar — the track holds 4 identical copies of the
+     .check-list (custom.css) and slides exactly one copy's width (-25%), so
+     it never jumps. Items are spaced with padding, not gap, to keep that
+     width exact. */
+  #fk-{{ section.id }} .fk__marquee {
+    margin-top: 0.972vw;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  }
+  #fk-{{ section.id }} .fk__marquee-track {
+    display: flex;
+    width: max-content;
+    animation: fk-marquee 22s linear infinite;
+  }
+  #fk-{{ section.id }} .fk__marquee:hover .fk__marquee-track { animation-play-state: paused; }
+  #fk-{{ section.id }} .fk__checks {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 0;
+  }
+  #fk-{{ section.id }} .fk__checks > li {
+    padding-right: 3.333vw; /* 48 between perks */
+    white-space: nowrap;
+  }
+  @keyframes fk-marquee {
+    to { transform: translateX(-25%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #fk-{{ section.id }} .fk__marquee { -webkit-mask-image: none; mask-image: none; }
+    #fk-{{ section.id }} .fk__marquee-track { width: auto; animation: none; }
+    #fk-{{ section.id }} .fk__checks { flex-wrap: wrap; row-gap: 0.694vw; }
+    #fk-{{ section.id }} .fk__checks[aria-hidden='true'] { display: none; }
+  }
+
+  /* ----- Right: the card, 90 off the centre line, 84 off the edge ----- */
+  #fk-{{ section.id }} .fk__card {
+    grid-area: card;
+    align-self: start;
+    /* "Get my free kit" buttons further down link to #free-kit-form */
+    scroll-margin-top: calc(var(--header-height, 6rem) + var(--fk-top));
+    margin: var(--fk-top) 5.833vw 2.778vw 6.25vw;
+    padding: 1.389vw 1.667vw 0.903vw;
+    background: var(--fk-card-bg);
+    border: 1px solid var(--beige);
+    border-radius: max(8px, 0.764vw);
+    color: var(--black);
+  }
+  #fk-{{ section.id }} .fk__step[hidden] { display: none; }
+  #fk-{{ section.id }} .fk__step-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  /* progress: one bar per step, filled up to the current one */
+  #fk-{{ section.id }} .fk__bars {
+    display: flex;
+    gap: max(3px, 0.278vw);
+  }
+  #fk-{{ section.id }} .fk__bars i {
+    display: block;
+    width: max(16px, 1.458vw);
+    height: 3px;
+    border-radius: 3px;
+    background: var(--beige);
+  }
+  #fk-{{ section.id }} .fk__bars i.is-on { background: var(--fk-orange); }
+  #fk-{{ section.id }} .fk__heading {
+    padding-top: 0.694vw;
+    outline: none;
+    text-wrap: balance;
+  }
+  #fk-{{ section.id }} .fk__sub {
+    max-width: max(280px, 20.833vw);
+    padding-top: 0.417vw;
+  }
+
+  /* ----- Fields: label 6 over the input; rows 19 apart, columns 16 ----- */
+  #fk-{{ section.id }} .fk__fields {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1.319vw 1.111vw;
+    padding-top: 1.111vw;
+  }
+  #fk-{{ section.id }} .fk__field {
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+    gap: 0.417vw;
+    min-width: 0;
+  }
+  #fk-{{ section.id }} .fk__field--half { grid-column: span 3; }
+  #fk-{{ section.id }} .fk__field--third { grid-column: span 2; }
+  #fk-{{ section.id }} .fk__field--sixth { grid-column: span 1; }
+  #fk-{{ section.id }} .fk__label { color: var(--fk-muted); }
+  #fk-{{ section.id }} .fk__input {
+    display: block;
+    width: 100%;
+    height: max(44px, 3.472vw); /* 50 */
+    padding-inline: max(12px, 0.833vw);
+    background: #fff;
+    border: 1px solid var(--beige);
+    border-radius: max(6px, 0.556vw);
+    color: var(--black);
+    /* 16px floor: iOS Safari zooms the page on focus below 16px */
+    font-size: max(16px, 1.25vw);
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  #fk-{{ section.id }} .fk__input::placeholder { color: var(--fk-muted); opacity: 0.6; }
+  #fk-{{ section.id }} .fk__input:focus { border-color: var(--black); }
+  #fk-{{ section.id }} .fk__input.is-invalid { border-color: #c0392b; }
+  #fk-{{ section.id }} .fk__select { position: relative; display: block; }
+  #fk-{{ section.id }} select.fk__input {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: max(32px, 2.5vw);
+    cursor: pointer;
+  }
+  /* the "Choose one" entry reads as a placeholder until something is picked */
+  #fk-{{ section.id }} select.fk__input:invalid { color: rgba(51, 51, 51, 0.36); }
+  #fk-{{ section.id }} .fk__caret {
+    position: absolute;
+    top: 50%;
+    right: max(12px, 0.833vw);
+    width: 10px;
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+
+  #fk-{{ section.id }} .fk__submit { margin-top: 1.667vw; }
+  #fk-{{ section.id }} .fk__fine {
+    padding-top: 0.972vw;
+    text-align: center;
+    color: var(--black);
+  }
+  #fk-{{ section.id }} .fk__fine a { color: inherit; }
+  #fk-{{ section.id }} .fk__back {
+    display: block;
+    margin: 0.972vw auto 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--black);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  #fk-{{ section.id }} .fk__status {
+    padding-top: 0.972vw; /* padding: custom.css zeroes p margins with !important */
+    color: #c0392b;
+  }
+  #fk-{{ section.id }} .fk__status[hidden] { display: none; }
+
+  /* ===== TABLET + MOBILE (<= 1024px) — one column: intro, the form, then the
+     photo. Below laptop width the half-width card is too narrow for step 2's
+     City / State / ZIP row and the dropdowns. ===== */
+  @media (max-width: 1024px) {
+    #fk-{{ section.id }} > .line-overlay { display: none; }
+    #fk-{{ section.id }} .fk__push {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto;
+      grid-template-areas:
+        'intro'
+        'card'
+        'media';
+    }
+    #fk-{{ section.id }} .fk__intro { padding: 24px 16px 0; }
+    #fk-{{ section.id }} .fk__title { padding-top: 8px; }
+    #fk-{{ section.id }} .fk__text { padding-top: 12px; }
+    #fk-{{ section.id }} .fk__card {
+      margin: 24px 16px 0;
+      padding: 20px 16px 16px;
+    }
+    #fk-{{ section.id }} .fk__heading { padding-top: 10px; }
+    #fk-{{ section.id }} .fk__sub { padding-top: 6px; }
+    #fk-{{ section.id }} .fk__fields { gap: 16px 12px; padding-top: 16px; }
+    #fk-{{ section.id }} .fk__field { gap: 6px; }
+    #fk-{{ section.id }} .fk__submit { margin-top: 24px; }
+    #fk-{{ section.id }} .fk__fine,
+    #fk-{{ section.id }} .fk__back,
+    #fk-{{ section.id }} .fk__status { margin-top: 0; padding-top: 14px; }
+    #fk-{{ section.id }} .fk__media { padding: 32px 16px 40px; }
+    /* full width here, so 24vw would be a sliver; keep the mock's 2:1 */
+    #fk-{{ section.id }} .fk__image { height: auto; aspect-ratio: 2 / 1; }
+    #fk-{{ section.id }} .fk__marquee { margin-top: 16px; }
+    #fk-{{ section.id }} .fk__checks > li { padding-right: 32px; }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign thanks_url = section.settings.thanks_link | default: '/pages/free-kit-thanks'
+-%}
+
+<section
+  class="fk has-line"
+  id="fk-{{ section.id }}"
+  data-endpoint="{{ section.settings.endpoint_url | escape }}"
+  data-thanks="{{ thanks_url | escape }}"
+>
+  <div class="fk__push">
+    <div class="fk__intro">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="body uppercase" data-reveal>{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      <h1 class="h1-v2 uppercase fk__title" data-reveal>{{ section.settings.heading | escape | newline_to_br }}</h1>
+      {%- if section.settings.text != blank -%}
+        <div class="body fk__text" data-reveal>{{ section.settings.text }}</div>
+      {%- endif -%}
+    </div>
+
+    <div class="fk__media">
+      {%- if section.settings.image != blank -%}
+        {{
+          section.settings.image
+          | image_url: width: 1600
+          | image_tag:
+            class: 'fk__image',
+            widths: '600, 900, 1200, 1600',
+            sizes: '(min-width: 769px) 50vw, 100vw',
+            loading: 'eager',
+            fetchpriority: 'high'
+        }}
+      {%- else -%}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'fk__image' }}
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <div class="fk__marquee">
+          <div class="fk__marquee-track">
+            {%- comment -%} 4 copies; only the first is read out, and carries the editor attributes {%- endcomment -%}
+            {%- for i in (1..4) -%}
+              <ul
+                class="check-list fk__checks"
+                role="list"
+                {% unless forloop.first %}
+                  aria-hidden="true"
+                {% endunless %}
+              >
+                {%- for block in section.blocks -%}
+                  <li class="body" {% if forloop.parentloop.first %}{{ block.shopify_attributes }}{% endif %}>
+                    <img class="check-list__icon" src="{{ 'check.svg' | asset_url }}" width="28" height="27" alt="" loading="lazy">
+                    <span>{{ block.settings.text | escape }}</span>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="fk__card" id="free-kit-form">
+      {%- comment -%} ===== Step 1 — who you are ===== {%- endcomment -%}
+      <div class="fk__step" data-fk-step="1">
+        {%- form 'contact', id: 'FreeKitStep1', class: 'fk__form', novalidate: 'novalidate' -%}
+          <input type="hidden" name="contact[Subject]" value="Free kit lead — step 1 of 2">
+          <input type="hidden" name="contact[Lead ID]" value="" data-fk-lead>
+          <input type="hidden" name="contact[name]" value="" data-fk-name>
+          {%- if form.errors -%}<span hidden data-fk-error></span>{%- endif -%}
+
+          <div class="fk__step-head">
+            <p class="body uppercase">{{ section.settings.step1_label | escape }}</p>
+            <span class="fk__bars" aria-hidden="true"><i class="is-on"></i><i></i></span>
+          </div>
+          <h2 class="h3 fk__heading" tabindex="-1">{{ section.settings.step1_heading | escape }}</h2>
+          {%- if section.settings.step1_text != blank -%}
+            <div class="body fk__sub">{{ section.settings.step1_text }}</div>
+          {%- endif -%}
+
+          <div class="fk__fields">
+            {%- render 'free-kit-field', label: 'First name', name: 'First name', key: 'first_name', placeholder: 'Jordan', autocomplete: 'given-name', class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'Last name', name: 'Last name', key: 'last_name', placeholder: 'Lee', autocomplete: 'family-name', class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'Email', name: 'email', key: 'email', type: 'email', placeholder: 'jordan@lincolnhigh.org', autocomplete: 'email' -%}
+            {%- render 'free-kit-field', label: 'Mobile phone', name: 'Mobile phone', key: 'phone', type: 'tel', placeholder: '(555) 555-5555', autocomplete: 'tel' -%}
+            {%- render 'free-kit-field', label: 'School or group name', name: 'School or group', key: 'organization', placeholder: 'Lincoln High Key Club', autocomplete: 'organization' -%}
+          </div>
+
+          <button class="custom-button block fk__submit" type="submit">
+            <span class="button-span body uppercase">{{ section.settings.step1_button | escape }}</span>
+          </button>
+          <p class="body fk__status" role="alert" hidden data-fk-status></p>
+          {%- if section.settings.step1_fine != blank -%}
+            <div class="body fk__fine">{{ section.settings.step1_fine }}</div>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+
+      {%- comment -%} ===== Step 2 — where to ship (replaces step 1) ===== {%- endcomment -%}
+      <div class="fk__step" data-fk-step="2" hidden>
+        {%- form 'contact', id: 'FreeKitStep2', class: 'fk__form', novalidate: 'novalidate' -%}
+          <input type="hidden" name="contact[Subject]" value="Free kit lead — step 2 of 2 (complete)">
+          {%- comment -%} step 1's fields are copied in here before sending, so this email is the whole lead {%- endcomment -%}
+          <div hidden data-fk-carry></div>
+          {%- if form.errors -%}<span hidden data-fk-error></span>{%- endif -%}
+
+          <div class="fk__step-head">
+            <p class="body uppercase">{{ section.settings.step2_label | escape }}</p>
+            <span class="fk__bars" aria-hidden="true"><i class="is-on"></i><i class="is-on"></i></span>
+          </div>
+          <h2 class="h3 fk__heading" tabindex="-1">{{ section.settings.step2_heading | escape }}</h2>
+          {%- if section.settings.step2_text != blank -%}
+            <div class="body fk__sub" data-fk-greeting data-template="{{ section.settings.step2_text | escape }}">
+              {{- section.settings.step2_text | replace: '[name]', '' -}}
+            </div>
+          {%- endif -%}
+
+          <div class="fk__fields">
+            {%- render 'free-kit-field', label: 'Street address', name: 'Street address', key: 'street', placeholder: '120 Main St', autocomplete: 'address-line1' -%}
+            {%- render 'free-kit-field', label: 'Apt, suite, room (optional)', name: 'Apt / suite / room', key: 'apt', placeholder: 'Room 214', autocomplete: 'address-line2', required: false -%}
+            {%- render 'free-kit-field', label: 'City', name: 'City', key: 'city', placeholder: 'Lincoln', autocomplete: 'address-level2', class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'State', name: 'State', key: 'state', placeholder: 'NE', autocomplete: 'address-level1', class: 'fk__field--sixth' -%}
+            {%- render 'free-kit-field', label: 'ZIP', name: 'ZIP', key: 'zip', placeholder: '68508', autocomplete: 'postal-code', class: 'fk__field--third' -%}
+            {%- render 'free-kit-field', label: 'Your sample tee', name: 'Sample tee', key: 'sample_tee', type: 'select', placeholder: 'Choose a design', options: section.settings.tee_options, class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'Size', name: 'Size', key: 'size', type: 'select', placeholder: 'Size', options: section.settings.size_options, class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'How many people will sell?', name: 'How many people will sell', key: 'team_size', type: 'select', options: section.settings.team_size_options, class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'When do you want to start?', name: 'When to start', key: 'start_time', type: 'select', options: section.settings.start_options, class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'Your role', name: 'Role', key: 'role', type: 'select', options: section.settings.role_options, class: 'fk__field--half' -%}
+            {%- render 'free-kit-field', label: 'What are you raising for?', name: 'Raising for', key: 'cause', type: 'select', options: section.settings.cause_options, class: 'fk__field--half' -%}
+          </div>
+
+          <button class="custom-button block fk__submit" type="submit">
+            <span class="button-span body uppercase">{{ section.settings.step2_button | escape }}</span>
+          </button>
+          <p class="body fk__status" role="alert" hidden data-fk-status></p>
+          <button class="body fk__back" type="button" data-fk-back>{{ section.settings.back_label | escape }}</button>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('fk-{{ section.id }}');
+    if (!root) return;
+
+    var ENDPOINT = (root.getAttribute('data-endpoint') || '').trim();
+    var THANKS = root.getAttribute('data-thanks') || '/pages/free-kit-thanks';
+    var ERROR = {{ section.settings.error_message | json }};
+    var STORE = 'free-kit-lead';
+
+    var steps = {
+      1: root.querySelector('[data-fk-step="1"]'),
+      2: root.querySelector('[data-fk-step="2"]'),
+    };
+    var forms = { 1: steps[1].querySelector('form'), 2: steps[2].querySelector('form') };
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+
+    function load() {
+      try { return JSON.parse(sessionStorage.getItem(STORE)) || {}; } catch (e) { return {}; }
+    }
+    function save(state) {
+      try { sessionStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {}
+    }
+    function newId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'fk-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    var state = load();
+    if (!state.id) {
+      state.id = newId();
+      save(state);
+    }
+
+    // { data-key: value } for the endpoint, { contact[...]: value } for Shopify
+    function collect(form) {
+      var data = {};
+      var fields = {};
+      form.querySelectorAll('.fk__fields [name]').forEach(function (el) {
+        data[el.getAttribute('data-key')] = el.value.trim();
+        fields[el.name] = el.value.trim();
+      });
+      return { data: data, fields: fields };
+    }
+
+    function restore(form, fields) {
+      if (!fields) return;
+      Object.keys(fields).forEach(function (name) {
+        var el = form.querySelector('.fk__fields [name="' + name.replace(/"/g, '\\"') + '"]');
+        if (el) el.value = fields[name];
+      });
+    }
+
+    function status(form, message) {
+      var el = form.querySelector('[data-fk-status]');
+      el.textContent = message || '';
+      el.hidden = !message;
+    }
+
+    // Native checks, shown by the browser on the first bad field.
+    function valid(form) {
+      var ok = true;
+      form.querySelectorAll('.fk__fields [name]').forEach(function (el) {
+        var bad = !el.checkValidity();
+        el.classList.toggle('is-invalid', bad);
+        if (bad && ok) {
+          ok = false;
+          el.reportValidity();
+          el.focus();
+        }
+      });
+      return ok;
+    }
+    root.addEventListener('input', function (e) {
+      if (e.target.classList.contains('is-invalid') && e.target.checkValidity()) e.target.classList.remove('is-invalid');
+    });
+    root.addEventListener('change', function (e) {
+      if (e.target.classList.contains('is-invalid') && e.target.checkValidity()) e.target.classList.remove('is-invalid');
+    });
+
+    function Challenge() {}
+
+    // Shopify's spam protection binds an invisible hCaptcha to a contact form
+    // the first time a field in it is focused (it marks the form data-cptcha),
+    // and turns away any post without its token. Shopify would get the token
+    // and then submit the page for real; we get the same token and post in the
+    // background instead. Resolves once the token is on the form, or straight
+    // away when the store has no captcha on its forms.
+    function token(form) {
+      var started = Date.now();
+      return new Promise(function (resolve, reject) {
+        (function wait() {
+          var frame = form.querySelector('.h-captcha iframe[data-hcaptcha-widget-id]');
+          if (window.hcaptcha && frame) {
+            hcaptcha.execute(frame.getAttribute('data-hcaptcha-widget-id'), { async: true }).then(function (r) {
+              var input = form.elements['h-captcha-response'];
+              if (!input) {
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'h-captcha-response';
+                form.appendChild(input);
+              }
+              input.value = r.response;
+              resolve();
+            }, reject);
+            return;
+          }
+          // not bound (yet): give the binding a moment to start, then go without
+          var waited = Date.now() - started;
+          if ((!form.hasAttribute('data-cptcha') && waited > 600) || waited > 15000) return resolve();
+          setTimeout(wait, 150);
+        })();
+      });
+    }
+
+    // Endpoint set: POST JSON there. Otherwise Shopify's contact form, sent in
+    // the background with the captcha token. Shopify redirects a good post to
+    // ?contact_posted=true and re-renders the page with form.errors on a bad
+    // one. If bot protection still turns it away (a /challenge captcha page or
+    // a 403 "Verifying your connection..."), only a real page load can pass —
+    // see fallback().
+    function send(form, step, data) {
+      if (ENDPOINT) {
+        var body = Object.assign({ lead_id: state.id, step: step, source: 'free-kit', page: location.pathname }, data);
+        return fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }).then(function (res) {
+          if (!res.ok) throw new Error('Lead endpoint answered ' + res.status);
+        });
+      }
+      return token(form).then(function () {
+        return fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin' });
+      }, function () {
+        throw new Challenge(); // hCaptcha itself failed
+      }).then(function (res) {
+        if (/\/challenge/.test(res.url) || res.status === 403 || res.status === 429) throw new Challenge();
+        if (/contact_posted=true/.test(res.url)) return;
+        return res.text().then(function (html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          if (/verifying your connection/i.test(doc.title)) throw new Challenge();
+          if (!res.ok || doc.querySelector('[data-fk-error]')) throw new Error('Contact form rejected the lead');
+        });
+      });
+    }
+
+    function busy(form, on) {
+      var btn = form.querySelector('.fk__submit');
+      btn.disabled = on;
+      btn.setAttribute('aria-busy', on ? 'true' : 'false');
+    }
+
+    // Shopify's bot check blocked the background post: send step 2 for real
+    // (a page load can pass the check). Shopify redirects a good post back to
+    // the page that sent it, so the address is switched to the thank-you page
+    // first — that is where the redirect lands, whatever URL the form is on.
+    function fallback(form) {
+      state.pending = 'thanks';
+      save(state);
+      try { history.replaceState(null, '', THANKS); } catch (e) {}
+      HTMLFormElement.prototype.submit.call(form);
+    }
+
+    function greet() {
+      var el = steps[2].querySelector('[data-fk-greeting]');
+      if (!el) return;
+      var first = (state.step1 && state.step1.data.first_name) || '';
+      el.textContent = el.getAttribute('data-template').replace('[name]', first ? ', ' + first : '');
+    }
+
+    // Step 2's email carries step 1's fields too, so it is the complete lead.
+    function carry() {
+      var box = forms[2].querySelector('[data-fk-carry]');
+      box.innerHTML = '';
+      var fields = Object.assign({ 'contact[Lead ID]': state.id }, (state.step1 && state.step1.fields) || {});
+      if (state.step1) {
+        fields['contact[name]'] = [state.step1.data.first_name, state.step1.data.last_name].join(' ').trim();
+      }
+      Object.keys(fields).forEach(function (name) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = fields[name];
+        box.appendChild(input);
+      });
+    }
+
+    function show(step, animate) {
+      steps[1].hidden = step !== 1;
+      steps[2].hidden = step !== 2;
+      var panel = steps[step];
+      if (animate) {
+        var card = root.querySelector('.fk__card');
+        if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        panel.querySelector('.fk__heading').focus({ preventScroll: true });
+        if (!reduce && window.gsap) {
+          // rows wipe up out of their own bottom edge, one after another
+          var rows = panel.querySelectorAll('.fk__step-head, .fk__heading, .fk__sub, .fk__field, .fk__submit, .fk__back, .fk__fine');
+          var wipe = gsap.fromTo(
+            rows,
+            { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+            { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power4.out', stagger: 0.04, clearProps: 'clipPath,transform' }
+          );
+          // A clipped button can't be clicked: if frames stall (throttled tab),
+          // never leave the form mid-wipe.
+          setTimeout(function () {
+            wipe.kill();
+            gsap.set(rows, { clearProps: 'clipPath,transform' });
+          }, 2000);
+        }
+      }
+    }
+
+    // Ours is bound first, so stopImmediatePropagation keeps Shopify's captcha
+    // listener from submitting the page for real; token() does its job instead.
+    forms[1].addEventListener('submit', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      status(forms[1]);
+      if (!valid(forms[1])) return;
+
+      var got = collect(forms[1]);
+      forms[1].querySelector('[data-fk-lead]').value = state.id;
+      forms[1].querySelector('[data-fk-name]').value = [got.data.first_name, got.data.last_name].join(' ').trim();
+
+      // Step 1 goes out as the early (partial) lead, then step 2 replaces the
+      // card — whether or not it got through, since step 2 carries every step 1
+      // field. Waiting first means a captcha puzzle, if hCaptcha asks for one,
+      // shows on Continue rather than halfway through step 2.
+      var unchanged = state.step1 && JSON.stringify(state.step1.fields) === JSON.stringify(got.fields);
+      state.step1 = got;
+      save(state);
+
+      var moved = false;
+      function next() {
+        if (moved) return;
+        moved = true;
+        busy(forms[1], false);
+        greet();
+        carry();
+        show(2, true);
+      }
+
+      // Back, then Continue again with nothing changed: don't send it twice.
+      if (unchanged && state.step1Sent) return next();
+      state.step1Sent = false;
+      busy(forms[1], true);
+      var safety = setTimeout(next, 30000); // never hold them on step 1
+      send(forms[1], 1, got.data)
+        .then(function () {
+          state.step1Sent = true;
+          save(state);
+        }, function (err) {
+          if (window.console) console.warn('Free kit: step 1 not sent on its own, step 2 will carry it.', err);
+        })
+        .then(function () {
+          clearTimeout(safety);
+          next();
+        });
+    });
+
+    forms[2].addEventListener('submit', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      status(forms[2]);
+      if (!valid(forms[2])) return;
+
+      var got = collect(forms[2]);
+      carry();
+      var all = Object.assign({}, state.step1 ? state.step1.data : {}, got.data);
+
+      // the thank-you page greets them by name and group
+      function handover() {
+        try {
+          sessionStorage.setItem('free-kit-name', all.first_name || '');
+          sessionStorage.setItem('free-kit-group', all.organization || '');
+        } catch (err) {}
+      }
+      function done() {
+        handover();
+        try { sessionStorage.removeItem(STORE); } catch (err) {} // the lead is finished
+        location.href = THANKS;
+      }
+
+      busy(forms[2], true);
+      send(forms[2], 2, all)
+        .then(done)
+        .catch(function (err) {
+          if (err instanceof Challenge) {
+            handover();
+            return fallback(forms[2]);
+          }
+          busy(forms[2], false);
+          status(forms[2], ERROR);
+        });
+    });
+
+    steps[2].querySelector('[data-fk-back]').addEventListener('click', function () {
+      show(1, true);
+    });
+
+    // The real step 2 post came back here instead of the thank-you page:
+    // it went through, so finish there.
+    if (/contact_posted=true/.test(location.search) && state.pending === 'thanks') {
+      try { sessionStorage.removeItem(STORE); } catch (e) {}
+      location.replace(THANKS);
+      return;
+    }
+    // A reload (or back from the bot check) mid-form: pick up on step 2.
+    delete state.pending;
+    save(state);
+    if (state.step1) {
+      restore(forms[1], state.step1.fields);
+      greet();
+      carry();
+      show(2, false);
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Free kit form",
+  "tag": "section",
+  "class": "free-kit-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Where leads go"
+    },
+    {
+      "type": "text",
+      "id": "endpoint_url",
+      "label": "Lead endpoint URL",
+      "info": "Leave blank to send each step through Shopify's contact form (the store's contact email). Fill in to POST both steps as JSON to this URL instead."
+    },
+    {
+      "type": "url",
+      "id": "thanks_link",
+      "label": "Thank-you page",
+      "info": "Defaults to /pages/free-kit-thanks."
+    },
+    {
+      "type": "text",
+      "id": "error_message",
+      "label": "Error message",
+      "default": "Something went wrong sending that. Please try again, or email support@humanitees.com."
+    },
+    {
+      "type": "header",
+      "content": "Left column"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Free fundraising kit for schools and groups"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the headline.",
+      "default": "Raise funds.\nMake an impact."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Tees your community will actually want to wear. Your group earns $5 on every shirt, and every sale supports environmental work.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "header",
+      "content": "Step 1"
+    },
+    {
+      "type": "text",
+      "id": "step1_label",
+      "label": "Step label",
+      "default": "Step 1 of 2"
+    },
+    {
+      "type": "text",
+      "id": "step1_heading",
+      "label": "Heading",
+      "default": "Get your free fundraising kit"
+    },
+    {
+      "type": "richtext",
+      "id": "step1_text",
+      "label": "Text",
+      "default": "<p>A sample tee, catalogs for your whole team, and a real person to help you plan.</p>"
+    },
+    {
+      "type": "text",
+      "id": "step1_button",
+      "label": "Button label",
+      "default": "Continue"
+    },
+    {
+      "type": "richtext",
+      "id": "step1_fine",
+      "label": "Small print",
+      "default": "<p>Free, no commitment. We'll call or text to help you plan.<br>By continuing you agree to our <a href=\"/policies/privacy-policy\">Privacy Policy</a>.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Step 2"
+    },
+    {
+      "type": "text",
+      "id": "step2_label",
+      "label": "Step label",
+      "default": "Step 2 of 2"
+    },
+    {
+      "type": "text",
+      "id": "step2_heading",
+      "label": "Heading",
+      "default": "Where should we send your kit?"
+    },
+    {
+      "type": "text",
+      "id": "step2_text",
+      "label": "Text",
+      "info": "[name] becomes \", Jordan\" (their first name from step 1).",
+      "default": "Thanks[name]. A few details so we can ship it and send the right number of catalogs."
+    },
+    {
+      "type": "text",
+      "id": "step2_button",
+      "label": "Button label",
+      "default": "Send my free kit"
+    },
+    {
+      "type": "text",
+      "id": "back_label",
+      "label": "Back link",
+      "default": "Back"
+    },
+    {
+      "type": "header",
+      "content": "Step 2 dropdowns"
+    },
+    {
+      "type": "paragraph",
+      "content": "One option per line, exactly as it should read."
+    },
+    {
+      "type": "textarea",
+      "id": "tee_options",
+      "label": "Your sample tee",
+      "default": "Design 1\nDesign 2\nDesign 3"
+    },
+    {
+      "type": "textarea",
+      "id": "size_options",
+      "label": "Size",
+      "default": "S\nM\nL\nXL\n2XL\n3XL"
+    },
+    {
+      "type": "textarea",
+      "id": "team_size_options",
+      "label": "How many people will sell?",
+      "default": "1–10\n11–25\n26–50\n51–100\n100+"
+    },
+    {
+      "type": "textarea",
+      "id": "start_options",
+      "label": "When do you want to start?",
+      "default": "Right away\nIn the next month\nIn 1–3 months\nJust exploring"
+    },
+    {
+      "type": "textarea",
+      "id": "role_options",
+      "label": "Your role",
+      "default": "Teacher\nCoach\nClub advisor\nParent / PTA\nStudent\nOther"
+    },
+    {
+      "type": "textarea",
+      "id": "cause_options",
+      "label": "What are you raising for?",
+      "default": "Club or team\nSchool program\nTrip or event\nCharity or cause\nOther"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "check",
+      "name": "Perk",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "No upfront cost, no inventory"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "Free kit form",
+      "blocks": [
+        { "type": "check", "settings": { "text": "No upfront cost, no inventory" } },
+        { "type": "check", "settings": { "text": "$5 to your group on every shirt" } },
+        { "type": "check", "settings": { "text": "We ship every order to you" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

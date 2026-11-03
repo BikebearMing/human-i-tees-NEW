@@ -1,0 +1,66 @@
+{%- comment -%}
+  One labelled field of the free-kit form (sections/free-kit.liquid).
+
+  Accepts:
+  - label {String} shown above the field
+  - name {String} the Shopify contact field, sent as contact[name] — also the
+    row label in the lead email ('email' for the address Shopify requires)
+  - key {String} the JSON key sent to the lead endpoint, when one is set
+  - type {String} text / email / tel / select (default text)
+  - placeholder {String} placeholder, or the select's first "Choose one" entry
+  - options {String} select only: one option per line
+  - autocomplete {String} optional autocomplete token
+  - required {Boolean} default true
+  - class {String} optional extra class on the wrapper
+
+  Usage:
+  {% render 'free-kit-field', label: 'City', name: 'City', key: 'city', placeholder: 'Lincoln', autocomplete: 'address-level2' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign field_type = type | default: 'text'
+  assign is_required = true
+  if required == false
+    assign is_required = false
+  endif
+-%}
+
+<label class="fk__field{% if class != blank %} {{ class }}{% endif %}">
+  <span class="body fk__label">{{ label | escape }}</span>
+  {%- if field_type == 'select' -%}
+    {%- assign option_lines = options | newline_to_br | split: '<br />' -%}
+    <span class="fk__select">
+      <select
+        class="body fk__input"
+        name="contact[{{ name | escape }}]"
+        data-key="{{ key }}"
+        {% if is_required %}
+          required
+        {% endif %}
+      >
+        <option value="" disabled selected>{{ placeholder | default: 'Choose one' | escape }}</option>
+        {%- for line in option_lines -%}
+          {%- assign option = line | strip -%}
+          {%- if option != blank -%}
+            <option value="{{ option | escape }}">{{ option | escape }}</option>
+          {%- endif -%}
+        {%- endfor -%}
+      </select>
+      <span class="svg-wrapper fk__caret" aria-hidden="true">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+    </span>
+  {%- else -%}
+    <input
+      class="body fk__input"
+      type="{{ field_type }}"
+      name="contact[{{ name | escape }}]"
+      data-key="{{ key }}"
+      placeholder="{{ placeholder | escape }}"
+      {% if autocomplete != blank %}
+        autocomplete="{{ autocomplete }}"
+      {% endif %}
+      {% if is_required %}
+        required
+      {% endif %}
+    >
+  {%- endif -%}
+</label>

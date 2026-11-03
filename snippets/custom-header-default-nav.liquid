@@ -1,0 +1,143 @@
+{%- comment -%}
+  Built-in nav for sections/custom-header.liquid, rendered when the section has
+  no menu chosen. Only the launch pages: Shop (opens the megamenu with All / New
+  Arrivals / Best Sellers / Collections), Fundraising and Contact. Choosing a menu
+  in the section settings replaces all of this. Same markup as the menu loop.
+
+  Accepts:
+  - section: {Object} the custom-header section
+{%- endcomment -%}
+
+{%- liquid
+  assign shop_titles = 'All|New Arrivals|Best Sellers|Collections' | split: '|'
+  assign shop_handles = 'shop|new-arrivals|best-sellers|all-collections' | split: '|'
+  # A store without one of these collections gets all products instead, sorted to match
+  # (newest first / best-selling) — the same fallback as the shop page's tabs.
+  assign shop_sorts = 'none|created-descending|best-selling|none' | split: '|'
+  assign shop_captions = 'Every tee in the shop|The latest drops|Fan favourites|Shop by series' | split: '|'
+  # Lifestyle photos bundled in assets/ (a "Megamenu card" block with an image still wins).
+  assign shop_photos = 'megamenu-all.jpg|megamenu-new-arrivals.jpg|megamenu-best-sellers.jpg|megamenu-collections.jpg' | split: '|'
+
+  # The "Collections" card has no collection of its own; borrow the first real one's image.
+  assign collections_image = blank
+  for c in collections
+    unless c.handle == 'frontpage' or c.handle == 'shop' or c.handle == 'all'
+      if c.featured_image != blank
+        assign collections_image = c.featured_image
+        break
+      endif
+    endunless
+  endfor
+
+  assign shop_current = false
+  if request.page_type == 'collection' or request.page_type == 'list-collections'
+    assign shop_current = true
+  endif
+-%}
+
+<li class="custom-header__item custom-header__item--mega" data-mega-item>
+  <button
+    type="button"
+    class="custom-header__link custom-header__link--pill custom-header__link--roll custom-header__mega-toggle"
+    aria-expanded="false"
+    aria-controls="MegaPanel-{{ section.id }}-shop"
+    {% if shop_current %}
+      aria-current="page"
+    {% endif %}
+  >
+    <span class="link-roll">
+      <span class="link-roll__line">Shop</span>
+      <span class="link-roll__line link-roll__line--in" aria-hidden="true">Shop</span>
+    </span>
+    <span class="custom-header__pill-plus" aria-hidden="true"></span>
+  </button>
+
+  {%- comment %} Plain nested list — used below 990px (static on mobile, hover dropdown on tablet). {%- endcomment %}
+  <ul class="custom-header__submenu" role="list">
+    {%- for title in shop_titles -%}
+      {%- liquid
+        assign handle = shop_handles[forloop.index0]
+        assign sort = shop_sorts[forloop.index0]
+        if handle == 'all-collections'
+          assign url = routes.collections_url
+        elsif collections[handle] != blank
+          assign url = collections[handle].url
+        else
+          assign url = routes.all_products_collection_url
+          if sort != 'none'
+            assign url = url | append: '?sort_by=' | append: sort
+          endif
+        endif
+      -%}
+      <li>
+        <a
+          href="{{ url }}"
+          class="custom-header__link"
+          {% if request.path == url %}
+            aria-current="page"
+          {% endif %}
+        >
+          {{- title -}}
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <div class="mega-panel custom-megamenu" id="MegaPanel-{{ section.id }}-shop">
+    <div class="wrapper">
+      {%- for title in shop_titles -%}
+        {%- liquid
+          assign handle = shop_handles[forloop.index0]
+          assign sort = shop_sorts[forloop.index0]
+          if handle == 'all-collections'
+            assign url = routes.collections_url
+            assign image = collections_image
+          elsif collections[handle] != blank
+            assign url = collections[handle].url
+            assign image = collections[handle].featured_image
+          else
+            assign url = routes.all_products_collection_url
+            if sort != 'none'
+              assign url = url | append: '?sort_by=' | append: sort
+            endif
+            assign image = collections.all.products.first.featured_image
+          endif
+        -%}
+        {%- liquid
+          assign photo = shop_photos[forloop.index0] | asset_url
+          assign caption = shop_captions[forloop.index0]
+        -%}
+        {%- render 'custom-header-mega-card',
+          section: section,
+          title: title,
+          url: url,
+          handle: handle,
+          image_src: photo,
+          caption: caption
+        -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</li>
+
+{%- liquid
+  assign page_titles = 'Fundraising|Contact' | split: '|'
+  assign page_urls = '/pages/fundraising|/pages/contact' | split: '|'
+-%}
+{%- for title in page_titles -%}
+  {%- assign url = page_urls[forloop.index0] -%}
+  <li class="custom-header__item">
+    <a
+      href="{{ url }}"
+      class="custom-header__link custom-header__link--pill custom-header__link--roll"
+      {% if request.path == url %}
+        aria-current="page"
+      {% endif %}
+    >
+      <span class="link-roll">
+        <span class="link-roll__line">{{ title }}</span>
+        <span class="link-roll__line link-roll__line--in" aria-hidden="true">{{ title }}</span>
+      </span>
+    </a>
+  </li>
+{%- endfor -%}

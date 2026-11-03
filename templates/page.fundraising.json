@@ -1,0 +1,258 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "fundraising-hero",
+      "blocks": {
+        "card2": {
+          "type": "card",
+          "settings": {
+            "title": "NO UPFRONT[br]COSTS",
+            "icon_text": "$",
+            "text": "<p>No inventory to manage and no financial risk. Just start sharing and raising with no minimum order required.</p>"
+          }
+        },
+        "card1": {
+          "type": "card",
+          "settings": {
+            "title": "[icon]5 PER TEE",
+            "icon_text": "$",
+            "text": "<p>Every shirt sold earns $5 for your group. More tees, more funds, more possibilities.</p>"
+          }
+        },
+        "card3": {
+          "type": "card",
+          "settings": {
+            "title": "100% ONLINE",
+            "icon_text": "%",
+            "text": "<p>From ordering to shipping, we've got the details covered. You focus on your cause. We'll handle the rest.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "card2",
+        "card1",
+        "card3"
+      ],
+      "settings": {
+        "eyebrow": "Fundraising",
+        "heading": "GOOD TEES.\nGREAT CAUSES.",
+        "text": "<p>Big ideas deserve big support. Raise funds for what matters with T-shirts people actually want to wear. <strong>No upfront costs, no inventory,</strong> just good tees doing good things.</p>",
+        "button_label": "Start fundraising",
+        "button_link": "/pages/free-kit",
+        "secondary_text": "Ready to launch now? <a href=\"https://humaniteesfundraising.com/get-started\">Start your campaign</a>"
+      }
+    },
+    "steps": {
+      "type": "fundraising-steps",
+      "blocks": {
+        "step1": {
+          "type": "step",
+          "settings": {
+            "number": "01",
+            "title": "START IN\nTHE APP",
+            "text": "<p>Start your fundraiser in the Human-i-Tees app and invite your sellers.</p>",
+            "image": "shopify://shop_images/step1.jpg"
+          }
+        },
+        "step2": {
+          "type": "step",
+          "settings": {
+            "number": "02",
+            "title": "SHARE\nYOUR LINK",
+            "text": "<p>Sellers share the fundraiser link. Supporters pick their tees and order online.</p>",
+            "image": "shopify://shop_images/Rectangle_921.jpg"
+          }
+        },
+        "step3": {
+          "type": "step",
+          "settings": {
+            "number": "03",
+            "title": "EARN ON\nEVERY TEE",
+            "text": "<p>We print, pack and ship every order. Your group earns $5 on every shirt sold.</p>",
+            "image": "shopify://shop_images/Rectangle_921_1.jpg"
+          }
+        },
+        "step4": {
+          "type": "step",
+          "settings": {
+            "number": "04",
+            "title": "BUILT FOR\nSTUDENTS",
+            "text": "<p>Every sale is tracked to the student who made it. Students watch their impact in real time, and a leaderboard keeps the competition friendly.</p>",
+            "image": "shopify://shop_images/Rectangle_923.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "step1",
+        "step2",
+        "step3",
+        "step4"
+      ],
+      "settings": {
+        "eyebrow": "4 Simple steps",
+        "step_label": "Step"
+      }
+    },
+    "earn": {
+      "type": "fundraising-earn",
+      "settings": {
+        "eyebrow": "What your group earns",
+        "amount": "5",
+        "heading": "ON EVERY\nSHIRT SOLD.",
+        "text": "<p>Sell 200 shirts and your group raises $1,000. No upfront cost. No inventory. No boxes to sort. Zero risk.</p>",
+        "button_label": "Start fundraising",
+        "button_link": "/pages/free-kit",
+        "secondary_text": "Ready to launch now? <a href=\"https://humaniteesfundraising.com/get-started\">Start your campaign</a>",
+        "tee_right": "shopify://shop_images/Screenshot2025-12-12at12.30.08AM17.png"
+      }
+    },
+    "why": {
+      "type": "fundraising-why",
+      "blocks": {
+        "reason1": {
+          "type": "reason",
+          "settings": {
+            "title": "EASY",
+            "text": "Your entire fundraiser runs\nin the app."
+          }
+        },
+        "reason2": {
+          "type": "reason",
+          "settings": {
+            "title": "PROFITABLE",
+            "text": "$5 from every shirt goes to\nyour group."
+          }
+        },
+        "reason3": {
+          "type": "reason",
+          "settings": {
+            "title": "RISK-FREE",
+            "text": "No upfront cost and no\nminimum order."
+          }
+        },
+        "reason4": {
+          "type": "reason",
+          "settings": {
+            "title": "NO DISTRIBUTION",
+            "text": "We print, pack and ship\nevery order."
+          }
+        },
+        "reason5": {
+          "type": "reason",
+          "settings": {
+            "title": "ORIGINAL",
+            "text": "Iconic nature artwork\npeople want to wear."
+          }
+        },
+        "reason6": {
+          "type": "reason",
+          "settings": {
+            "title": "PROVEN",
+            "text": "60,000+ groups have raised over\n$75,000,000 with Human-i-Tees."
+          }
+        }
+      },
+      "block_order": [
+        "reason1",
+        "reason2",
+        "reason3",
+        "reason4",
+        "reason5",
+        "reason6"
+      ],
+      "settings": {
+        "eyebrow": "Why organizers choose Human-i-Tees",
+        "heading": "FUNDRAISING\nTHAT RUNS ITSELF"
+      }
+    },
+    "planet": {
+      "type": "fundraising-planet",
+      "settings": {
+        "heading": "YOUR FUNDRAISER\nDOES MORE",
+        "image": "shopify://shop_images/Rectangle_35.png",
+        "number": "20",
+        "copy": "OF OUR\nPROFITS\nGO TO THE\nPLANET."
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": {
+          "type": "qa",
+          "settings": {
+            "question": "How does a Human-i-Tees fundraiser work?",
+            "answer": "<p>Start your fundraiser in the Human-i-Tees app and invite your sellers. Supporters order their tees online, and your group earns on every shirt sold.</p>"
+          }
+        },
+        "q2": {
+          "type": "qa",
+          "settings": {
+            "question": "How much does my group earn?",
+            "answer": "<p>$5 on every shirt sold. Sell 200 shirts and your group raises $1,000.</p>"
+          }
+        },
+        "q3": {
+          "type": "qa",
+          "settings": {
+            "question": "Is there an upfront cost or minimum order?",
+            "answer": "<p>No. There's no upfront cost and no minimum order, so there's zero risk.</p>"
+          }
+        },
+        "q4": {
+          "type": "qa",
+          "settings": {
+            "question": "Who prints and ships the shirts?",
+            "answer": "<p>We do. We print, pack and ship every order, so there are no boxes to sort.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ],
+      "settings": {
+        "title": "FAQ",
+        "title_size": "small",
+        "button_label": "View all",
+        "button_link": "",
+        "page_header": false,
+        "open_first": false,
+        "padding_top": 0,
+        "padding_bottom": 40
+      }
+    },
+    "impact": {
+      "type": "fundraising-impact",
+      "settings": {
+        "heading_left": "MAKE AN",
+        "heading_right": "IMPACT",
+        "image_left": "shopify://shop_images/archive.jpg",
+        "image_right": "shopify://shop_images/Rectangle_38.jpg",
+        "text": "<p>Every great movement starts somewhere. Yours could start with a T-shirt. Bring your people together, spread the word and turn every tee into something meaningful.</p>",
+        "button_label": "Start your fundraiser",
+        "button_link": "",
+        "contact": "<p>Questions first? <a href=\"/pages/contact\">Contact us.</a></p>"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "steps",
+    "earn",
+    "why",
+    "planet",
+    "faq",
+    "impact"
+  ]
+}

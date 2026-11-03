@@ -1,0 +1,259 @@
+{%- comment -%}
+  Search (/search) — big search field, then results. Products use the shared
+  tee card (snippets/tee-card.liquid) in the Our Tees 4-column grid
+  (assets/section-our-tees.css); pages and articles follow as a plain lined
+  list. Shell styles are shared with the other utility pages
+  (assets/section-utility-page.css).
+{%- endcomment -%}
+
+{{ 'section-utility-page.css' | asset_url | stylesheet_tag }}
+{{ 'section-our-tees.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign shop_url = routes.all_products_collection_url
+  if collections['shop'].products_count > 0
+    assign shop_url = collections['shop'].url
+  endif
+-%}
+
+{%- style -%}
+  #csearch-{{ section.id }} .csearch__form {
+    display: flex;
+    align-items: center;
+    gap: max(10px, 0.694vw);
+    padding: max(10px, 0.694vw) var(--util-pad);
+    border-top: 1px solid var(--util-line);
+  }
+  #csearch-{{ section.id }} .csearch__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: max(8px, 0.556vw) 0;
+    border: 0;
+    background: transparent;
+    color: var(--black);
+    outline: none;
+  }
+  #csearch-{{ section.id }} .csearch__input::placeholder {
+    color: #c9bcae;
+  }
+  #csearch-{{ section.id }} .csearch__form:focus-within {
+    background: rgba(255, 148, 77, 0.12);
+  }
+  #csearch-{{ section.id }} .csearch__form .custom-button {
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+
+  /* Results grid sits on the shop's beige; full rows of cards only (no
+     heading column), so the 4n+1 partition rule in section-our-tees.css
+     lines up as is. */
+  #csearch-{{ section.id }} .csearch__grid {
+    row-gap: 0;
+  }
+  #csearch-{{ section.id }} .csearch__grid > .our-tees__card:nth-child(n + 5) {
+    border-top: 1px solid rgba(51, 51, 51, 0.2);
+  }
+  @media (max-width: 1024px) {
+    #csearch-{{ section.id }} .csearch__grid {
+      padding: 0;
+    }
+    #csearch-{{ section.id }} .csearch__grid > .our-tees__card:nth-child(n) {
+      border-left: 0;
+      border-top: 0;
+    }
+    #csearch-{{ section.id }} .csearch__grid > .our-tees__card:nth-child(even) {
+      border-left: 1px solid rgba(51, 51, 51, 0.2);
+    }
+    #csearch-{{ section.id }} .csearch__grid > .our-tees__card:nth-child(n + 3) {
+      border-top: 1px solid rgba(51, 51, 51, 0.2);
+    }
+  }
+  @media (max-width: 768px) {
+    #csearch-{{ section.id }} .csearch__grid > .our-tees__card:nth-child(n) {
+      border-left: 0;
+    }
+    #csearch-{{ section.id }} .csearch__grid > .our-tees__card:nth-child(n + 2) {
+      border-top: 1px solid rgba(51, 51, 51, 0.2);
+    }
+  }
+
+  /* Pages / articles: a lined list. */
+  #csearch-{{ section.id }} .csearch__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--util-line);
+  }
+  #csearch-{{ section.id }} .csearch__list li {
+    border-bottom: 1px solid var(--util-line);
+  }
+  #csearch-{{ section.id }} .csearch__list a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: max(12px, 0.972vw) var(--util-pad);
+    color: var(--black);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  #csearch-{{ section.id }} .csearch__list a:hover {
+    background: rgba(255, 148, 77, 0.2);
+  }
+  #csearch-{{ section.id }} .csearch__type {
+    color: var(--util-muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+{%- endstyle -%}
+
+<div class="util csearch" id="csearch-{{ section.id }}">
+  <header class="util__head">
+    <p class="body util__crumb">{{ section.settings.crumb | escape }}</p>
+    <h1 class="h2-v2 util__title">{{ section.settings.heading | escape }}</h1>
+  </header>
+
+  <form action="{{ routes.search_url }}" method="get" role="search" class="csearch__form">
+    <label class="visually-hidden" for="CsearchInput-{{ section.id }}">{{ 'general.search.search' | t }}</label>
+    <input
+      class="h3 csearch__input"
+      id="CsearchInput-{{ section.id }}"
+      type="search"
+      name="q"
+      value="{{ search.terms | escape }}"
+      placeholder="{{ section.settings.placeholder | escape }}"
+      autocomplete="off"
+    >
+    <input type="hidden" name="options[prefix]" value="last">
+    <button type="submit" class="custom-button">
+      <span class="button-span body">SEARCH</span>
+    </button>
+  </form>
+
+  {%- if search.performed -%}
+    {%- paginate search.results by 24 -%}
+      <p class="body util__band">
+        {{ search.results_count }} result{% if search.results_count != 1 %}s{% endif %} for &ldquo;{{ search.terms | escape }}&rdquo;
+      </p>
+
+      {%- if search.results_count > 0 -%}
+        {%- liquid
+          assign has_products = false
+          assign has_other = false
+          for item in search.results
+            if item.object_type == 'product'
+              assign has_products = true
+            else
+              assign has_other = true
+            endif
+          endfor
+        -%}
+
+        {%- if has_products -%}
+          <section class="our-tees csearch__grid" aria-label="Products">
+            {%- for item in search.results -%}
+              {%- if item.object_type == 'product' -%}
+                {%- render 'tee-card', product: item, heading_tag: 'h2' -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </section>
+        {%- endif -%}
+
+        {%- if has_other -%}
+          <ul class="csearch__list" role="list">
+            {%- for item in search.results -%}
+              {%- unless item.object_type == 'product' -%}
+                <li>
+                  <a href="{{ item.url }}">
+                    <span class="h4">{{ item.title | escape }}</span>
+                    <span class="body csearch__type">{{ item.object_type }}</span>
+                  </a>
+                </li>
+              {%- endunless -%}
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if paginate.pages > 1 -%}
+          <nav class="util__pagination" aria-label="{{ 'general.pagination.label' | t }}">
+            {%- if paginate.previous -%}
+              <a class="custom-button" href="{{ paginate.previous.url }}"><span class="button-span body">PREV</span></a>
+            {%- else -%}
+              <span class="custom-button is-disabled" aria-hidden="true"><span class="button-span body">PREV</span></span>
+            {%- endif -%}
+            <span class="body">{{ paginate.current_page }} / {{ paginate.pages }}</span>
+            {%- if paginate.next -%}
+              <a class="custom-button" href="{{ paginate.next.url }}"><span class="button-span body">NEXT</span></a>
+            {%- else -%}
+              <span class="custom-button is-disabled" aria-hidden="true"><span class="button-span body">NEXT</span></span>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- else -%}
+        <div class="util__empty">
+          <h2 class="h3">{{ section.settings.no_results_heading | escape }}</h2>
+          <p class="body">{{ section.settings.no_results_text | escape }}</p>
+          <a class="custom-button" href="{{ shop_url }}"><span class="button-span body">SHOP ALL</span></a>
+        </div>
+      {%- endif -%}
+    {%- endpaginate -%}
+  {%- else -%}
+    <p class="body util__band">{{ section.settings.intro | escape }}</p>
+    <div class="util__empty">
+      <h2 class="h3">{{ section.settings.idle_heading | escape }}</h2>
+      <a class="custom-button" href="{{ shop_url }}"><span class="button-span body">SHOP ALL</span></a>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Search",
+  "tag": "section",
+  "class": "custom-search-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "crumb",
+      "label": "Small label",
+      "default": "Search"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find a tee"
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "Field placeholder",
+      "default": "Search tees..."
+    },
+    {
+      "type": "text",
+      "id": "intro",
+      "label": "Line under the field",
+      "default": "Search by tee name or animal"
+    },
+    {
+      "type": "text",
+      "id": "idle_heading",
+      "label": "Before searching",
+      "default": "Or just browse them all"
+    },
+    {
+      "type": "text",
+      "id": "no_results_heading",
+      "label": "No results heading",
+      "default": "Nothing found"
+    },
+    {
+      "type": "text",
+      "id": "no_results_text",
+      "label": "No results text",
+      "default": "Try another word, or browse the whole shop."
+    }
+  ]
+}
+{% endschema %}

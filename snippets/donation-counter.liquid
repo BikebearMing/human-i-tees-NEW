@@ -1,0 +1,138 @@
+{% comment %}
+  Donations counter for the custom header.
+
+  It is NOT a link — the pill is a button that opens a full-screen takeover.
+  Open/close behaviour lives in the <script> at the bottom of
+  sections/custom-header.liquid (delegated, so theme-editor re-renders are fine);
+  styling lives in the same file's <style> block. That script also moves the
+  panel to <body> on first open — see the comment on the panel below.
+
+  Accepts:
+  - section: {Object} the custom header section (needed for its settings)
+
+  Usage:
+  {% render 'donation-counter', section: section %}
+{% endcomment %}
+
+{%- liquid
+  assign popup_id = 'DonationPopup-' | append: section.id
+
+  # Split a leading currency symbol off the amount so the overlay can colour it.
+  # amount_symbol stays blank when the amount already starts with a digit.
+  assign amount_symbol = ''
+  assign amount_rest = ''
+  assign amount_first = section.settings.donations_amount | slice: 0
+  unless '0123456789' contains amount_first
+    assign amount_symbol = amount_first
+    assign amount_rest = section.settings.donations_amount | slice: 1, 200
+  endunless
+-%}
+
+<div class="donation" data-donation>
+  <button
+    type="button"
+    class="donation__pill"
+    aria-expanded="false"
+    aria-controls="{{ popup_id }}"
+    aria-haspopup="dialog"
+  >
+    <span class="donation__sprout" aria-hidden="true">
+      {%- if section.settings.donations_image != blank -%}
+        {{
+          section.settings.donations_image
+          | image_url: width: 200
+          | image_tag: loading: 'eager', widths: '100, 200', alt: ''
+        }}
+      {%- else -%}
+        {%- comment %} Default sprout cut-out — override per-store via the image setting. {% endcomment -%}
+        <img
+          src="{{ 'donation-leaf.png' | asset_url }}"
+          alt=""
+          loading="eager"
+          width="49"
+          height="45"
+        >
+      {%- endif -%}
+    </span>
+
+    <span class="donation__copy">
+      <span class="donation__label">{{ section.settings.donations_label | escape }}</span>
+      <span class="donation__amount">{{ section.settings.donations_amount | escape }}</span>
+    </span>
+  </button>
+
+  {%- comment -%}
+    Full-screen takeover. The JS below portals this element to <body> the first
+    time it opens — it is position: fixed, and the header it is authored inside
+    picks up GSAP transforms from the sticky-header and hero-intro scripts,
+    which would otherwise become its containing block and trap it in the bar.
+  {%- endcomment -%}
+  <div
+    class="donation__popup"
+    id="{{ popup_id }}"
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ section.settings.donations_label | escape }}"
+  >
+    <button type="button" class="donation__close" data-donation-close aria-label="{{ 'accessibility.close' | t }}">
+      <span class="svg-wrapper">{{- 'icon-close.svg' | inline_asset_content -}}</span>
+    </button>
+
+    <div class="donation__hero">
+      {%- comment -%}
+        The leading currency symbol is split off so it can take the lime accent
+        from the mock. Skipped when the amount starts with a digit, so a plain
+        "2,000,000" is not left with a coloured 2.
+      {%- endcomment -%}
+      <p class="donation__hero-amount">
+        {%- if amount_symbol != blank -%}
+          <span class="donation__hero-currency">{{ amount_symbol | escape }}</span><span class="donation__hero-value" data-donation-value>{{ amount_rest | escape }}</span>
+        {%- else -%}
+          <span class="donation__hero-value" data-donation-value>{{ section.settings.donations_amount | escape }}</span>
+        {%- endif -%}
+      </p>
+
+      {%- if section.settings.donations_label != blank -%}
+        <p class="donation__hero-label">{{ section.settings.donations_label | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.donations_text != blank -%}
+        <div class="donation__hero-text">{{ section.settings.donations_text }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.donations_updated != blank -%}
+        <p class="donation__hero-updated">{{ section.settings.donations_updated | escape }}</p>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Sprout + soil reuse the Brand Is Back assets. {%- endcomment -%}
+    <div class="donation__soil" aria-hidden="true">
+      <img
+        class="donation__leaf"
+        src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/leaf-crop.webp?v=1778908210"
+        alt=""
+        loading="lazy"
+        width="232"
+        height="219"
+      >
+      <img
+        class="donation__soil-img"
+        src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/ground-dirt-crop.webp?v=1778908175"
+        alt=""
+        loading="lazy"
+        width="2000"
+        height="600"
+      >
+    </div>
+
+    {%- if section.settings.donations_button_label != blank -%}
+      <a
+        href="{{ section.settings.donations_button_link | default: routes.root_url }}"
+        class="custom-button light donation__cta"
+      >
+        <span class="button-span body">{{ section.settings.donations_button_label | escape }}</span>
+        <span class="button-arrow" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+      </a>
+    {%- endif -%}
+  </div>
+</div>

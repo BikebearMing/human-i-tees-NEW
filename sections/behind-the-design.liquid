@@ -1,0 +1,205 @@
+{%- comment -%}
+  Behind the design — a simple full-bleed story panel (810px tall @ 1440).
+
+  - Full-bleed parallax background (reuses the global .parallax-container /
+    .parallax-image convention driven by assets/parallax.js).
+  - White triple lines (.has-line-white) at the 25/50/75 boundaries.
+  - A centred tag image up top (e.g. "BEHIND THE DESIGN").
+  - One text block per column (column blocks), pinned near the bottom.
+{%- endcomment -%}
+
+{%- style -%}
+  #bd-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    height: 56.25vw;   /* 810px @ 1440 */
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Background fills the whole panel; parallax.js handles the scroll motion. */
+  #bd-{{ section.id }} .parallax-container {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  /* Anchor the cover-crop to the bottom of the photo (keeps the foreground,
+     crops the sky). parallax.js sets object-fit:cover inline; this only sets
+     the position, so it isn't overridden. */
+  #bd-{{ section.id }} .parallax-image { object-position: bottom; }
+
+  /* Keep the white lines above the photo, below the content. */
+  #bd-{{ section.id }} > .line-overlay { z-index: 1; }
+
+  /* Tag — the cloth label image with the heading text laid over it. */
+  #bd-{{ section.id }} .bd__tag {
+    position: absolute;
+    top: 2.538vw;            /* 36.54px @ 1440 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22.774vw;
+    height: 12.284vw;
+    z-index: 2;
+  }
+  #bd-{{ section.id }} .bd__tag-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  /* "BEHIND THE DESIGN" — centred on the tag, 36.54px down from the tag top. */
+  #bd-{{ section.id }} .bd__tag-text {
+    position: absolute;
+    top: 3.2vw;
+    left: 48%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    color: var(--black);
+  }
+
+  /* One text block per column, aligned to the 4 line-columns. */
+  #bd-{{ section.id }} .bd__cols {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  #bd-{{ section.id }} .bd__col { position: relative; }
+  #bd-{{ section.id }} .bd__text {
+    position: absolute;
+    bottom: 24.583vw;        /* 354px @ 1440 */
+    left: 0.35vw;            /* small inset off the column's left line */
+    max-width: 17.708vw;     /* 255px @ 1440 */
+    color: #fff;
+  }
+  #bd-{{ section.id }} .bd__text p { margin: 0; }
+
+  @media (max-width: 768px) {
+    #bd-{{ section.id }} { height: 120vw; }
+    /* Only the centre line survives on phones, and it ran straight through
+       the full-width copy. */
+    #bd-{{ section.id }} > .line-overlay { display: none; }
+    /* Dark fade up from the bottom so the white copy reads on a bright photo. */
+    #bd-{{ section.id }}::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 70%;
+      z-index: 1;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.55) 100%);
+      pointer-events: none;
+    }
+    #bd-{{ section.id }} .bd__cols { grid-template-columns: 1fr; }
+    #bd-{{ section.id }} .bd__col:not(:first-child) { display: none; }
+    #bd-{{ section.id }} .bd__text {
+      bottom: 10vw;
+      left: 16px;
+      right: 16px;
+      max-width: none;
+    }
+    #bd-{{ section.id }} .bd__tag { width: 60vw; height: 32vw; top: 8vw; }
+    #bd-{{ section.id }} .bd__tag-text { top: 8.5vw; }
+  }
+{%- endstyle -%}
+
+<section class="bd has-line-white" id="bd-{{ section.id }}">
+  <div class="parallax-container">
+    {%- if section.settings.image != blank -%}
+      {{
+        section.settings.image
+        | image_url: width: 2400
+        | image_tag: class: 'parallax-image', widths: '800, 1200, 1800, 2400', sizes: '100vw', alt: ''
+      }}
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'parallax-image placeholder-svg' }}
+    {%- endif -%}
+  </div>
+
+  {%- if section.settings.tag_image != blank or section.settings.tag_text != blank -%}
+    <div class="bd__tag">
+      {%- if section.settings.tag_image != blank -%}
+        {{
+          section.settings.tag_image
+          | image_url: width: 700
+          | image_tag: class: 'bd__tag-img', widths: '350, 700', sizes: '21vw', alt: section.settings.tag_alt | escape
+        }}
+      {%- endif -%}
+      {%- if section.settings.tag_text != blank -%}
+        <span class="h3 bd__tag-text">{{ section.settings.tag_text | escape }}</span>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="bd__cols">
+    {%- for block in section.blocks -%}
+      <div class="bd__col" {{ block.shopify_attributes }}>
+        <div class="body bd__text">{{ block.settings.text }}</div>
+      </div>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Behind the design",
+  "tag": "section",
+  "class": "behind-the-design-section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Background image"
+    },
+    {
+      "type": "header",
+      "content": "Tag"
+    },
+    {
+      "type": "image_picker",
+      "id": "tag_image",
+      "label": "Tag image (cloth label)"
+    },
+    {
+      "type": "text",
+      "id": "tag_text",
+      "label": "Tag text",
+      "default": "BEHIND THE DESIGN"
+    },
+    {
+      "type": "text",
+      "id": "tag_alt",
+      "label": "Tag alt text",
+      "default": "Behind the design"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Column text",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "Behind the design",
+      "blocks": [
+        { "type": "column", "settings": { "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>" } },
+        { "type": "column", "settings": { "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>" } },
+        { "type": "column", "settings": { "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>" } },
+        { "type": "column", "settings": { "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

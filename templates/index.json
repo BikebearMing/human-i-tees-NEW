@@ -1,210 +1,156 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
-    "image_banner": {
-      "type": "image-banner",
-      "blocks": {
-        "heading": {
-          "type": "heading",
-          "settings": {
-            "heading": "Image banner",
-            "heading_size": "h0"
-          }
-        },
-        "text": {
-          "type": "text",
-          "settings": {
-            "text": "Give customers details about the banner image(s) or content on the template.",
-            "text_style": "body"
-          }
-        },
-        "button": {
-          "type": "buttons",
-          "settings": {
-            "button_label_1": "Shop all",
-            "button_link_1": "shopify://collections/all",
-            "button_style_secondary_1": true,
-            "button_label_2": "",
-            "button_link_2": "",
-            "button_style_secondary_2": false
-          }
-        }
-      },
-      "block_order": [
-        "heading",
-        "text",
-        "button"
-      ],
-      "settings": {
-        "image_overlay_opacity": 40,
-        "image_height": "large",
-        "desktop_content_position": "bottom-center",
-        "show_text_box": false,
-        "desktop_content_alignment": "center",
-        "color_scheme": "scheme-3",
-        "mobile_content_alignment": "center",
-        "stack_images_on_mobile": false,
-        "show_text_below": false
-      }
-    },
-    "rich_text": {
-      "type": "rich-text",
-      "blocks": {
-        "heading": {
-          "type": "heading",
-          "settings": {
-            "heading": "Talk about your brand",
-            "heading_size": "h1"
-          }
-        },
-        "text": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Share information about your brand with your customers. Describe a product, make announcements, or welcome customers to your store.<\/p>"
-          }
-        }
-      },
-      "block_order": [
-        "heading",
-        "text"
-      ],
-      "settings": {
-        "color_scheme": "scheme-1",
-        "full_width": true,
-        "padding_top": 40,
-        "padding_bottom": 0
-      }
-    },
-    "featured_collection": {
-      "type": "featured-collection",
-      "settings": {
-        "title": "Featured products",
-        "heading_size": "h2",
-        "collection": "all",
-        "products_to_show": 8,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "show_view_all": false,
-        "swipe_on_mobile": false,
-        "image_ratio": "adapt",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "columns_mobile": "2",
-        "padding_top": 28,
-        "padding_bottom": 36
-      }
-    },
-    "collage": {
-      "type": "collage",
-      "blocks": {
-        "collection-0": {
-          "type": "collection",
-          "settings": {
-            "collection": ""
-          }
-        },
-        "product": {
-          "type": "product",
-          "settings": {
-            "product": "",
-            "second_image": false
-          }
-        },
-        "collection-1": {
-          "type": "collection",
-          "settings": {
-            "collection": ""
-          }
-        }
-      },
-      "block_order": [
-        "collection-0",
-        "product",
-        "collection-1"
-      ],
-      "settings": {
-        "heading": "Multimedia collage",
-        "heading_size": "h2",
-        "desktop_layout": "left",
-        "mobile_layout": "collage",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "video": {
-      "type": "video",
-      "settings": {
-        "heading": "",
-        "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
-        "heading_size": "h1",
-        "description": "",
-        "full_width": false,
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
     "multicolumn": {
       "type": "multicolumn",
-      "blocks": {
-        "column1": {
-          "type": "column",
-          "settings": {
-            "title": "Column",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
-            "link_label": "",
-            "link": ""
-          }
-        },
-        "column2": {
-          "type": "column",
-          "settings": {
-            "title": "Column",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
-            "link_label": "",
-            "link": ""
-          }
-        },
-        "column3": {
-          "type": "column",
-          "settings": {
-            "title": "Column",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
-            "link_label": "",
-            "link": ""
-          }
-        }
-      },
-      "block_order": [
-        "column1",
-        "column2",
-        "column3"
-      ],
       "settings": {
         "title": "",
         "heading_size": "h1",
         "image_width": "third",
         "image_ratio": "adapt",
+        "button_label": "",
+        "button_link": "",
         "columns_desktop": 3,
         "column_alignment": "center",
         "background_style": "none",
-        "button_label": "",
-        "button_link": "",
-        "swipe_on_mobile": false,
         "color_scheme": "scheme-1",
         "columns_mobile": "1",
+        "swipe_on_mobile": false,
         "padding_top": 36,
         "padding_bottom": 36
+      }
+    },
+    "homepage_hero_6fdkp8": {
+      "type": "homepage-hero",
+      "name": "Homepage hero",
+      "settings": {}
+    },
+    "brand_is_back": {
+      "type": "brand-is-back",
+      "name": "Brand Is Back",
+      "settings": {}
+    },
+    "tv_section": {
+      "type": "tv-section",
+      "blocks": {
+        "channel_1": {
+          "type": "channel",
+          "settings": {
+            "image": "shopify://shop_images/tv-channel-1-90s-kids.jpg"
+          }
+        },
+        "channel_2": {
+          "type": "channel",
+          "settings": {
+            "image": "shopify://shop_images/tv-channel-2-booth.jpg"
+          }
+        },
+        "channel_3": {
+          "type": "channel",
+          "settings": {
+            "image": "shopify://shop_images/tv-channel-3-donation-check.jpg"
+          }
+        },
+        "channel_4": {
+          "type": "channel",
+          "settings": {
+            "image": "shopify://shop_images/tv-channel-4-newspaper.jpg"
+          }
+        },
+        "channel_5": {
+          "type": "channel",
+          "settings": {
+            "image": "shopify://shop_images/tv-channel-5-older-90s-kids.jpg"
+          }
+        },
+        "channel_6": {
+          "type": "channel",
+          "settings": {
+            "image": "shopify://shop_images/tv-channel-6-kaw.jpg"
+          }
+        },
+        "channel_7": {
+          "type": "channel",
+          "settings": {
+            "image": "shopify://shop_images/tv-channel-7-donations-list.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "channel_1",
+        "channel_2",
+        "channel_3",
+        "channel_4",
+        "channel_5",
+        "channel_6",
+        "channel_7"
+      ],
+      "name": "TV",
+      "settings": {}
+    },
+    "featured_shop_kBUbCy": {
+      "type": "featured-shop",
+      "name": "Featured Shop",
+      "settings": {}
+    },
+    "where_your_money_goes_TFYHAD": {
+      "type": "where-your-money-goes",
+      "name": "Where your money goes",
+      "settings": {}
+    },
+    "our_tees_QgcezF": {
+      "type": "our-tees",
+      "blocks": {
+        "product_iJeQhJ": {
+          "type": "product",
+          "settings": {
+            "product": "nature-can-t-be-restock",
+            "show_new_badge": false
+          }
+        },
+        "product_LcDDng": {
+          "type": "product",
+          "settings": {
+            "product": "bear-us-in-mind",
+            "show_new_badge": false
+          }
+        },
+        "product_nJ3yM7": {
+          "type": "product",
+          "settings": {
+            "product": "losing-ground",
+            "show_new_badge": false
+          }
+        }
+      },
+      "block_order": [
+        "product_iJeQhJ",
+        "product_LcDDng",
+        "product_nJ3yM7"
+      ],
+      "name": "Our Tees",
+      "settings": {
+        "heading": "Our Tees",
+        "shop_all_label": "SHOP ALL",
+        "shop_all_url": ""
       }
     }
   },
   "order": [
-    "image_banner",
-    "rich_text",
-    "featured_collection",
-    "collage",
-    "video",
-    "multicolumn"
+    "multicolumn",
+    "homepage_hero_6fdkp8",
+    "brand_is_back",
+    "tv_section",
+    "featured_shop_kBUbCy",
+    "where_your_money_goes_TFYHAD",
+    "our_tees_QgcezF"
   ]
 }

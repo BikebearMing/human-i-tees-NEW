@@ -1,0 +1,276 @@
+{% comment %}
+  First-visit preloader overlay.
+
+  - Shows once per browser session (sessionStorage). On later page loads in the
+    same session it's removed before paint, so there's no flash.
+  - Fake progress counter (pauses at 71% so it feels like it's really loading)
+    and an image montage that cycles. The headline + the % counter rise in,
+    line by line, masked behind overflow:hidden (GSAP SplitText). At 100% they
+    drop back down, leaving just the image for a beat, then the whole overlay
+    slides up to reveal the site.
+  - Needs GSAP + SplitText (loaded just below from /assets). If they fail to
+    load — or JS is off — the overlay is removed/hidden so it never traps
+    the visitor. Skipped in the theme editor.
+
+  Timings live in the CONFIG block in the <script> at the bottom — tweak there.
+
+  Usage: place {% render 'preloader' %} immediately after the opening <body>
+  tag in layout/theme.liquid.
+{% endcomment %}
+
+<style>
+  .preloader {
+    width: 100vw;
+    height: 100vh;
+
+    & .wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    & .image-montage-wrapper {
+      position: absolute;
+      width: max(140px, 12.083vw);
+      height: max(193px, 16.667vw);
+      top: max(80px, 9.931vw);
+      left: 50%;
+      transform: translateX(-50%);
+
+      & img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    & .h3 {
+      max-width: max(280px, 22.686vw);
+      text-align: center;
+      position: absolute;
+      bottom: max(120px, 13.375vw);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .body {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: max(24px, 2.083vw);
+    }
+  }
+
+  /* --- preloader behaviour --- */
+  .preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    /* No background here — the 4 .preloader-cols below carry the white fill so
+       they can slide up independently and reveal the site behind. */
+  }
+
+  /* 4 vertical column panels that cover the screen during loading and slide
+     up (staggered L→R) on dismissal. The image/headline/% counter sit on top
+     via .wrapper's z-index. */
+  .preloader .preloader-cols {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .preloader .preloader-cols > i {
+    flex: 1 1 25%;
+    background-color: #f9f7f3; /* match the body background (custom.css) */
+    display: block;
+  }
+  .preloader .wrapper { position: relative; z-index: 1; }
+
+  /* montage: images stacked (inset:0 above); show one at a time, hard cut */
+  .preloader .image-montage-wrapper img { opacity: 0; }
+  .preloader .image-montage-wrapper img.is-active { opacity: 1; }
+
+  /* text reveal: GSAP SplitText wraps each .h3 line in an overflow:hidden mask;
+     the % counter has a matching mask in the markup. Both stay hidden until the
+     JS is ready, so the un-animated text never flashes while GSAP loads. */
+  .preloader .po-mask { display: block; overflow: hidden; }
+  .preloader .po-num { display: block; }
+  .preloader .h3,
+  .preloader .body { visibility: hidden; }
+  .preloader.is-text-ready .h3,
+  .preloader.is-text-ready .body { visibility: visible; }
+
+  /* Small screens: pull the montage and the line toward the middle instead of
+     pinning them to the top and bottom edges of a tall viewport. */
+  @media (max-width: 1024px) {
+    .preloader .image-montage-wrapper { top: 24vh; }
+    .preloader .h3 { bottom: 28vh; max-width: 80vw; }
+  }
+</style>
+
+<noscript>
+  <style>
+    .preloader { display: none; }
+  </style>
+</noscript>
+
+<div class="preloader">
+  <div class="preloader-cols" aria-hidden="true">
+    <i></i><i></i><i></i><i></i>
+  </div>
+  <div class="wrapper">
+    <div class="image-montage-wrapper">
+      <img src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/preloader-img-1.jpg?v=1778486245" alt="">
+      <img src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Screenshot_2025-09-26_at_2.37.40_PM.png?v=1758911905" alt="">
+      <img src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/dclassic_2025-09-01_123604.350_2.jpg?v=1756826969" alt="">
+      <img src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/cpm35_2025-08-17_172322.390.jpg?v=1756216486" alt="">
+    </div>
+
+    <span class="h3">TO BE HUMAN IS TO BE A PART OF SOMETHING BIGGER</span>
+
+    <span class="body"><span class="po-mask"><span class="po-num">0%</span></span></span>
+  </div>
+</div>
+
+{%- comment -%} GSAP + SplitText now load globally in layout/theme.liquid (this snippet only renders on the homepage). {%- endcomment -%}
+<script>
+  (function () {
+    /* ---------------- CONFIG ---------------- */
+    var DEV_ALWAYS_SHOW = true;   // DEV: play on every refresh. Set false before launch (then it's once per session).
+    var SESSION_KEY     = 'preloaderShown';
+    var MONTAGE_MS      = 150;     // time each montage image is shown
+
+    var STAGES = [                 // fake progress: [targetPercent, durationMs]
+      [71, 2000],   // climb to 71%
+      [71, 700],    // ...brief stall, just enough to read as "loading"
+      [100, 1100]   // finish
+    ];
+
+    var TEXT_IN_DELAY = 0.15;      // s — beat before the lines rise in
+    var LINE_DUR      = 0.7;       // s — rise-in duration per line
+    var LINE_STAGGER  = 0.08;      // s — gap between lines (rise in / drop out)
+    var HOLD_AT_100   = 0.6;       // s — sit at 100% (image frozen) before the text drops
+    var OUT_DUR       = 0.5;       // s — drop-out duration per line
+    var IMG_FADE      = 0.4;       // s — image fade-to-blank after the text is gone
+    var BLANK_HOLD    = 0.35;      // s — beat on the empty white screen before the columns leave
+    var SLIDE_DUR     = 0.9;       // s — each column slides up
+    var COL_STAGGER   = 0.1;       // s — gap between columns (L→R)
+    var HARD_CAP_MS   = 12000;     // absolute backstop — never trap the visitor
+    /* ---------------------------------------- */
+
+    var el = document.querySelector('.preloader');
+    if (!el) return;
+    function removeEl() { if (el.parentNode) el.parentNode.removeChild(el); }
+
+    // Never show inside the theme editor.
+    if (window.Shopify && Shopify.designMode) { removeEl(); return; }
+
+    // Already shown this session? Remove it now, before the browser paints.
+    if (!DEV_ALWAYS_SHOW) {
+      try {
+        if (sessionStorage.getItem(SESSION_KEY)) { removeEl(); return; }
+        sessionStorage.setItem(SESSION_KEY, '1');
+      } catch (e) {}
+    }
+
+    // GSAP / SplitText didn't load (blocked, 404, offline) — fail open.
+    if (!window.gsap || !window.SplitText) { removeEl(); return; }
+    gsap.registerPlugin(SplitText);
+
+    var reduce = false;
+    try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+    // Lock scrolling while the overlay is up.
+    var root = document.documentElement;
+    var prevOverflow = root.style.overflow;
+    root.style.overflow = 'hidden';
+
+    var numEl = el.querySelector('.po-num');
+
+    /* --- headline: split into overflow-masked lines, rise them in -------- */
+    var hSplit = SplitText.create(el.querySelector('.h3'), {
+      type: 'lines',
+      mask: 'lines',
+      autoSplit: true,           // re-split + replay if the webfont loads late, or on resize
+      onSplit: function (self) {
+        if (reduce) return;
+        return gsap.from(self.lines.concat([numEl]), {
+          yPercent: 110,
+          duration: LINE_DUR,
+          stagger: LINE_STAGGER,
+          ease: 'power4.out',
+          delay: TEXT_IN_DELAY
+        });
+      }
+    });
+    el.classList.add('is-text-ready');   // lines already sit clipped at yPercent:110 — safe to reveal the containers
+
+    /* --- image montage --------------------------------------------------- */
+    var imgs = el.querySelectorAll('.image-montage-wrapper img');
+    var montageTimer = null;
+    if (imgs.length) {
+      var idx = 0;
+      imgs[0].classList.add('is-active');
+      montageTimer = setInterval(function () {
+        imgs[idx].classList.remove('is-active');
+        idx = (idx + 1) % imgs.length;
+        imgs[idx].classList.add('is-active');
+      }, MONTAGE_MS);
+    }
+    function freezeMontage() { if (montageTimer) { clearInterval(montageTimer); montageTimer = null; } }
+
+    /* --- fake progress counter ------------------------------------------- */
+    function render(n) { if (numEl) numEl.textContent = n + '%'; }
+    render(0);
+
+    var si = 0, from = 0, start = null, value = 0;
+    function step(now) {
+      if (start === null) { start = now; from = value; }
+      var target = STAGES[si][0], dur = STAGES[si][1];
+      var t = dur ? Math.min((now - start) / dur, 1) : 1;
+      value = from + (target - from) * (1 - Math.pow(1 - t, 2));   // easeOutQuad
+      render(Math.round(value));
+      if (t < 1) { requestAnimationFrame(step); return; }
+      si++; start = null;
+      if (si < STAGES.length) { requestAnimationFrame(step); }
+      else { render(100); finish(); }
+    }
+    requestAnimationFrame(step);
+
+    /* --- reveal the site ------------------------------------------------- */
+    var leaving = false, revealed = false;
+
+    function reveal() {
+      if (revealed) return;
+      revealed = true;
+      freezeMontage();
+      root.style.overflow = prevOverflow;
+      removeEl();
+      try { document.dispatchEvent(new CustomEvent('preloader:done')); } catch (e) {}
+    }
+
+    function finish() {
+      if (leaving) return;
+      leaving = true;
+      render(100);
+      if (reduce) { reveal(); return; }
+      freezeMontage();   // image holds on its current frame from here on
+
+      var outTargets = hSplit.lines.concat([numEl]).reverse();
+      var cols       = el.querySelectorAll('.preloader-cols > i');
+      var imgWrap    = el.querySelector('.image-montage-wrapper');
+
+      // hold at 100% → text masks back up → image fades out → blank beat
+      //   → 4 columns slide up L→R, staggered
+      gsap.timeline({ delay: HOLD_AT_100, onComplete: reveal })
+        .to(outTargets, { yPercent: 110, duration: OUT_DUR, stagger: LINE_STAGGER, ease: 'power3.in' })
+        .to(imgWrap,    { autoAlpha: 0, duration: IMG_FADE, ease: 'power2.out' }, '-=0.15')
+        .to(cols,       { yPercent: -100, duration: SLIDE_DUR, stagger: COL_STAGGER, ease: 'power4.inOut' }, '+=' + BLANK_HOLD);
+    }
+
+    setTimeout(function () { if (!leaving) finish(); else reveal(); }, HARD_CAP_MS);
+  })();
+</script>

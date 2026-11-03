@@ -1,0 +1,263 @@
+{%- comment -%}
+  Fundraising why — "FUNDRAISING THAT RUNS ITSELF" over a 4-up grid of
+  numbered reasons. The grid columns sit exactly on the .has-line columns
+  (25/50/75%), and each cell is ruled top and under its number band.
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h3 (heading, cell titles) and .body (eyebrow, numbers, copy).
+{%- endcomment -%}
+
+{%- style -%}
+  #fr-why-{{ section.id }} {
+    --fw-line: #d9cdb8; /* same rule colour as the .has-line columns (custom.css) */
+    --fw-pad: 0.556vw; /* 8 — inset from each column line */
+
+    position: relative;
+    width: 100%;
+    padding-top: 0.903vw;
+    box-sizing: border-box;
+  }
+
+  #fr-why-{{ section.id }} .fr-why__head {
+    position: relative;
+    z-index: 1;
+    padding-inline: var(--fw-pad);
+    color: var(--black);
+  }
+  /* mock: Futura PT Cond 60px / 80% / -2.4px — same as the step-card title */
+  #fr-why-{{ section.id }} .fr-why__title {
+    padding-top: 0.556vw;
+    font-size: max(36px, 4.167vw);
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+  }
+
+  /* ----- Grid: 23 under the heading ----- */
+  #fr-why-{{ section.id }} .fr-why__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 1.597vw;
+  }
+  #fr-why-{{ section.id }} .fr-why__cell {
+    position: relative;
+    padding-bottom: 2.639vw; /* ~38 under the copy to the next row's rule */
+  }
+  /* The rules are drawn, not borders, so the intro can sweep them across.
+     --fw-draw is 1 at rest; the script runs it up from 0. */
+  #fr-why-{{ section.id }} .fr-why__cell::before,
+  #fr-why-{{ section.id }} .fr-why__band::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--fw-line);
+    transform: scaleX(var(--fw-draw, 1));
+    transform-origin: left center;
+  }
+  #fr-why-{{ section.id }} .fr-why__cell::before { top: 0; }
+  #fr-why-{{ section.id }} .fr-why__band::after { bottom: 0; }
+
+  /* number band: 25 tall between the two rules */
+  #fr-why-{{ section.id }} .fr-why__band {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: max(24px, 1.736vw);
+    padding-inline: var(--fw-pad);
+    color: var(--black);
+  }
+  #fr-why-{{ section.id }} .fr-why__body {
+    padding: 1.111vw var(--fw-pad) 0; /* 16 under the band */
+  }
+  #fr-why-{{ section.id }} .fr-why__text {
+    padding-top: 1.042vw; /* 15 (custom.css zeroes <p> margins) */
+    font-size: max(14px, 0.972vw); /* .body, scaled with the layout as in the sections above */
+    letter-spacing: -0.03em;
+    color: var(--black);
+  }
+
+  #fr-why-{{ section.id }} .fr-why-line-mask {
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  /* ===== TABLET (<= 1024px) ===== */
+  @media (max-width: 1024px) {
+    #fr-why-{{ section.id }} {
+      --fw-pad: 10px;
+    }
+    #fr-why-{{ section.id }} .fr-why__grid { margin-top: 20px; }
+    #fr-why-{{ section.id }} .fr-why__cell { padding-bottom: 32px; }
+    #fr-why-{{ section.id }} .fr-why__body { padding-top: 14px; }
+    #fr-why-{{ section.id }} .fr-why__text { padding-top: 12px; }
+  }
+
+  /* ===== MOBILE (<= 768px) — two columns, on the centre .has-line ===== */
+  @media (max-width: 768px) {
+    #fr-why-{{ section.id }} {
+      --fw-pad: 12px;
+      padding-top: 16px;
+    }
+    #fr-why-{{ section.id }} .fr-why__title { padding-top: 8px; }
+    #fr-why-{{ section.id }} .fr-why__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    #fr-why-{{ section.id }} .fr-why__cell--filler { display: none; }
+    #fr-why-{{ section.id }} .fr-why__text br { display: none; }
+  }
+{%- endstyle -%}
+
+<section class="fr-why has-line" id="fr-why-{{ section.id }}">
+  <div class="fr-why__head">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="body uppercase fr-why__eyebrow" data-fw-split>{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+    <h2 class="h3 fr-why__title" data-fw-split>{{ section.settings.heading | escape | newline_to_br }}</h2>
+  </div>
+
+  {%- if section.blocks.size > 0 -%}
+    <div class="fr-why__grid">
+      {%- for block in section.blocks -%}
+        <article class="fr-why__cell" {{ block.shopify_attributes }}>
+          <p class="body fr-why__band">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</p>
+          <div class="fr-why__body">
+            <h3 class="h3 fr-why__cell-title" data-fw-split>{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.text != blank -%}
+              <p class="body fr-why__text" data-fw-split>{{ block.settings.text | escape | newline_to_br }}</p>
+            {%- endif -%}
+          </div>
+        </article>
+      {%- endfor -%}
+
+      {%- comment -%} Pad the last row so its rules still run the full width {%- endcomment -%}
+      {%- assign remainder = section.blocks.size | modulo: 4 -%}
+      {%- if remainder > 0 -%}
+        {%- assign fillers = 4 | minus: remainder -%}
+        {%- for i in (1..fillers) -%}
+          <div class="fr-why__cell fr-why__cell--filler" aria-hidden="true">
+            <p class="body fr-why__band">&nbsp;</p>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('fr-why-{{ section.id }}');
+    if (!root) return;
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (reduce || !window.gsap || !window.ScrollTrigger) return;
+
+    var grid = root.querySelector('.fr-why__grid');
+    var cells = root.querySelectorAll('.fr-why__cell');
+    var nums = root.querySelectorAll('.fr-why__cell:not(.fr-why__cell--filler) .fr-why__band');
+
+    function run() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      var splitEls = root.querySelectorAll('[data-fw-split]');
+      var split = null;
+      if (window.SplitText && splitEls.length) {
+        gsap.registerPlugin(SplitText);
+        split = SplitText.create(splitEls, { type: 'lines', mask: 'lines', linesClass: 'fr-why-line' });
+      }
+
+      // Heading rises line by line as it comes up the screen.
+      var head = gsap.timeline({
+        scrollTrigger: { trigger: root, start: 'top 80%', once: true },
+      });
+      var headLines = split ? root.querySelectorAll('.fr-why__head .fr-why-line') : [];
+      if (headLines.length) {
+        head.from(headLines, { yPercent: 120, duration: 0.9, ease: 'power4.out', stagger: 0.08 });
+      }
+
+      // Then the rules sweep across cell by cell, each number ticks up and
+      // its title and copy follow.
+      if (!grid) return;
+      var tl = gsap.timeline({
+        scrollTrigger: { trigger: grid, start: 'top 80%', once: true },
+      });
+      tl.fromTo(cells, { '--fw-draw': 0 }, { '--fw-draw': 1, duration: 0.9, ease: 'power3.inOut', stagger: 0.08 }, 0);
+      tl.fromTo(nums, { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+        { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power3.out', stagger: 0.08, clearProps: 'clipPath' }, 0.3);
+
+      if (split) {
+        cells.forEach(function (cell, i) {
+          var lines = cell.querySelectorAll('.fr-why-line');
+          if (lines.length) {
+            tl.from(lines, { yPercent: 120, duration: 0.8, ease: 'power4.out', stagger: 0.06 }, 0.4 + i * 0.08);
+          }
+        });
+      }
+    }
+
+    // split once the webfonts are in, so the line breaks are the real ones
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+    else run();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Fundraising why",
+  "tag": "section",
+  "class": "fundraising-why-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Why organizers choose Human-i-Tees"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the heading.",
+      "default": "FUNDRAISING\nTHAT RUNS ITSELF"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "reason",
+      "name": "Reason",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "EASY"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "info": "Each new line starts a new line on desktop.",
+          "default": "Your entire fundraiser runs\nin the app."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fundraising why",
+      "blocks": [
+        { "type": "reason", "settings": { "title": "EASY", "text": "Your entire fundraiser runs\nin the app." } },
+        { "type": "reason", "settings": { "title": "PROFITABLE", "text": "$5 from every shirt goes to\nyour group." } },
+        { "type": "reason", "settings": { "title": "RISK-FREE", "text": "No upfront cost and no\nminimum order." } },
+        { "type": "reason", "settings": { "title": "NO DISTRIBUTION", "text": "We print, pack and ship\nevery order." } },
+        { "type": "reason", "settings": { "title": "ORIGINAL", "text": "Iconic nature artwork\npeople want to wear." } },
+        { "type": "reason", "settings": { "title": "PROVEN", "text": "60,000+ groups have raised over\n$75,000,000 with Human-i-Tees." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

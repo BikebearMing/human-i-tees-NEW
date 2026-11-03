@@ -1,0 +1,60 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "faq",
+      "blocks": {
+        "q1": {
+          "type": "qa",
+          "settings": {
+            "question": "When was Humanitees founded?",
+            "answer": "<p>Humanitees was started in the 90s by 3 founders, Tim Boylan, Dave Highbloom, and Steve Kemler. They had one mission: to make clothing that sparks conversation and action for the planet.</p>"
+          }
+        },
+        "q2": {
+          "type": "qa",
+          "settings": {
+            "question": "What happened to Humanitees after the early 2000s?",
+            "answer": "<p>Add your answer hHumanitees was started in the 90s by 3 founders, Tim Boylan, Dave Highbloom, and Steve Kemler. They had one mission: to make clothing that sparks conversation and action for the planet. Humanitees was started in the 90s by 3 founders, Tim Boylan, Dave Highbloom, and Steve Kemler. They had one mission: to make clothing that sparks conversation and action for the planet.</p>"
+          }
+        },
+        "q3": {
+          "type": "qa",
+          "settings": {
+            "question": "Who brought Humanitees back?",
+            "answer": "<p>Add your answer here.</p>"
+          }
+        },
+        "q4": {
+          "type": "qa",
+          "settings": {
+            "question": "Why “Humanitees”?",
+            "answer": "<p>Add your answer here.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ],
+      "settings": {
+        "title": "FAQ",
+        "padding_top": 130,
+        "padding_bottom": 40
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

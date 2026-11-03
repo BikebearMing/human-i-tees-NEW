@@ -1,0 +1,777 @@
+{%- comment -%}
+  Custom product (single product / PDP).
+
+  3-column layout aligned to the .has-line boundaries (25 / 50 / 75 %):
+    - LEFT rail  (1 of 4 cols, sticky):  NEW badge, title, price, cursive
+      image (per-product, added in settings later), description.
+    - CENTRE     (2 of 4 cols, scrolls): the product media stacked vertically.
+      As you scroll, the imagery rises past the two pinned rails.
+    - RIGHT rail (1 of 4 cols, sticky):  size picker, size guide, quantity,
+      ADD TO CART, and the DETAILS / CARE / SHIPPING collapsibles.
+
+  The pin is pure CSS (position: sticky) — no JS needed for the layout. The
+  only JS is the size picker (swap variant + price + availability) and the
+  collapsibles. Add-to-cart reuses the theme's <product-form> + <cart-notification>.
+
+  Typography: .h4 (labels/title) and .body (copy), per the design.
+{%- endcomment -%}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+
+  comment
+    Cursive label image: per-product metafield first (custom.cursive_image),
+    then the section setting as a shop-wide fallback, then the bundled
+    assets/pdp-cursive.png.
+  endcomment
+  assign cursive_src = ''
+  if product.metafields.custom.cursive_image != blank
+    assign cursive_mf = product.metafields.custom.cursive_image
+    if cursive_mf.value.src
+      assign cursive_src = cursive_mf | image_url: width: 600
+    else
+      assign cursive_src = cursive_mf
+    endif
+  elsif section.settings.cursive_image != blank
+    assign cursive_src = section.settings.cursive_image
+  else
+    assign cursive_src = 'pdp-cursive.png' | asset_url
+  endif
+
+  assign show_badge = false
+  if section.settings.badge_mode == 'always'
+    assign show_badge = true
+  elsif section.settings.badge_mode == 'tag' and product.tags contains 'new'
+    assign show_badge = true
+  endif
+-%}
+
+{%- style -%}
+  #pdp-{{ section.id }} {
+    --pdp-line: #d9cdb8;
+    --pdp-muted: #9a8f7a;
+    --pdp-ink: var(--black, #282828);
+    --pdp-orange: #ff944d;       /* existing brand orange (FAQ / blog) */
+    --pdp-panel: var(--beige);   /* existing beige, panel behind the first image */
+    /* Never pin under the fixed header, whatever the editor value. */
+    --pdp-sticky-top: max({{ section.settings.sticky_top }}px, calc(var(--header-height, 8rem) + 1.6rem));
+
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* The header is fixed and this section opts out of the global header
+     offset, so the editor's top padding is added below the measured bar
+     (otherwise the title and SELECT SIZE start underneath it). */
+  #pdp-{{ section.id }} .pdp__push { padding-top: calc(var(--header-height, 8rem) + {{ section.settings.padding_top }}px) !important; }
+
+  /* 3 columns on the 25/50/75 line grid. */
+  #pdp-{{ section.id }} .pdp__grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: start;
+  }
+
+  /* ---------- LEFT rail (sticky) ---------- */
+  #pdp-{{ section.id }} .pdp__left {
+    position: sticky;
+    top: var(--pdp-sticky-top);
+    align-self: start;
+    min-height: calc(100vh - var(--pdp-sticky-top));
+    padding: 0 2vw 3vw 1.4vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;     /* centre the title / price / desc */
+    text-align: center;
+    z-index: 2;              /* keep the overflowing cursive above the media */
+  }
+  #pdp-{{ section.id }} .pdp__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: max(36px, 2.5vw);
+    height: max(36px, 2.5vw);
+    border-radius: 50%;
+    background: var(--pdp-ink);
+    color: #fff;
+    font-size: max(9px, 0.7vw);
+    letter-spacing: 0.06vw;
+    margin: 0 0 1vw;
+  }
+  #pdp-{{ section.id }} .pdp__title {
+    color: var(--pdp-ink);
+    margin: 0;
+    max-width: max(160px, 13.264vw);   /* 191px @ 1440 */
+  }
+  #pdp-{{ section.id }} .pdp__price {
+    color: var(--pdp-ink);
+    margin: 0.8vw 0 0;
+  }
+  /* Cursive label — lives in the (sticky) left column and overflows out of it
+     into the centre. Anchored to the column, so it pins with the rail while
+     scrolling and releases ~a viewport before the section end (never reaches
+     the footer). top backs out the push padding so it lands at 245px from the
+     section top regardless of the padding setting. */
+  #pdp-{{ section.id }} .pdp__cursive {
+    position: absolute;
+    top: calc(17.014vw - {{ section.settings.padding_top }}px);   /* 245px @ 1440 from section top */
+    left: 18.966vw;    /* 273.11px @ 1440 */
+    width: 11vw;
+    height: auto;
+    z-index: 2;
+    pointer-events: none;
+  }
+  #pdp-{{ section.id }} .pdp__desc {
+    color: var(--pdp-ink);
+    max-width: max(200px, 17.708vw);    /* 255px @ 1440 */
+    margin: auto auto 0;    /* push to the bottom of the pinned rail, centred */
+    padding-top: 3vw;
+  }
+  #pdp-{{ section.id }} .pdp__desc p { margin: 0; }
+
+  /* ---------- CENTRE (scrolling media) ---------- */
+  /* No side borders here — the .has-line overlay already draws the 25%/75%
+     column boundaries this column sits between. */
+  #pdp-{{ section.id }} .pdp__media { position: relative; }
+  #pdp-{{ section.id }} .pdp__media-item { display: block; }
+  /* First image sits on the tan panel; the rest are full-bleed within the column. */
+  #pdp-{{ section.id }} .pdp__media-item--panel {
+    background: var(--pdp-panel);
+    padding: 6vw 6vw 5vw;
+  }
+  #pdp-{{ section.id }} .pdp__media-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  #pdp-{{ section.id }} .pdp__media-item--bleed img {
+    width: 100%;
+    object-fit: cover;
+  }
+  /* Artwork: framed like the first shot but on the page colour, and capped so
+     tall prints (Tree Frog, Losing Ground) don't run a whole screen long. */
+  #pdp-{{ section.id }} .pdp__media-item--art {
+    padding: 6vw 6vw 5vw;
+    background: rgb(var(--color-background)); /* hides the page's column lines behind the transparent art */
+  }
+  #pdp-{{ section.id }} .pdp__media-item--art img {
+    max-height: 70vh;
+    object-fit: contain;
+  }
+
+  /* ---------- RIGHT rail (sticky) ---------- */
+  #pdp-{{ section.id }} .pdp__right {
+    position: sticky;
+    top: var(--pdp-sticky-top);
+    align-self: start;
+    padding: 0 1.4vw 3vw 2vw;
+  }
+  #pdp-{{ section.id }} .pdp__label {
+    display: block;
+    text-align: center;
+    color: var(--pdp-ink);
+    margin: 0 0 1.4vw;
+  }
+  #pdp-{{ section.id }} .pdp__sizes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.9vw;
+    margin: 0 0 1.2vw;
+  }
+  #pdp-{{ section.id }} .pdp__size {
+    width: max(40px, 3.4vw);
+    height: max(40px, 3.4vw);
+    border-radius: 50%;
+    border: 1px solid var(--pdp-ink);
+    background: transparent;
+    color: var(--pdp-ink);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  }
+  #pdp-{{ section.id }} .pdp__size.is-active {
+    background: var(--pdp-ink);
+    color: #fff;
+  }
+  #pdp-{{ section.id }} .pdp__size[data-soldout] {
+    opacity: 0.35;
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+  #pdp-{{ section.id }} .pdp__guide {
+    display: block;
+    text-align: center;
+    color: var(--pdp-ink);
+    text-decoration: underline;
+    text-underline-offset: 0.25vw;
+    margin: 0 auto 2.4vw;
+  }
+
+  /* quantity */
+  #pdp-{{ section.id }} .pdp__qty {
+    display: grid;
+    grid-template-columns: max(40px, 3vw) 1fr max(40px, 3vw);
+    align-items: center;
+    border: 1px solid var(--pdp-ink);
+    border-radius: max(20px, 2vw);
+    height: max(40px, 3vw);
+    margin: 0 0 1vw;
+    overflow: hidden;
+  }
+  #pdp-{{ section.id }} .pdp__qty button {
+    border: 0;
+    background: transparent;
+    color: var(--pdp-ink);
+    font-size: max(16px, 1.1vw);
+    cursor: pointer;
+    height: 100%;
+  }
+  #pdp-{{ section.id }} .pdp__qty input {
+    border: 0;
+    background: transparent;
+    text-align: center;
+    color: var(--pdp-ink);
+    width: 100%;
+    -moz-appearance: textfield;
+  }
+  #pdp-{{ section.id }} .pdp__qty input::-webkit-outer-spin-button,
+  #pdp-{{ section.id }} .pdp__qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* add to cart */
+  #pdp-{{ section.id }} .pdp__atc {
+    width: 100%;
+    border: 0;
+    border-radius: max(22px, 2vw);
+    height: max(44px, 3vw);
+    background: var(--pdp-orange);
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6vw;
+    transition: opacity 0.2s ease;
+  }
+  #pdp-{{ section.id }} .pdp__atc[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; }
+  #pdp-{{ section.id }} .pdp__atc .loading__spinner { display: inline-flex; }
+  #pdp-{{ section.id }} .pdp__atc .loading__spinner.hidden { display: none; }
+  #pdp-{{ section.id }} .pdp__atc svg { width: max(16px, 1.2vw); height: max(16px, 1.2vw); }
+  #pdp-{{ section.id }} .pdp__form-error {
+    margin: 0.8vw 0 0;
+    color: #b3261e;
+    text-align: center;
+  }
+  #pdp-{{ section.id }} .pdp__form-error:empty { display: none; }
+
+  /* collapsibles — beige bars, separated by a small gap, underlined headings */
+  /* The whole row is one beige box — head + expanded info sit inside it. */
+  #pdp-{{ section.id }} .pdp__rows { margin: 12.5vw 0 0; }   /* 180px @ 1440 gap from the button */
+  #pdp-{{ section.id }} .pdp__row {
+    background: var(--beige);
+    color: var(--pdp-ink);
+  }
+  #pdp-{{ section.id }} .pdp__row + .pdp__row { margin-top: 0.7vw; }
+  #pdp-{{ section.id }} .pdp__row-head {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    padding: max(10px, 0.9vw) max(12px, 1.1vw);
+    cursor: pointer;
+    text-align: left;
+  }
+  #pdp-{{ section.id }} .pdp__row-head > span {
+    text-decoration: underline;
+    text-underline-offset: 0.2vw;
+    text-transform: uppercase;
+  }
+  #pdp-{{ section.id }} .pdp__row-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s ease;
+  }
+  #pdp-{{ section.id }} .pdp__row.is-open .pdp__row-body { grid-template-rows: 1fr; }
+  #pdp-{{ section.id }} .pdp__row-inner { overflow: hidden; }
+  #pdp-{{ section.id }} .pdp__row-inner > div {
+    color: var(--pdp-muted);
+    padding: 0 max(12px, 1.1vw) max(12px, 1vw);     /* inside the beige box, aligned with the head */
+  }
+  #pdp-{{ section.id }} .pdp__row-inner p { margin: 0 0 0.6em; }
+
+  @media (max-width: 1024px) {
+    /* The header is fixed; the editor's top padding (40px) is shorter than
+       the bar on small screens, so clear the measured bar height instead. */
+    #pdp-{{ section.id }} .pdp__push { padding-top: calc(var(--header-height, 8rem) + 1.6rem) !important; }
+  }
+  @media (max-width: 768px) {
+    /* Single column: info, then media, then the buy box. The 25/50/75 lines
+       would cut through the text here, so they're off. */
+    #pdp-{{ section.id }} > .line-overlay { display: none; }
+    /* Phone order: title + price, the swipeable gallery, the buy box, then
+       the description. The left rail is flattened (display: contents) so its
+       description can drop below the buy box; its children still inherit the
+       rail's centred text. */
+    #pdp-{{ section.id }} .pdp__grid {
+      display: flex;
+      flex-direction: column;
+    }
+    #pdp-{{ section.id }} .pdp__left { display: contents; }
+    #pdp-{{ section.id }} .pdp__media { order: 1; }
+    #pdp-{{ section.id }} .pdp__right { order: 2; }
+    #pdp-{{ section.id }} .pdp__desc { order: 3; }
+    #pdp-{{ section.id }} .pdp__right { position: static; min-height: 0; }
+    #pdp-{{ section.id }} .pdp__right { padding: 24px 16px 32px; }
+    #pdp-{{ section.id }} .pdp__title,
+    #pdp-{{ section.id }} .pdp__price { padding-inline: 16px; }
+    #pdp-{{ section.id }} .pdp__price { margin: 8px 0 20px; }
+    #pdp-{{ section.id }} .pdp__title,
+    #pdp-{{ section.id }} .pdp__desc { max-width: none; }
+    #pdp-{{ section.id }} .pdp__desc {
+      margin: 0;
+      padding: 0 16px 40px;
+    }
+    #pdp-{{ section.id }} .pdp__cursive {
+      position: static;
+      align-self: center;
+      width: 26vw;
+      margin: 0 auto 8px;
+    }
+    #pdp-{{ section.id }} .pdp__badge {
+      align-self: center;
+      margin-bottom: 12px;
+    }
+
+    /* Gallery: one swipeable row instead of every image stacked above the
+       buy box. Each slide is 86% wide so the next one peeks in as a cue. */
+    #pdp-{{ section.id }} .pdp__media {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 16px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    #pdp-{{ section.id }} .pdp__media::-webkit-scrollbar { display: none; }
+    #pdp-{{ section.id }} .pdp__media-item {
+      flex: 0 0 86%;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      scroll-snap-align: start;
+    }
+    #pdp-{{ section.id }} .pdp__media-item:only-child { flex-basis: 100%; }
+    #pdp-{{ section.id }} .pdp__media-item img,
+    #pdp-{{ section.id }} .pdp__media-item video,
+    #pdp-{{ section.id }} .pdp__media-item iframe,
+    #pdp-{{ section.id }} .pdp__media-item .placeholder-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* the first shot sits on the beige panel, so show all of it */
+    #pdp-{{ section.id }} .pdp__media-item--panel img,
+    #pdp-{{ section.id }} .pdp__media-item--art img { object-fit: contain; max-height: none; }
+    #pdp-{{ section.id }} .pdp__media-item--panel,
+    #pdp-{{ section.id }} .pdp__media-item--art { padding: 24px 24px 20px; }
+    #pdp-{{ section.id }} .pdp__sizes { gap: 10px; margin-bottom: 12px; }
+    #pdp-{{ section.id }} .pdp__guide { margin-bottom: 20px; }
+    #pdp-{{ section.id }} .pdp__qty { margin-bottom: 12px; }
+    #pdp-{{ section.id }} .pdp__qty input { font-size: 16px; } /* no iOS focus zoom */
+    #pdp-{{ section.id }} .pdp__rows { margin-top: 32px; }
+    #pdp-{{ section.id }} .pdp__row + .pdp__row { margin-top: 8px; }
+  }
+{%- endstyle -%}
+
+<section class="pdp has-line" id="pdp-{{ section.id }}">
+  <div class="pdp__push" style="padding-top:{{ section.settings.padding_top }}px;padding-bottom:{{ section.settings.padding_bottom }}px;">
+    <div class="pdp__grid">
+      {%- comment -%} ---------------- LEFT rail ---------------- {%- endcomment -%}
+      <div class="pdp__left">
+        {%- if cursive_src != blank -%}
+          {%- comment -%} Lives in the (sticky) left column and overflows into the centre. {%- endcomment -%}
+          <img class="pdp__cursive" src="{{ cursive_src }}" alt="" loading="lazy" aria-hidden="true">
+        {%- endif -%}
+        {%- if show_badge -%}
+          <span class="pdp__badge">{{ section.settings.badge_text | escape }}</span>
+        {%- endif -%}
+        <h1 class="h3 pdp__title">{{ product.title }}</h1>
+        <div class="body pdp__price" data-pdp-price>{{ current_variant.price | money }}</div>
+
+        <div class="body pdp__desc">
+          {%- if section.settings.description != blank -%}
+            {{ section.settings.description }}
+          {%- else -%}
+            {{ product.description }}
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- comment -%} ---------------- CENTRE media ---------------- {%- endcomment -%}
+      <div class="pdp__media">
+        {%- if product.media.size > 0 -%}
+          {%- for media in product.media -%}
+            {%- liquid
+              # Artwork (alt text ending in "artwork") is a transparent print file, not a photo:
+              # it gets the framed treatment instead of full-bleed.
+              assign media_alt = media.alt | downcase | strip
+              assign media_kind = 'bleed'
+              if forloop.first
+                assign media_kind = 'panel'
+              elsif media_alt contains 'artwork'
+                assign media_kind = 'art'
+              endif
+            -%}
+            <div class="pdp__media-item pdp__media-item--{{ media_kind }}">
+              {%- if media.media_type == 'image' -%}
+                {{
+                  media
+                  | image_url: width: 1400
+                  | image_tag: loading: 'lazy', widths: '400, 700, 1000, 1400', sizes: '(max-width: 768px) 86vw, 50vw', alt: media.alt | default: product.title
+                }}
+              {%- else -%}
+                {{ media | media_tag }}
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        {%- else -%}
+          <div class="pdp__media-item pdp__media-item--panel">
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} ---------------- RIGHT rail ---------------- {%- endcomment -%}
+      <div class="pdp__right">
+        <product-form class="pdp__product-form" data-section-id="{{ section.id }}" data-hide-errors="false">
+          {%- assign pdp_form_id = 'pdp-form-' | append: section.id -%}
+          {%- form 'product', product, id: pdp_form_id, novalidate: 'novalidate' -%}
+            <input type="hidden" name="id" value="{{ current_variant.id }}" data-pdp-variant-id disabled>
+
+            {%- comment %} A product with no options has nothing to pick: skip the picker (the hidden id input above still carries its one variant). {%- endcomment %}
+            {%- unless product.has_only_default_variant -%}
+            <span class="h4 pdp__label">{{ section.settings.size_label | escape }}</span>
+
+            {%- liquid
+              # Tees carry one colour plus Size ("White / S"): label the buttons by size
+              # alone, unless another option really varies — then use the full variant title.
+              assign size_index = nil
+              assign other_option_varies = false
+              for option in product.options_with_values
+                assign option_name = option.name | downcase
+                if option_name == 'size'
+                  assign size_index = forloop.index0
+                elsif option.values.size > 1
+                  assign other_option_varies = true
+                endif
+              endfor
+            -%}
+            <div class="pdp__sizes" role="group" aria-label="{{ section.settings.size_label | escape }}">
+              {%- for variant in product.variants -%}
+                <button
+                  type="button"
+                  class="h4 pdp__size{% if variant.id == current_variant.id %} is-active{% endif %}"
+                  data-pdp-size
+                  data-variant-id="{{ variant.id }}"
+                  data-price="{{ variant.price | money }}"
+                  {% unless variant.available %}data-soldout disabled{% endunless %}
+                  aria-pressed="{% if variant.id == current_variant.id %}true{% else %}false{% endif %}"
+                >
+                  {%- if size_index != nil and other_option_varies == false -%}
+                    {{- variant.options[size_index] -}}
+                  {%- else -%}
+                    {{- variant.title -}}
+                  {%- endif -%}
+                </button>
+              {%- endfor -%}
+            </div>
+            {%- endunless -%}
+
+            {%- if section.settings.size_guide_url != blank or section.settings.size_guide_page != blank -%}
+              {%- assign guide_href = section.settings.size_guide_url -%}
+              {%- if section.settings.size_guide_page != blank -%}{%- assign guide_href = section.settings.size_guide_page.url -%}{%- endif -%}
+              <a class="h4 pdp__guide" href="{{ guide_href }}">{{ section.settings.size_guide_label | escape }}</a>
+            {%- endif -%}
+
+            <div class="pdp__qty">
+              <button type="button" data-pdp-qty-down aria-label="Decrease quantity">&minus;</button>
+              <input class="body" type="number" name="quantity" value="1" min="1" inputmode="numeric" data-pdp-qty>
+              <button type="button" data-pdp-qty-up aria-label="Increase quantity">+</button>
+            </div>
+
+            <button
+              type="submit"
+              name="add"
+              class="body pdp__atc"
+              {% unless current_variant.available %}aria-disabled="true"{% endunless %}
+              data-pdp-atc
+            >
+              <span data-pdp-atc-text>
+                {%- if current_variant.available -%}{{ section.settings.atc_label | escape }}{%- else -%}{{ section.settings.soldout_label | escape }}{%- endif -%}
+              </span>
+              <span class="loading__spinner hidden" aria-hidden="true">
+                <svg class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                  <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30" stroke="currentColor"></circle>
+                </svg>
+              </span>
+            </button>
+
+            <div class="body pdp__form-error" data-pdp-error role="alert"></div>
+          {%- endform -%}
+        </product-form>
+
+        {%- comment -%} collapsibles {%- endcomment -%}
+        <div class="pdp__rows">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'collapsible' and block.settings.heading != blank -%}
+              <div class="pdp__row" {{ block.shopify_attributes }}>
+                <button type="button" class="body pdp__row-head" aria-expanded="false" data-pdp-row-head>
+                  <span>{{ block.settings.heading | escape }}</span>
+                </button>
+                <div class="pdp__row-body">
+                  <div class="pdp__row-inner">
+                    <div class="body">
+                      {%- if block.settings.content != blank -%}
+                        {{ block.settings.content }}
+                      {%- elsif block.settings.use_product_description -%}
+                        {{ product.description }}
+                      {%- endif -%}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
+
+<script>
+  (function () {
+    var root = document.getElementById('pdp-{{ section.id }}');
+    if (!root) return;
+
+    /* ----- size picker: swap variant id + price + ATC state ----- */
+    var idInput = root.querySelector('[data-pdp-variant-id]');
+    var priceEl = root.querySelector('[data-pdp-price]');
+    var atc     = root.querySelector('[data-pdp-atc]');
+    var atcText = root.querySelector('[data-pdp-atc-text]');
+    var sizes   = root.querySelectorAll('[data-pdp-size]');
+    var ATC_LABEL     = {{ section.settings.atc_label | json }};
+    var SOLDOUT_LABEL = {{ section.settings.soldout_label | json }};
+
+    sizes.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (btn.hasAttribute('data-soldout')) return;
+        sizes.forEach(function (b) { b.classList.remove('is-active'); b.setAttribute('aria-pressed', 'false'); });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-pressed', 'true');
+
+        if (idInput) idInput.value = btn.getAttribute('data-variant-id');
+        if (priceEl && btn.getAttribute('data-price')) priceEl.innerHTML = btn.getAttribute('data-price');
+
+        // selected size is always available (sold-out ones are disabled)
+        if (atc) atc.removeAttribute('aria-disabled');
+        if (atcText) atcText.textContent = ATC_LABEL;
+      });
+    });
+
+    /* ----- quantity stepper ----- */
+    var qty  = root.querySelector('[data-pdp-qty]');
+    var up   = root.querySelector('[data-pdp-qty-up]');
+    var down = root.querySelector('[data-pdp-qty-down]');
+    function clampQty() { var n = parseInt(qty.value, 10); if (isNaN(n) || n < 1) n = 1; qty.value = n; return n; }
+    if (up)   up.addEventListener('click', function () { qty.value = clampQty() + 1; });
+    if (down) down.addEventListener('click', function () { qty.value = Math.max(1, clampQty() - 1); });
+    if (qty)  qty.addEventListener('change', clampQty);
+
+    /* ----- surface add-to-cart errors in the inline slot ----- */
+    var errEl = root.querySelector('[data-pdp-error]');
+    if (errEl && window.subscribe && window.PUB_SUB_EVENTS) {
+      subscribe(PUB_SUB_EVENTS.cartError, function (e) {
+        if (e && e.source === 'product-form') errEl.textContent = e.message || (e.errors && e.errors.toString()) || '';
+      });
+      subscribe(PUB_SUB_EVENTS.cartUpdate, function () { errEl.textContent = ''; });
+    }
+
+    /* ----- collapsibles ----- */
+    root.querySelectorAll('[data-pdp-row-head]').forEach(function (head) {
+      head.addEventListener('click', function () {
+        var row = head.closest('.pdp__row');
+        var open = row.classList.toggle('is-open');
+        head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Custom product",
+  "tag": "section",
+  "class": "custom-product-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Badge"
+    },
+    {
+      "type": "select",
+      "id": "badge_mode",
+      "label": "Show NEW badge",
+      "options": [
+        { "value": "off", "label": "Never" },
+        { "value": "tag", "label": "When product is tagged \"new\"" },
+        { "value": "always", "label": "Always" }
+      ],
+      "default": "tag"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "NEW"
+    },
+    {
+      "type": "header",
+      "content": "Cursive image (per product)"
+    },
+    {
+      "type": "paragraph",
+      "content": "Hand-lettered label shown under the title (e.g. \"Wear What Matters\"). Paste an image URL — leave blank to hide."
+    },
+    {
+      "type": "text",
+      "id": "cursive_image",
+      "label": "Cursive image URL"
+    },
+    {
+      "type": "header",
+      "content": "Description"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description (overrides product description)"
+    },
+    {
+      "type": "header",
+      "content": "Buy controls"
+    },
+    {
+      "type": "text",
+      "id": "size_label",
+      "label": "Size label",
+      "default": "SELECT SIZE"
+    },
+    {
+      "type": "text",
+      "id": "size_guide_label",
+      "label": "Size guide link text",
+      "default": "SIZE GUIDE"
+    },
+    {
+      "type": "url",
+      "id": "size_guide_url",
+      "label": "Size guide URL"
+    },
+    {
+      "type": "page",
+      "id": "size_guide_page",
+      "label": "Size guide page (overrides URL)"
+    },
+    {
+      "type": "text",
+      "id": "atc_label",
+      "label": "Add to cart label",
+      "default": "ADD TO CART"
+    },
+    {
+      "type": "text",
+      "id": "soldout_label",
+      "label": "Sold out label",
+      "default": "SOLD OUT"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "sticky_top",
+      "label": "Sticky offset (clears the header)",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collapsible",
+      "name": "Collapsible row",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Details"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_product_description",
+          "label": "Use product description when content is empty",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom product",
+      "blocks": [
+        { "type": "collapsible", "settings": { "heading": "Details", "use_product_description": true } },
+        { "type": "collapsible", "settings": { "heading": "Care" } },
+        { "type": "collapsible", "settings": { "heading": "Shipping & Returns" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

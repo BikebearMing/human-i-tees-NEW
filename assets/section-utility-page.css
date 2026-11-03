@@ -1,0 +1,97 @@
+/* Utility pages — shared shell for the simple pages that sit outside the
+   designed flow: cart, 404, search, the collections list and the generic
+   page. Each section adds its own bits in a scoped <style>; this file holds
+   the page head, the ruled band under it, the empty state and pagination,
+   so the five pages read as one set.
+
+   Markup:
+   <div class="util">
+     <header class="util__head">
+       <p class="body util__crumb">CRUMB</p>
+       <h1 class="h2-v2 util__title">TITLE</h1>
+     </header>
+     <p class="body util__band">META LINE</p>
+     ...
+   </div>
+
+   Colours follow the article / bag drawer: #d9cdb8 rules, #9a8f7a muted text. */
+.util {
+  --util-pad: max(14px, 0.972vw);
+  --util-line: #d9cdb8;
+  --util-muted: #9a8f7a;
+  position: relative;
+  width: 100%;
+  color: var(--black);
+}
+
+/* ----- Head: crumb + big title ----- */
+.util__head {
+  display: flex;
+  flex-direction: column;
+  gap: max(10px, 1.042vw);
+  padding: max(24px, 2.778vw) var(--util-pad) max(18px, 1.528vw);
+}
+.util__crumb {
+  color: var(--util-muted);
+  text-transform: uppercase;
+}
+.util__title {
+  color: var(--black);
+  max-width: 60vw;
+}
+
+/* ----- Band: one line of meta between two full-width rules ----- */
+.util__band {
+  padding: max(8px, 0.556vw) var(--util-pad);
+  border-top: 1px solid var(--util-line);
+  border-bottom: 1px solid var(--util-line);
+  color: var(--util-muted);
+  text-transform: uppercase;
+}
+
+/* ----- Button row (404, empty states) ----- */
+.util__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: max(10px, 0.694vw);
+}
+
+/* ----- Empty state ----- */
+.util__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: max(14px, 1.111vw);
+  min-height: max(320px, 26vw);
+  padding: max(40px, 4.167vw) var(--util-pad);
+  text-align: center;
+}
+.util__empty .h3 {
+  color: var(--black);
+}
+.util__empty .body {
+  max-width: 34ch;
+  color: var(--util-muted);
+}
+
+/* ----- Pagination (PREV  1 / 3  NEXT) ----- */
+.util__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: max(16px, 1.667vw);
+  padding: max(24px, 2.778vw) var(--util-pad);
+  border-top: 1px solid var(--util-line);
+}
+.util__pagination .is-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .util__title {
+    max-width: none;
+  }
+}

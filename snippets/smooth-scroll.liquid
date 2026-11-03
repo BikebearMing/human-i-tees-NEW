@@ -1,0 +1,104 @@
+{% comment %}
+  Lenis — site-wide smooth scrolling (lerp/inertia).
+
+  - Loaded from the Lenis CDN (major version pinned). If the CDN is blocked /
+    404s, this no-ops and the page scrolls natively — no errors.
+  - Driven off GSAP's ticker (GSAP is already on the page via the preloader),
+    so Lenis shares one rAF loop with every GSAP/ScrollTrigger animation and
+    never desyncs. Where ScrollTrigger is present (the homepage hero loads it)
+    we also pipe Lenis's scroll events into ScrollTrigger.update, so pinned /
+    scrubbed timelines track the smoothed scroll position — and refresh once,
+    because adding the `lenis` class changes html/body height.
+  - Honours prefers-reduced-motion (skips smoothing entirely).
+  - Plays nice with the preloader: while the preloader has the page locked
+    (html overflow:hidden) Lenis simply can't scroll; it resumes on its own
+    once the preloader restores overflow. Nothing to coordinate.
+  - Exposes window.lenis so other scripts can lenis.stop() / start() / scrollTo().
+
+  Usage: render once near the end of <body> in layout/theme.liquid, AFTER the
+  section that loads ScrollTrigger (so the wiring above can find it) — e.g. just
+  before {% raw %}{% sections 'footer-group' %}{% endraw %}.
+
+  To self-host instead of the CDN (like gsap.min.js / SplitText.min.js): drop
+  dist/lenis.min.js into /assets and swap the <script src> below for:
+  <script src="{% raw %}{{ 'lenis.min.js' | asset_url }}{% endraw %}"></script>
+{% endcomment %}
+
+{%- comment %} Minimal Lenis stylesheet (normally shipped as lenis/dist/lenis.css). {% endcomment -%}
+<style>
+  html.lenis,
+  html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  .lenis.lenis-smooth iframe { pointer-events: none; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1/dist/lenis.min.js"></script>
+<script>
+  (function () {
+    if (!window.Lenis) return;   // CDN blocked / 404 — native scroll, no error
+
+    var reduceMotion = false;
+    try { reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    if (reduceMotion) return;
+
+    var lenis = new Lenis({
+      duration: 1.1,             // glide length in seconds — higher = slower, smoother lerp
+      easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },  // expo-out
+      smoothWheel: true,
+      touchMultiplier: 1.5,
+      wheelMultiplier: 1
+    });
+    window.lenis = lenis;
+
+    var hasGSAP = !!window.gsap;
+    var hasST   = hasGSAP && !!window.ScrollTrigger;
+
+    // keep ScrollTrigger reading the smoothed scroll position
+    if (hasST) {
+      lenis.on('scroll', ScrollTrigger.update);
+    }
+
+    if (hasGSAP) {
+      // one rAF loop for everything: GSAP's ticker pumps Lenis (ticker time is in seconds)
+      gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+      /* Lenis's own GSAP recipe says lagSmoothing(0) here. Don't — it is what
+         made the homepage header snap instead of drop. Lag smoothing is GSAP's
+         guard against a single long frame (preloader teardown, first paint of
+         the page below the fold, a ScrollTrigger refresh) being charged to a
+         running tween as real elapsed time; with it off, a 400ms stall drops a
+         1s intro tween 40% of the way in before it renders a single frame.
+         Keeping GSAP's default only rescales Lenis's clock during that one
+         stall, which it lerps straight back out of. */
+      gsap.ticker.lagSmoothing(500, 33);
+    } else {
+      // no GSAP on this page — run Lenis's own loop
+      requestAnimationFrame(function raf(t) { lenis.raf(t); requestAnimationFrame(raf); });
+    }
+
+    // adding the `lenis` class flips html/body to height:auto, which can change
+    // the scrollable height — let ScrollTrigger re-measure once things settle.
+    if (hasST) {
+      requestAnimationFrame(function () { ScrollTrigger.refresh(); });
+
+      /* The homepage intro tween is started by this same 'preloader:done' event,
+         and refresh() is a heavy synchronous reflow (it rebuilds the hero's pin
+         spacer and re-runs every invalidateOnRefresh value) — running it inline
+         stole the intro's opening frames. It also measured too early: the intro
+         keeps the page scroll-locked until it lands, so the heights it read were
+         the locked ones. Wait for the intro to report done instead; the timeout
+         covers pages that have a preloader but no intro. */
+      document.addEventListener('preloader:done', function () {
+        var refreshed = false;
+        function refreshOnce() {
+          if (refreshed) return;
+          refreshed = true;
+          ScrollTrigger.refresh();
+        }
+        document.addEventListener('intro:done', refreshOnce, { once: true });
+        setTimeout(refreshOnce, 3000);
+      }, { once: true });
+    }
+  })();
+</script>

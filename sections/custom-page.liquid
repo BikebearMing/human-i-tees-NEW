@@ -1,0 +1,56 @@
+{%- comment -%}
+  Generic page — title, a rule, then the page content as body copy in a
+  readable column. Shell styles are shared with the other utility pages
+  (assets/section-utility-page.css).
+{%- endcomment -%}
+
+{{ 'section-utility-page.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  #cpage-{{ section.id }} .util__head {
+    border-bottom: 1px solid var(--util-line);
+  }
+  #cpage-{{ section.id }} .cpage__body {
+    max-width: 640px;
+    padding: max(24px, 2.778vw) var(--util-pad) max(48px, 5.556vw);
+  }
+  /* RTE content: paragraphs and lists spaced out (the global reset zeroes
+     their margins), headings in the display face. */
+  #cpage-{{ section.id }} .cpage__body > * + * {
+    margin-top: 1em !important;
+  }
+  #cpage-{{ section.id }} .cpage__body h2,
+  #cpage-{{ section.id }} .cpage__body h3,
+  #cpage-{{ section.id }} .cpage__body h4 {
+    margin-top: 1.6em !important;
+    font-family: var(--futura);
+    text-transform: uppercase;
+    color: var(--black);
+  }
+  #cpage-{{ section.id }} .cpage__body a {
+    color: var(--black);
+    text-underline-offset: 2px;
+  }
+  #cpage-{{ section.id }} .cpage__body img {
+    max-width: 100%;
+    height: auto;
+  }
+{%- endstyle -%}
+
+<div class="util cpage" id="cpage-{{ section.id }}">
+  <header class="util__head">
+    <h1 class="h2-v2 util__title">{{ page.title | escape }}</h1>
+  </header>
+  <div class="rte body cpage__body">
+    {{ page.content }}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Page",
+  "tag": "section",
+  "class": "custom-page-section",
+  "settings": []
+}
+{% endschema %}

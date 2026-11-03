@@ -1,0 +1,217 @@
+{%- comment -%}
+  Impact stat — "GOOD FOR YOUR GROUP. GOOD FOR THE PLANET." over the aerial
+  field: eyebrow and headline top left, a short story bottom left, and the big
+  "$75M+" with its caption on the right, a sprout growing up out of the
+  bottom edge under it. Used on the free-kit page.
+  Measurements are from the 1440 mock (px / 14.4 = vw); the section is 657
+  tall there. Typography reuses .h1-v2 (headline), .h2 (the stat), .h4 (its
+  caption) and .body (eyebrow, story).
+{%- endcomment -%}
+
+{%- style -%}
+  #istat-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    height: 45.625vw; /* 657 */
+    overflow: hidden;
+    color: #fff;
+  }
+
+  #istat-{{ section.id }} .istat__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  #istat-{{ section.id }} .istat__bg img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ----- Top left: eyebrow 41 down, headline under it ----- */
+  #istat-{{ section.id }} .istat__intro {
+    position: absolute;
+    top: 2.847vw;
+    left: 0.972vw;
+    z-index: 1;
+  }
+  #istat-{{ section.id }} .istat__title {
+    padding-top: 0.486vw;
+    color: #fff;
+  }
+
+  /* ----- Bottom left: the story, 20 off the bottom ----- */
+  #istat-{{ section.id }} .istat__text {
+    position: absolute;
+    left: 0.972vw;
+    bottom: 1.389vw;
+    z-index: 1;
+    max-width: max(220px, 16.667vw);
+  }
+
+  /* ----- Right: the stat 146 down and 73 in, caption 18 under it, the
+     sprout 11 under that and running off the bottom edge ----- */
+  #istat-{{ section.id }} .istat__stat {
+    position: absolute;
+    top: 10.139vw;
+    right: 5.069vw;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  /* .h2 is 180px; the mock's "$75M+" has ~209px caps (~266px type) packed
+     tight into ~561 wide, with the + raised to the cap line */
+  #istat-{{ section.id }} .istat__num {
+    font-size: 18.472vw;
+    letter-spacing: -0.07em;
+    color: #fff;
+  }
+  /* data-reveal masks each line (overflow: clip) at the line box, and the
+     0.8 line-height box is shorter than the "$", whose tail was cut off.
+     Grow the mask, not the layout (same as fundraising-hero's line masks). */
+  #istat-{{ section.id }} .istat__num > div {
+    padding-block: 0.15em;
+    margin-block: -0.15em;
+  }
+  #istat-{{ section.id }} .istat__plus {
+    display: inline-block;
+    transform: translateY(-0.24em);
+  }
+  #istat-{{ section.id }} .istat__caption {
+    max-width: max(190px, 15.278vw); /* 3 lines, as in the mock */
+    padding-top: 1.25vw;
+    color: #fff;
+  }
+  #istat-{{ section.id }} .istat__sprout {
+    display: block;
+    width: 13.194vw; /* 190 */
+    height: auto;
+    margin-top: auto;
+  }
+
+  /* ===== MOBILE (<= 768px) — one column over the field: intro, stat, story ===== */
+  @media (max-width: 768px) {
+    #istat-{{ section.id }} {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      padding: 48px 16px 0;
+    }
+    #istat-{{ section.id }} .istat__intro,
+    #istat-{{ section.id }} .istat__text,
+    #istat-{{ section.id }} .istat__stat {
+      position: relative;
+      inset: auto;
+    }
+    #istat-{{ section.id }} .istat__title { padding-top: 8px; }
+    #istat-{{ section.id }} .istat__text { order: 3; padding: 24px 0 32px; }
+    #istat-{{ section.id }} .istat__stat { order: 2; padding-top: 40px; }
+    #istat-{{ section.id }} .istat__num { font-size: 30vw; }
+    #istat-{{ section.id }} .istat__caption { max-width: 200px; padding-top: 12px; }
+    #istat-{{ section.id }} .istat__sprout { width: 120px; margin-top: 8px; }
+  }
+{%- endstyle -%}
+
+<section class="istat" id="istat-{{ section.id }}">
+  <div class="istat__bg" aria-hidden="true">
+    {%- if section.settings.background != blank -%}
+      {{ section.settings.background | image_url: width: 2400 | image_tag: alt: '', loading: 'lazy', sizes: '100vw' }}
+    {%- else -%}
+      <img src="{{ 'fundraiser-makeanimpact.jpg' | asset_url }}" alt="" width="1440" height="720" loading="lazy">
+    {%- endif -%}
+  </div>
+
+  <div class="istat__intro">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="body uppercase" data-reveal>{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+    <h2 class="h1-v2 uppercase istat__title" data-reveal>{{ section.settings.heading | escape | newline_to_br }}</h2>
+  </div>
+
+  <div class="istat__stat">
+    <p class="h2 istat__num" data-reveal>
+      {{- section.settings.stat | escape | replace: '+', '<span class="istat__plus">+</span>' -}}
+    </p>
+    {%- if section.settings.stat_caption != blank -%}
+      <p class="h4 istat__caption" data-reveal>{{ section.settings.stat_caption | escape | newline_to_br }}</p>
+    {%- endif -%}
+    {%- if section.settings.sprout != blank -%}
+      {{ section.settings.sprout | image_url: width: 480 | image_tag: class: 'istat__sprout', alt: '', loading: 'lazy' }}
+    {%- else -%}
+      <img
+        class="istat__sprout"
+        src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/leaf-crop.webp?v=1778908210"
+        alt=""
+        width="232"
+        height="219"
+        loading="lazy"
+      >
+    {%- endif -%}
+  </div>
+
+  {%- if section.settings.text != blank -%}
+    <div class="body istat__text" data-reveal>{{ section.settings.text }}</div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Impact stat",
+  "tag": "section",
+  "class": "impact-stat-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Free fundraising kit for schools and groups"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the headline.",
+      "default": "Good for your\ngroup. Good\nfor the planet."
+    },
+    {
+      "type": "text",
+      "id": "stat",
+      "label": "Stat",
+      "default": "$75M+"
+    },
+    {
+      "type": "textarea",
+      "id": "stat_caption",
+      "label": "Stat caption",
+      "default": "Raised for environmental nonprofits, schools and clubs across the U.S."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Human-i-Tees started in a high school classroom over 30 years ago. Today a new generation is running it, with the same mission and better tools.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "background",
+      "label": "Background",
+      "info": "Defaults to the aerial field."
+    },
+    {
+      "type": "image_picker",
+      "id": "sprout",
+      "label": "Sprout",
+      "info": "Cut-out on a transparent background. Defaults to the leaf sprout."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Impact stat"
+    }
+  ]
+}
+{% endschema %}

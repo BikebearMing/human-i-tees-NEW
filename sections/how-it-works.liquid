@@ -1,0 +1,201 @@
+{%- comment -%}
+  How it works — eyebrow and headline on the dark band, then a row of step
+  cards, each with an orange ribbon carrying its number (same ribbon as
+  sections/fundraising-steps.liquid, at card size). Used on the free-kit page.
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h3 (headline, card titles), .body (everything else) and
+  --font-american-typewriter (the step number).
+{%- endcomment -%}
+
+{%- style -%}
+  #hiw-{{ section.id }} {
+    --hiw-orange: #ff944d; /* the theme's CTA orange (.custom-button, FAQ toggle) */
+    --hiw-card-bg: #efe9e0; /* same card as fundraising-steps */
+    --hiw-radius: max(4px, 0.347vw); /* 5 */
+
+    position: relative;
+    width: 100%;
+    /* 67 above the eyebrow, 72 under the cards, cards 205 in from each side */
+    padding: 4.653vw 14.236vw 5vw;
+    box-sizing: border-box;
+    background: var(--black);
+  }
+
+  #hiw-{{ section.id }} .hiw__intro {
+    text-align: center;
+    color: #fff;
+  }
+  /* .h3 is 40px; the mock's headline is ~52px */
+  #hiw-{{ section.id }} .hiw__title {
+    padding-top: 0.556vw;
+    font-size: max(32px, 3.611vw);
+    color: #fff;
+  }
+
+  /* ----- Cards: three across, 15 apart, 25 under the headline ----- */
+  #hiw-{{ section.id }} .hiw__cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.042vw;
+    margin: 0;
+    padding: 1.736vw 0 0;
+    list-style: none;
+  }
+  #hiw-{{ section.id }} .hiw__card {
+    padding: 0 1.667vw 1.736vw; /* ribbon and copy 24 in, 25 under the copy */
+    background: var(--hiw-card-bg);
+    border-radius: var(--hiw-radius);
+    color: var(--black);
+  }
+
+  /* Orange ribbon hanging from the card's top edge, notched at the bottom */
+  #hiw-{{ section.id }} .hiw__ribbon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 6.181vw; /* 89 */
+    height: 6.528vw; /* 94 */
+    padding-top: 0.556vw;
+    box-sizing: border-box;
+    background: var(--hiw-orange);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+  }
+  /* the typewriter face is the theme's number font; sized and tightened the
+     same way as fundraising-steps' ribbon, to the mock's ~70px-wide "01" */
+  #hiw-{{ section.id }} .hiw__num {
+    font-family: var(--font-american-typewriter);
+    font-size: 4.861vw;
+    line-height: 0.8;
+    letter-spacing: -0.11em;
+  }
+
+  /* 35 from the ribbon to the title, 12 to the copy */
+  #hiw-{{ section.id }} .hiw__card-title {
+    padding-top: 2.431vw;
+  }
+  #hiw-{{ section.id }} .hiw__text {
+    max-width: max(220px, 15.278vw);
+    padding-top: 0.833vw;
+  }
+
+  /* ===== TABLET (<= 1024px) — the 205-at-1440 side insets would squeeze the
+     three cards; pull them in ===== */
+  @media (max-width: 1024px) {
+    #hiw-{{ section.id }} { padding-inline: 3vw; }
+  }
+
+  /* ===== MOBILE (<= 768px) — cards stacked ===== */
+  @media (max-width: 768px) {
+    #hiw-{{ section.id }} { padding: 56px 16px 64px; }
+    #hiw-{{ section.id }} .hiw__title { padding-top: 8px; }
+    #hiw-{{ section.id }} .hiw__cards {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding-top: 28px;
+    }
+    #hiw-{{ section.id }} .hiw__card { padding: 0 20px 24px; }
+    #hiw-{{ section.id }} .hiw__ribbon {
+      width: 72px;
+      height: 76px;
+      padding-top: 8px;
+    }
+    #hiw-{{ section.id }} .hiw__num { font-size: 40px; }
+    #hiw-{{ section.id }} .hiw__card-title { padding-top: 24px; }
+    #hiw-{{ section.id }} .hiw__text { padding-top: 10px; }
+  }
+{%- endstyle -%}
+
+<section class="hiw" id="hiw-{{ section.id }}">
+  <div class="hiw__intro">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="body uppercase" data-reveal>{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+    {%- if section.settings.heading != blank -%}
+      <h2 class="h3 hiw__title" data-reveal>{{ section.settings.heading | escape | newline_to_br }}</h2>
+    {%- endif -%}
+  </div>
+
+  {%- if section.blocks.size > 0 -%}
+    <ol class="hiw__cards" role="list">
+      {%- for block in section.blocks -%}
+        <li class="hiw__card" {{ block.shopify_attributes }}>
+          <div class="hiw__ribbon">
+            <span class="body uppercase">{{ section.settings.step_label | escape }}</span>
+            <span class="hiw__num">{{ block.settings.number | escape }}</span>
+          </div>
+          <h3 class="h3 hiw__card-title" data-reveal>{{ block.settings.title | escape | newline_to_br }}</h3>
+          {%- if block.settings.text != blank -%}
+            <div class="body hiw__text" data-reveal>{{ block.settings.text }}</div>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ol>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "How it works",
+  "tag": "section",
+  "class": "how-it-works-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "How it works"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the headline.",
+      "default": "Three steps to\nyour fundraiser"
+    },
+    {
+      "type": "text",
+      "id": "step_label",
+      "label": "Ribbon label",
+      "default": "Step"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        {
+          "type": "text",
+          "id": "number",
+          "label": "Number",
+          "default": "01"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Title",
+          "info": "Each new line starts a new line of the title.",
+          "default": "Request\nyour kit"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Tell us about your group. We ship a sample tee and enough catalogs for everyone selling.</p>"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "How it works",
+      "blocks": [
+        { "type": "step", "settings": { "number": "01" } },
+        { "type": "step", "settings": { "number": "02" } },
+        { "type": "step", "settings": { "number": "03" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

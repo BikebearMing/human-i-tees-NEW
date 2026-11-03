@@ -1,0 +1,61 @@
+{%- comment -%}
+  Product card for the Our Tees grid (styles: assets/section-our-tees.css).
+  Used by sections/our-tees.liquid and sections/custom-collection.liquid.
+
+  Accepts:
+  - product: {Object} product (blank renders a placeholder card)
+  - show_badge: {Boolean} show the NEW badge
+  - block: {Object} optional section block, for theme-editor attributes
+  - heading_tag: {String} optional title tag (default 'h3')
+  - show_view: {Boolean} pass false to drop the hover VIEW button (collection grid)
+
+  Usage:
+  {% render 'tee-card', product: product, show_badge: true %}
+{%- endcomment -%}
+
+{%- liquid
+  assign title_tag = heading_tag | default: 'h3'
+-%}
+
+<a
+  class="our-tees__col our-tees__card"
+  href="{{ product.url | default: '#' }}"
+  {% if block %}{{ block.shopify_attributes }}{% endif %}
+>
+  {%- if show_badge -%}
+    <span class="our-tees__badge" aria-label="New">NEW</span>
+  {%- endif -%}
+
+  <div class="our-tees__media">
+    {%- if product.featured_image -%}
+      {{
+        product.featured_image
+        | image_url: width: 1200
+        | image_tag:
+          class: 'our-tees__image',
+          widths: '400, 600, 800, 1200',
+          sizes: '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw',
+          loading: 'lazy'
+      }}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'our-tees__image our-tees__image--placeholder' }}
+    {%- endif -%}
+  </div>
+
+  <div class="our-tees__meta">
+    <{{ title_tag }} class="our-tees__title" data-reveal>{{ product.title | default: 'Product title' }}</{{ title_tag }}>
+    <span class="our-tees__price body" data-reveal>
+      {%- if product -%}
+        {{ product.price | money }}
+      {%- else -%}
+        {{ 2400 | money }}
+      {%- endif -%}
+    </span>
+  </div>
+
+  {%- unless show_view == false -%}
+    <span class="our-tees__view custom-button full-width" aria-hidden="true">
+      <span class="button-span body">VIEW</span>
+    </span>
+  {%- endunless -%}
+</a>

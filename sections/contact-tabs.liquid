@@ -1,0 +1,456 @@
+{%- comment -%}
+  Contact — "CONTACTS" on the left, and on the right a tabbed contact form:
+  one Shopify contact form per subject tab, so each subject can ask for its
+  own extra field and every message arrives tagged with its subject.
+  Fills the screen under the fixed header; the right column sits exactly on
+  the centre .has-line, its rows ruled in the same tan as the columns.
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h2 (title), .h3 (submit), .h4 (tabs) and .body (labels, copy, inputs).
+{%- endcomment -%}
+
+{%- style -%}
+  #contact-{{ section.id }} {
+    --ct-line: #d9cdb8; /* same rule colour as the .has-line columns (custom.css) */
+    --ct-pad: 1.25vw; /* 18 — inset from the column line */
+
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* The .has-line columns start at the top of the page; this carries the
+     header clearance and fills the rest of the screen (613 under the header
+     in the mock). */
+  #contact-{{ section.id }} .contact__push {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-top: var(--header-height, 6rem);
+    box-sizing: border-box;
+  }
+
+  /* the mock keeps only the centre column line; the 25/75 ones would cut
+     through the form */
+  #contact-{{ section.id }} > .line-overlay > i:nth-child(odd) { display: none; }
+
+  /* ----- Left: title + intro ----- */
+  #contact-{{ section.id }} .contact__intro {
+    padding: 0.972vw 0.833vw;
+  }
+  /* ~70px caps in the mock; .h2's -0.75vw tracking is for its 180px */
+  #contact-{{ section.id }} .contact__title {
+    font-size: max(48px, 6.389vw);
+    letter-spacing: -0.04em;
+    color: var(--black);
+  }
+  #contact-{{ section.id }} .contact__text {
+    max-width: max(200px, 13.889vw);
+    padding-top: 1.528vw;
+    color: var(--black);
+  }
+
+  /* ----- Right: the form column ----- */
+  #contact-{{ section.id }} .contact__panel-wrap {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--ct-line);
+  }
+  #contact-{{ section.id }} .contact__label,
+  #contact-{{ section.id }} .contact__field-label {
+    text-transform: uppercase;
+    color: var(--black);
+  }
+  #contact-{{ section.id }} .contact__muted { color: var(--ct-line); }
+
+  /* subject row: label, 12, tabs, 17 */
+  #contact-{{ section.id }} .contact__subject {
+    padding: 0.556vw var(--ct-pad) 1.181vw;
+    border-bottom: 1px solid var(--ct-line);
+  }
+  #contact-{{ section.id }} .contact__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: max(6px, 0.417vw);
+    padding-top: 0.833vw;
+  }
+  /* same pill as the header nav: beige rule, dark when selected */
+  #contact-{{ section.id }} .contact__tab {
+    display: inline-flex;
+    align-items: center;
+    height: max(34px, 2.778vw); /* 40 */
+    padding-inline: max(12px, 1.042vw);
+    border: 1px solid var(--beige);
+    border-radius: 10rem;
+    background: transparent;
+    color: var(--black);
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  #contact-{{ section.id }} .contact__tab:hover { border-color: var(--black); }
+  #contact-{{ section.id }} .contact__tab[aria-selected='true'] {
+    background: var(--black);
+    border-color: var(--black);
+    color: #fff;
+  }
+
+  /* each tab's form fills the rest of the column */
+  #contact-{{ section.id }} .contact__form {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  #contact-{{ section.id }} .contact__form.is-hidden { display: none; }
+
+  /* ----- Field rows: 81 tall. Empty, the label sits mid-row; focused or
+     filled it lifts to 23 from the top and fades, with the value under it. */
+  #contact-{{ section.id }} .contact__field {
+    position: relative;
+    display: block;
+    border-bottom: 1px solid var(--ct-line);
+  }
+  #contact-{{ section.id }} .contact__input {
+    display: block;
+    width: 100%;
+    height: max(64px, 5.625vw);
+    padding: max(30px, 2.708vw) var(--ct-pad) max(10px, 1.111vw);
+    border: 0;
+    background: transparent;
+    color: var(--black);
+    font-family: var(--geist);
+    font-size: max(14px, 0.972vw);
+    letter-spacing: -0.03em;
+    box-sizing: border-box;
+    outline: none;
+  }
+  #contact-{{ section.id }} .contact__field-label {
+    position: absolute;
+    top: 50%;
+    left: var(--ct-pad);
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: top 0.3s cubic-bezier(0.65, 0, 0.35, 1), transform 0.3s cubic-bezier(0.65, 0, 0.35, 1), color 0.3s ease;
+  }
+  #contact-{{ section.id }} .contact__input:focus + .contact__field-label,
+  #contact-{{ section.id }} .contact__input:not(:placeholder-shown) + .contact__field-label {
+    top: max(14px, 1.597vw);
+    transform: none;
+    color: var(--ct-line);
+  }
+
+  /* message: label 31 from the top, the textarea takes the remaining height */
+  #contact-{{ section.id }} .contact__field--message {
+    flex: 1 1 auto;
+    display: flex;
+    border-bottom: 0;
+  }
+  #contact-{{ section.id }} .contact__field--message .contact__input {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: max(140px, 12vw);
+    padding-top: max(46px, 3.75vw);
+    resize: none;
+  }
+  #contact-{{ section.id }} .contact__field--message .contact__field-label,
+  #contact-{{ section.id }} .contact__field--message .contact__input:focus + .contact__field-label,
+  #contact-{{ section.id }} .contact__field--message .contact__input:not(:placeholder-shown) + .contact__field-label {
+    top: max(20px, 2.153vw);
+    transform: none;
+  }
+  #contact-{{ section.id }} .contact__field--message .contact__input:focus + .contact__field-label,
+  #contact-{{ section.id }} .contact__field--message .contact__input:not(:placeholder-shown) + .contact__field-label {
+    color: var(--ct-line);
+  }
+
+  #contact-{{ section.id }} .contact__status {
+    padding: max(12px, 0.833vw) var(--ct-pad);
+    border-bottom: 1px solid var(--ct-line);
+    color: var(--black);
+  }
+  #contact-{{ section.id }} .contact__status--error { color: #c0392b; }
+  #contact-{{ section.id }} .contact__status ul { margin: 4px 0 0; padding-left: 18px; }
+
+  /* ===== MOBILE (<= 768px) — title above the form, one column ===== */
+  @media (max-width: 768px) {
+    #contact-{{ section.id }} {
+      --ct-pad: 16px;
+    }
+    #contact-{{ section.id }} > .line-overlay { display: none; }
+    #contact-{{ section.id }} .contact__push {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      padding-top: calc(var(--header-height, 6rem) + 16px);
+    }
+    #contact-{{ section.id }} .contact__intro { padding: 0 16px 28px; }
+    #contact-{{ section.id }} .contact__text { padding-top: 12px; }
+    #contact-{{ section.id }} .contact__subject { padding: 14px 16px 16px; }
+    #contact-{{ section.id }} .contact__tabs { padding-top: 10px; }
+  }
+{%- endstyle -%}
+
+<section class="contact has-line" id="contact-{{ section.id }}">
+  <div class="contact__push">
+    <div class="contact__intro">
+      <h1 class="h2 contact__title" data-ct-split>{{ section.settings.title | escape }}</h1>
+      {%- if section.settings.text != blank -%}
+        <div class="body contact__text" data-ct-split>{{ section.settings.text }}</div>
+      {%- endif -%}
+    </div>
+
+    <div class="contact__panel-wrap">
+      <div class="contact__subject">
+        <p class="body contact__label" id="contact-subject-{{ section.id }}">
+          {{ section.settings.subject_label | escape }}
+          {%- if section.settings.subject_hint != blank %}
+            <span class="contact__muted">{{ section.settings.subject_hint | escape }}</span>
+          {%- endif -%}
+        </p>
+        <div class="contact__tabs" role="tablist" aria-labelledby="contact-subject-{{ section.id }}">
+          {%- for block in section.blocks -%}
+            <button
+              class="h4 contact__tab"
+              type="button"
+              role="tab"
+              id="contact-tab-{{ block.id }}"
+              aria-controls="ContactForm-{{ block.id }}"
+              data-subject="{{ block.settings.label | handleize }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              {% unless forloop.first %}tabindex="-1"{% endunless %}
+              {{ block.shopify_attributes }}
+            >
+              {{ block.settings.label | escape }}
+            </button>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      {%- for block in section.blocks -%}
+        {%- assign form_id = 'ContactForm-' | append: block.id -%}
+        {%- assign form_class = 'contact__form' -%}
+        {%- unless forloop.first -%}{%- assign form_class = 'contact__form is-hidden' -%}{%- endunless -%}
+        {%- form 'contact', id: form_id, class: form_class -%}
+          <input type="hidden" name="contact[Subject]" value="{{ block.settings.label | escape }}">
+
+          {%- if form.posted_successfully? -%}
+            <p class="body contact__status" role="status" data-ct-status>{{ section.settings.success_message | escape }}</p>
+          {%- elsif form.errors -%}
+            <div class="body contact__status contact__status--error" role="alert" data-ct-status>
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+
+          <label class="contact__field">
+            <input class="body contact__input" type="text" name="contact[name]" autocomplete="name" placeholder=" " required value="{{ form.name }}">
+            <span class="body contact__field-label">Name*</span>
+          </label>
+          <label class="contact__field">
+            <input class="body contact__input" type="email" name="contact[email]" autocomplete="email" placeholder=" " required value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}">
+            <span class="body contact__field-label">Email*</span>
+          </label>
+          <label class="contact__field">
+            <input class="body contact__input" type="tel" name="contact[Phone number]" autocomplete="tel" placeholder=" " required>
+            <span class="body contact__field-label">Phone number*</span>
+          </label>
+          {%- if block.settings.extra_field != blank -%}
+            <label class="contact__field">
+              <input class="body contact__input" type="text" name="contact[{{ block.settings.extra_field | escape }}]" placeholder=" " required>
+              <span class="body contact__field-label">{{ block.settings.extra_field | escape }}*</span>
+            </label>
+          {%- endif -%}
+          <label class="contact__field contact__field--message">
+            <textarea class="body contact__input" name="contact[body]" placeholder=" " required>{{ form.body }}</textarea>
+            <span class="body contact__field-label">Message*</span>
+          </label>
+
+          <button class="custom-button bar contact__submit" type="submit">
+            <span class="button-span h3">{{ section.settings.button_label | escape }}</span>
+          </button>
+        {%- endform -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('contact-{{ section.id }}');
+    if (!root) return;
+
+    var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+    var forms = Array.prototype.slice.call(root.querySelectorAll('.contact__form'));
+    if (!tabs.length) return;
+
+    forms.forEach(function (form, i) {
+      form.setAttribute('role', 'tabpanel');
+      if (tabs[i]) form.setAttribute('aria-labelledby', tabs[i].id);
+    });
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    var STORE = 'contact-tab-{{ section.id }}';
+
+    function select(index, animate) {
+      tabs.forEach(function (tab, i) {
+        var on = i === index;
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        tab.tabIndex = on ? 0 : -1;
+      });
+      forms.forEach(function (form, i) {
+        form.classList.toggle('is-hidden', i !== index);
+      });
+      // the newly shown form's rows rise in, one after another
+      if (animate && !reduce && window.gsap && forms[index]) {
+        // wiped up out of their own bottom edge, no fade
+        gsap.fromTo(
+          forms[index].querySelectorAll('.contact__field, .contact__submit'),
+          { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+          { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power4.out', stagger: 0.05, clearProps: 'clipPath,transform' }
+        );
+      }
+    }
+
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () {
+        if (tab.getAttribute('aria-selected') !== 'true') select(i, true);
+      });
+      // arrow keys move between tabs
+      tab.addEventListener('keydown', function (e) {
+        var next = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : null;
+        if (next === null) return;
+        next = (next + tabs.length) % tabs.length;
+        select(next, true);
+        tabs[next].focus();
+      });
+    });
+
+    // remember which tab was sent, so the thank-you shows on the same tab
+    // after Shopify reloads the page
+    forms.forEach(function (form, i) {
+      form.addEventListener('submit', function () {
+        try { sessionStorage.setItem(STORE, String(i)); } catch (e) {}
+      });
+    });
+
+    var start = 0;
+    var hashForm = location.hash ? root.querySelector(location.hash.replace(/[^#\w-]/g, '')) : null;
+    // ?subject=fundraising opens the first tab whose label contains it (the fundraising CTAs link here)
+    var subject = (new URLSearchParams(location.search).get('subject') || '').toLowerCase();
+    var subjectTab = subject ? tabs.filter(function (tab) {
+      return (tab.getAttribute('data-subject') || '').indexOf(subject) > -1;
+    })[0] : null;
+    if (hashForm && forms.indexOf(hashForm) > -1) {
+      start = forms.indexOf(hashForm);
+    } else if (subjectTab && !/contact_posted=true/.test(location.search)) {
+      start = tabs.indexOf(subjectTab);
+    } else if (/contact_posted=true/.test(location.search) || root.querySelector('[data-ct-status]')) {
+      try {
+        var saved = parseInt(sessionStorage.getItem(STORE), 10);
+        if (!isNaN(saved) && forms[saved]) start = saved;
+      } catch (e) {}
+    }
+    select(start, false);
+
+    if (reduce || !window.gsap) return;
+
+    function run() {
+      // title and intro rise line by line; the form rows follow
+      var splitEls = root.querySelectorAll('[data-ct-split]');
+      var tl = gsap.timeline({ delay: 0.3 });
+      if (window.SplitText && splitEls.length) {
+        gsap.registerPlugin(SplitText);
+        var split = SplitText.create(splitEls, { type: 'lines', mask: 'lines', linesClass: 'contact-line' });
+        tl.from(split.lines, { yPercent: 120, duration: 0.9, ease: 'power4.out', stagger: 0.08 }, 0);
+      }
+      var rows = [root.querySelector('.contact__subject')].concat(
+        Array.prototype.slice.call(forms[start].querySelectorAll('.contact__field, .contact__submit'))
+      );
+      tl.fromTo(rows, { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+        { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power4.out', stagger: 0.07, clearProps: 'clipPath,transform' }, 0.15);
+    }
+
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+    else run();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Contact tabs",
+  "tag": "section",
+  "class": "contact-tabs-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "CONTACTS"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Use the form below to send us a message—our team will respond as quickly as possible.</p>"
+    },
+    {
+      "type": "text",
+      "id": "subject_label",
+      "label": "Subject label",
+      "default": "Subject"
+    },
+    {
+      "type": "text",
+      "id": "subject_hint",
+      "label": "Subject hint",
+      "default": "(Choose one)"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Submit"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Thank-you message",
+      "default": "Thanks for reaching out. We'll get back to you as soon as we can."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tab",
+      "name": "Subject tab",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Subject",
+          "info": "Shown on the tab and sent with the message.",
+          "default": "General inquiry"
+        },
+        {
+          "type": "text",
+          "id": "extra_field",
+          "label": "Extra field",
+          "info": "Optional field for this subject only, e.g. Order number. Leave blank for none."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 5,
+  "presets": [
+    {
+      "name": "Contact tabs",
+      "blocks": [
+        { "type": "tab", "settings": { "label": "General inquiry" } },
+        { "type": "tab", "settings": { "label": "About fundraising", "extra_field": "Group or organization" } },
+        { "type": "tab", "settings": { "label": "Product related", "extra_field": "Order number" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

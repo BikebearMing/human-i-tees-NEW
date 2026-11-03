@@ -1,0 +1,336 @@
+{%- comment -%}
+  Fundraising earn — "$5 ON EVERY SHIRT SOLD." with the hand-drawn coin
+  standing in for the $, and two tees drifting past on either side.
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h2 (headline) and .body (eyebrow, copy).
+{%- endcomment -%}
+
+{%- style -%}
+  #fr-earn-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    overflow-x: clip;
+    /* 93 above the eyebrow, 96 below the button */
+    padding: 6.458vw var(--sidepadding-xs) 6.667vw;
+    box-sizing: border-box;
+  }
+
+  #fr-earn-{{ section.id }} .fr-earn__intro {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: var(--black);
+  }
+
+  /* ----- Headline: coin + amount on the first line, then .h2 lines ----- */
+  #fr-earn-{{ section.id }} .fr-earn__title {
+    padding-top: 1.042vw;
+  }
+  #fr-earn-{{ section.id }} .fr-earn__amount {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15em; /* 27 at the mock's 180px .h2 */
+  }
+  /* 212.68 tall in the mock — sized in em so it tracks .h2 down to mobile */
+  #fr-earn-{{ section.id }} .fr-earn__coin {
+    display: block;
+    width: auto;
+    height: 1.182em;
+  }
+  #fr-earn-{{ section.id }} .fr-earn__num-mask {
+    display: block;
+    overflow: hidden;
+  }
+  /* the amount is half again the size of the lines under it */
+  #fr-earn-{{ section.id }} .fr-earn__num {
+    display: block;
+    font-size: 1.5em;
+    line-height: 0.8;
+  }
+  #fr-earn-{{ section.id }} .fr-earn__lines {
+    display: block;
+    padding-top: 1.389vw;
+  }
+
+  /* .body is a fixed 14px; here it scales with the layout so it keeps the
+     mock's proportions (and its 3-line wrap) on wide screens */
+  #fr-earn-{{ section.id }} .fr-earn__text {
+    margin-top: 1.319vw;
+    max-width: max(246px, 17.083vw);
+    font-size: max(14px, 0.972vw);
+    letter-spacing: -0.03em;
+    color: var(--black);
+  }
+  #fr-earn-{{ section.id }} .fr-earn__cta {
+    display: inline-block;
+    margin-top: 1.389vw;
+  }
+  /* "Ready to launch now? Start your campaign" — small link line under the CTA */
+  #fr-earn-{{ section.id }} .fr-earn__secondary {
+    padding-top: 0.833vw; /* padding: custom.css zeroes p margins with !important */
+    color: var(--black);
+  }
+  #fr-earn-{{ section.id }} .fr-earn__secondary a { color: inherit; }
+
+  #fr-earn-{{ section.id }} .fr-earn-line-mask {
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  /* ----- Tees: free-floating either side of the headline ----- */
+  #fr-earn-{{ section.id }} .fr-earn__tee {
+    position: absolute;
+    z-index: 1;
+    width: 18.056vw; /* 260 */
+    pointer-events: none;
+  }
+  #fr-earn-{{ section.id }} .fr-earn__tee img,
+  #fr-earn-{{ section.id }} .fr-earn__tee svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  #fr-earn-{{ section.id }} .fr-earn__tee svg {
+    aspect-ratio: 364 / 331;
+    background: var(--beige);
+  }
+  #fr-earn-{{ section.id }} .fr-earn__tee--left {
+    top: 13.403vw; /* 193 */
+    left: 2.014vw; /* 29 */
+  }
+  #fr-earn-{{ section.id }} .fr-earn__tee--right {
+    top: 33.056vw; /* 476 */
+    right: 3.333vw; /* 48 */
+  }
+
+  /* ===== MOBILE (<= 768px) — the tees can't sit beside the headline, so they
+     drop into a staggered pair under the button ===== */
+  @media (max-width: 768px) {
+    #fr-earn-{{ section.id }} {
+      padding: 64px 16px 56px;
+    }
+    #fr-earn-{{ section.id }} .fr-earn__title { padding-top: 12px; }
+    #fr-earn-{{ section.id }} .fr-earn__lines { padding-top: 12px; }
+    #fr-earn-{{ section.id }} .fr-earn__text { margin-top: 20px; }
+    #fr-earn-{{ section.id }} .fr-earn__cta { margin-top: 20px; }
+    #fr-earn-{{ section.id }} .fr-earn__secondary { padding-top: 12px; }
+
+    #fr-earn-{{ section.id }} .fr-earn__tees {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 32px;
+    }
+    #fr-earn-{{ section.id }} .fr-earn__tee {
+      position: relative;
+      inset: auto;
+      width: 46%;
+    }
+    #fr-earn-{{ section.id }} .fr-earn__tee--right {
+      margin-top: 48px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="fr-earn has-line" id="fr-earn-{{ section.id }}">
+  <div class="fr-earn__intro">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="body uppercase fr-earn__eyebrow" data-fe-split>{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+
+    <h2 class="h2 fr-earn__title">
+      <span class="fr-earn__amount">
+        {%- if section.settings.coin != blank -%}
+          {{ section.settings.coin | image_url: width: 480 | image_tag: class: 'fr-earn__coin', alt: '$', loading: 'lazy' }}
+        {%- else -%}
+          <img class="fr-earn__coin" src="{{ 'coin.svg' | asset_url }}" alt="$" width="232" height="227" loading="lazy">
+        {%- endif -%}
+        <span class="fr-earn__num-mask"><span class="fr-earn__num">{{ section.settings.amount | escape }}</span></span>
+      </span>
+      <span class="fr-earn__lines" data-fe-split>{{ section.settings.heading | escape | newline_to_br }}</span>
+    </h2>
+
+    {%- if section.settings.text != blank -%}
+      <div class="body fr-earn__text" data-fe-split>{{ section.settings.text }}</div>
+    {%- endif -%}
+
+    {%- if section.settings.button_label != blank -%}
+      <a class="custom-button fr-earn__cta" href="{{ section.settings.button_link | default: '/pages/contact?subject=fundraising' }}">
+        <span class="button-span body uppercase">{{ section.settings.button_label | escape }}</span>
+      </a>
+    {%- endif -%}
+
+    {%- if section.settings.secondary_text != blank -%}
+      <p class="body fr-earn__secondary" data-fe-split>{{ section.settings.secondary_text }}</p>
+    {%- endif -%}
+  </div>
+
+  <div class="fr-earn__tees" aria-hidden="true">
+    <div class="fr-earn__tee fr-earn__tee--left">
+      {%- if section.settings.tee_left != blank -%}
+        {{ section.settings.tee_left | image_url: width: 720 | image_tag: alt: '', loading: 'lazy', sizes: '(max-width: 768px) 46vw, 18vw' }}
+      {%- else -%}
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/topleft-shirt.png?v=1779209777"
+          alt=""
+          width="364"
+          height="331"
+          loading="lazy"
+        >
+      {%- endif -%}
+    </div>
+    <div class="fr-earn__tee fr-earn__tee--right">
+      {%- if section.settings.tee_right != blank -%}
+        {{ section.settings.tee_right | image_url: width: 720 | image_tag: alt: '', loading: 'lazy', sizes: '(max-width: 768px) 46vw, 18vw' }}
+      {%- else -%}
+        {{ 'product-apparel-2' | placeholder_svg_tag }}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('fr-earn-{{ section.id }}');
+    if (!root) return;
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (reduce || !window.gsap || !window.ScrollTrigger) return;
+
+    var intro = root.querySelector('.fr-earn__intro');
+    var coin = root.querySelector('.fr-earn__coin');
+    var num = root.querySelector('.fr-earn__num');
+    var cta = root.querySelector('.fr-earn__cta');
+    var teeL = root.querySelector('.fr-earn__tee--left');
+    var teeR = root.querySelector('.fr-earn__tee--right');
+
+    function run() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Plays once as the headline comes up: the coin flips in, the amount
+      // rises out of its mask, then the lines and copy follow line by line.
+      var tl = gsap.timeline({
+        scrollTrigger: { trigger: intro, start: 'top 75%', once: true },
+      });
+
+      if (coin) {
+        tl.from(coin, { scale: 0, rotation: -200, autoAlpha: 0, duration: 1.1, ease: 'back.out(1.7)' }, 0.1);
+      }
+      if (num) tl.from(num, { yPercent: 110, duration: 0.9, ease: 'power4.out' }, 0.2);
+
+      var splitEls = root.querySelectorAll('[data-fe-split]');
+      if (window.SplitText && splitEls.length) {
+        gsap.registerPlugin(SplitText);
+        var split = SplitText.create(splitEls, {
+          type: 'lines',
+          mask: 'lines',
+          linesClass: 'fr-earn-line',
+        });
+        tl.from(split.lines, { yPercent: 120, duration: 0.9, ease: 'power4.out', stagger: 0.08 }, 0);
+      }
+
+      // wiped up out of its own bottom edge, no fade
+      if (cta) {
+        tl.fromTo(cta, { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+          { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power4.out', clearProps: 'clipPath,transform' }, 0.6);
+      }
+
+      // The tees drift up and sway as the section scrolls through, passing
+      // through their mock positions when the section is centred on screen.
+      var drift = { trigger: root, start: 'top bottom', end: 'bottom top', scrub: true };
+      if (teeL) {
+        gsap.fromTo(teeL, { yPercent: 20, rotation: -6 }, { yPercent: -20, rotation: 6, ease: 'none', scrollTrigger: drift });
+      }
+      if (teeR) {
+        gsap.fromTo(teeR, { yPercent: 35, rotation: 6 }, { yPercent: -35, rotation: -6, ease: 'none', scrollTrigger: drift });
+      }
+    }
+
+    // split once the webfonts are in, so the line breaks are the real ones
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+    else run();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Fundraising earn",
+  "tag": "section",
+  "class": "fundraising-earn-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "What your group earns"
+    },
+    {
+      "type": "image_picker",
+      "id": "coin",
+      "label": "Coin",
+      "info": "Defaults to the hand-drawn coin."
+    },
+    {
+      "type": "text",
+      "id": "amount",
+      "label": "Amount",
+      "info": "Shown large beside the coin.",
+      "default": "5"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the heading.",
+      "default": "ON EVERY\nSHIRT SOLD."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Sell 200 shirts and your group raises $1,000. No upfront cost. No inventory. No boxes to sort. Zero risk.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Start fundraising"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "secondary_text",
+      "label": "Secondary link line",
+      "info": "Small line under the button, e.g. Ready to launch now? with a link on Start your campaign. Leave blank to hide."
+    },
+    {
+      "type": "image_picker",
+      "id": "tee_left",
+      "label": "Left tee",
+      "info": "Cut-out tee on a transparent background. Defaults to the barcode tee."
+    },
+    {
+      "type": "image_picker",
+      "id": "tee_right",
+      "label": "Right tee",
+      "info": "Cut-out tee on a transparent background."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fundraising earn"
+    }
+  ]
+}
+{% endschema %}

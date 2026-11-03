@@ -1,216 +1,107 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
-      "type": "main-product",
+      "type": "custom-product",
       "blocks": {
-        "vendor": {
-          "type": "text",
+        "details": {
+          "type": "collapsible",
           "settings": {
-            "text": "{{ product.vendor }}",
-            "text_style": "uppercase"
+            "heading": "Details",
+            "content": "<p>This premium tee is a true heavyweight: 6.0 oz, 100% ringspun cotton with a high-stitch-density knit for an ultra-smooth, pro-grade print surface. The modern classic fit and seamless body feel clean and sturdy, while the rib collar plus taped neck and shoulders add comfort that holds its shape. Finished with a recycled tear-away label, and made by a supplier that partners with Better Cotton, uses OEKO-TEX® certified low-impact dyes, and participates in the Fair Labor Association. Clean look, durable build—made to be worn on repeat.</p>",
+            "use_product_description": false
           }
         },
-        "title": {
-          "type": "title"
-        },
-        "caption": {
-          "type": "text",
+        "care": {
+          "type": "collapsible",
           "settings": {
-            "text": "{{ product.metafields.descriptors.subtitle.value }}",
-            "text_style": "subtitle"
+            "heading": "Care",
+            "content": "<p>If you have any questions, you are welcome to <a href=\"/pages/contact\" title=\"Contact\">contact us</a>.</p>",
+            "use_product_description": false
           }
         },
-        "price": {
-          "type": "price"
-        },
-        "variant_picker": {
-          "type": "variant_picker",
-          "settings": {
-            "picker_type": "button"
-          }
-        },
-        "quantity_selector": {
-          "type": "quantity_selector"
-        },
-        "buy_buttons": {
-          "type": "buy_buttons",
-          "settings": {
-            "show_dynamic_checkout": true,
-            "show_gift_card_recipient": true
-          }
-        },
-        "description": {
-          "type": "description"
-        },
-        "collapsible-row-0": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Materials",
-            "icon": "leather",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-1": {
-          "type": "collapsible_tab",
+        "shipping": {
+          "type": "collapsible",
           "settings": {
             "heading": "Shipping & Returns",
-            "icon": "truck",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-2": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Dimensions",
-            "icon": "ruler",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-3": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Care Instructions",
-            "icon": "heart",
-            "content": "",
-            "page": ""
-          }
-        },
-        "share": {
-          "type": "share",
-          "settings": {
-            "share_label": "Share"
+            "content": "<p>Find all the essential information about our shipping timelines and return policies to shop with confidence: <a href=\"/policies/shipping-policy\" title=\"Shipping policy\">shipping policy</a> and <a href=\"/policies/refund-policy\" title=\"Refund policy\">refund policy</a>.</p>",
+            "use_product_description": false
           }
         }
       },
       "block_order": [
-        "vendor",
-        "title",
-        "caption",
-        "price",
-        "variant_picker",
-        "quantity_selector",
-        "buy_buttons",
-        "description",
-        "collapsible-row-0",
-        "collapsible-row-1",
-        "collapsible-row-2",
-        "collapsible-row-3",
-        "share"
+        "details",
+        "care",
+        "shipping"
       ],
       "settings": {
-        "enable_sticky_info": true,
-        "gallery_layout": "stacked",
-        "media_size": "large",
-        "constrain_to_viewport": true,
-        "mobile_thumbnails": "hide",
-        "hide_variants": true,
-        "enable_video_looping": false,
-        "padding_top": 36,
-        "padding_bottom": 12
+        "badge_mode": "tag",
+        "badge_text": "NEW",
+        "cursive_image": "",
+        "description": "",
+        "size_label": "SELECT SIZE",
+        "size_guide_label": "SIZE GUIDE",
+        "size_guide_url": "",
+        "size_guide_page": "",
+        "atc_label": "ADD TO CART",
+        "soldout_label": "SOLD OUT",
+        "sticky_top": 90,
+        "padding_top": 40,
+        "padding_bottom": 0
       }
     },
-    "image-with-text": {
-      "type": "image-with-text",
+    "behind-the-design": {
+      "type": "behind-the-design",
+      "disabled": true,
       "blocks": {
-        "image-with-text-0": {
-          "type": "heading",
-          "settings": {
-            "heading": "Image with text",
-            "heading_size": "h1"
-          }
-        },
-        "image-with-text-1": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
-            "text_style": "body"
-          }
-        }
-      },
-      "block_order": [
-        "image-with-text-0",
-        "image-with-text-1"
-      ],
-      "settings": {
-        "height": "small",
-        "desktop_image_width": "medium",
-        "layout": "text_first",
-        "desktop_content_position": "top",
-        "desktop_content_alignment": "left",
-        "content_layout": "no-overlap",
-        "color_scheme": "scheme-2",
-        "mobile_content_alignment": "left",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "multicolumn": {
-      "type": "multicolumn",
-      "blocks": {
-        "column-0": {
+        "col-1": {
           "type": "column",
           "settings": {
-            "title": "Free Shipping",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
-            "link_label": "",
-            "link": ""
+            "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>"
           }
         },
-        "column-1": {
+        "col-2": {
           "type": "column",
           "settings": {
-            "title": "Hassle-Free Exchanges",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
-            "link_label": "",
-            "link": ""
+            "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>"
+          }
+        },
+        "col-3": {
+          "type": "column",
+          "settings": {
+            "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>"
+          }
+        },
+        "col-4": {
+          "type": "column",
+          "settings": {
+            "text": "<p>\"Nature Can't Be Restocked\" was among the most iconic of our designs back in the 90's. A zebra print melts into a barcode — a warning that nature isn't a product line. Every wear reminds those our natural world has no price.</p>"
           }
         }
       },
       "block_order": [
-        "column-0",
-        "column-1"
+        "col-1",
+        "col-2",
+        "col-3",
+        "col-4"
       ],
       "settings": {
-        "title": "",
-        "heading_size": "h1",
-        "image_width": "full",
-        "image_ratio": "adapt",
-        "columns_desktop": 2,
-        "column_alignment": "left",
-        "background_style": "none",
-        "button_label": "",
-        "button_link": "",
-        "swipe_on_mobile": false,
-        "color_scheme": "scheme-1",
-        "columns_mobile": "1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "related-products": {
-      "type": "related-products",
-      "settings": {
-        "heading": "You may also like",
-        "heading_size": "h2",
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "image_ratio": "square",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "columns_mobile": "2",
-        "padding_top": 36,
-        "padding_bottom": 28
+        "image": "shopify://shop_images/Rectangle_39_1.png",
+        "tag_image": "shopify://shop_images/tag_1.png",
+        "tag_alt": "Behind the design"
       }
     }
   },
   "order": [
     "main",
-    "image-with-text",
-    "multicolumn",
-    "related-products"
+    "behind-the-design"
   ]
 }

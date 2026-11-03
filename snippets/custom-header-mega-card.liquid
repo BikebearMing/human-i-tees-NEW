@@ -1,0 +1,94 @@
+{%- comment -%}
+  One megamenu card for sections/custom-header.liquid. Shared by the admin-menu
+  loop and the built-in nav, so both look up "Megamenu card" blocks the same way.
+
+  Accepts:
+  - section: {Object} the custom-header section (for its blocks + default caption)
+  - title: {String} the menu item's name
+  - url: {String} where the card links
+  - handle: {String} optional resource handle the link points at
+  - image: {Object} optional fallback image when no card block supplies one
+  - image_src: {String} optional image URL, used when there's no image object either
+  - caption: {String} optional caption, overriding the section-wide default
+
+  Card content: a "Megamenu card" block whose "Menu item name" matches this
+  link wins; otherwise fall back to `image` and the section-wide default caption.
+{%- endcomment -%}
+
+{%- liquid
+  assign card_image = blank
+  assign card_label = title
+  assign card_caption = caption | default: section.settings.mega_default_caption
+  assign card_wide = false
+  assign link_title_handle = title | handleize
+  for block in section.blocks
+    if block.type == 'mega_card'
+      assign block_handle = block.settings.menu_item | handleize
+      # Match on the link's own handle OR its handleized title. For a link
+      # pointing at a resource those differ — a link named "Our History"
+      # aimed at a page called "History" has handle `history`, so matching
+      # only on handle would silently miss the block the merchant set up.
+      if block_handle == handle or block_handle == link_title_handle
+        if block.settings.image != blank
+          assign card_image = block.settings.image
+        endif
+        if block.settings.label != blank
+          assign card_label = block.settings.label
+        endif
+        if block.settings.caption != blank
+          assign card_caption = block.settings.caption
+        endif
+        assign card_wide = block.settings.wide
+      endif
+    endif
+  endfor
+  if card_image == blank
+    assign card_image = image
+  endif
+-%}
+<a
+  href="{{ url }}"
+  class="megamenu-child{% if card_wide %} megamenu-child--wide{% endif %}"
+>
+  {%- comment %}
+    Direct child of the card on purpose — the CSS targets
+    `> img` so the plus icon inside .top isn't caught by it.
+  {%- endcomment %}
+  {%- if card_image != blank -%}
+    {{
+      card_image
+      | image_url: width: 720
+      | image_tag: loading: 'lazy', sizes: '240px', widths: '240, 480, 720', alt: ''
+    }}
+  {%- elsif image_src != blank -%}
+    <img src="{{ image_src }}" alt="" width="720" height="720" loading="lazy">
+  {%- else -%}
+    {%- comment %}
+      Fallback so a card is never a bare cream rectangle. Hit
+      whenever the link has no image of its own (pages and
+      plain URL links never do) and no card block supplies one.
+    {% endcomment -%}
+    <img
+      src="{{ 'megamenu-placeholder.png' | asset_url }}"
+      alt=""
+      width="240"
+      height="240"
+      loading="lazy"
+    >
+  {%- endif -%}
+  <div class="top">
+    <h3 class="h3">{{ card_label | escape }}</h3>
+    <img
+      src="{{ 'megamenu-plus.svg' | asset_url }}"
+      alt=""
+      width="24"
+      height="24"
+      loading="lazy"
+    >
+  </div>
+  {%- if card_caption != blank -%}
+    <div class="bottom">
+      <p class="body dark">{{ card_caption | escape }}</p>
+    </div>
+  {%- endif -%}
+</a>

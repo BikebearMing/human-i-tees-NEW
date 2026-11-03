@@ -1,0 +1,196 @@
+{%- comment -%}
+  Checklist with image — headline, a .check-list of items and a button on the
+  left half; a photo filling the right half, edge to edge. Used on the
+  free-kit page ("What's in your free kit"), where the button links back up
+  to the form (#free-kit-form).
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h3 (headline) and .body (items, button).
+{%- endcomment -%}
+
+{%- style -%}
+  #cli-{{ section.id }} {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 26.736vw; /* 385 */
+    width: 100%;
+  }
+
+  /* 19 above the headline, 27 under the button */
+  #cli-{{ section.id }} .cli__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.319vw 0.972vw 1.875vw;
+    color: var(--black);
+  }
+  /* .h3 is 40px; the mock's headline is ~52px (same as how-it-works) */
+  #cli-{{ section.id }} .cli__title {
+    font-size: max(32px, 3.611vw);
+  }
+  #cli-{{ section.id }} .cli__list {
+    padding-top: 1.528vw;
+  }
+  /* 83 from the list to the button */
+  #cli-{{ section.id }} .cli__cta {
+    display: inline-block;
+    margin-top: 5.764vw;
+  }
+
+  #cli-{{ section.id }} .cli__media {
+    position: relative;
+    overflow: hidden;
+    background: var(--beige);
+  }
+  #cli-{{ section.id }} .cli__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ===== MOBILE (<= 768px) — copy, then the photo under it ===== */
+  @media (max-width: 768px) {
+    #cli-{{ section.id }} {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    #cli-{{ section.id }} .cli__copy { padding: 48px 16px 40px; }
+    #cli-{{ section.id }} .cli__list { padding-top: 20px; }
+    #cli-{{ section.id }} .cli__cta { margin-top: 32px; }
+    #cli-{{ section.id }} .cli__media { aspect-ratio: 4 / 3; }
+  }
+{%- endstyle -%}
+
+<section class="cli" id="cli-{{ section.id }}">
+  <div class="cli__copy">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="h3 cli__title" data-reveal>{{ section.settings.heading | escape | newline_to_br }}</h2>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <ul class="check-list cli__list" role="list">
+        {%- for block in section.blocks -%}
+          <li class="body" {{ block.shopify_attributes }}>
+            <img class="check-list__icon" src="{{ 'check.svg' | asset_url }}" width="28" height="27" alt="" loading="lazy">
+            <span>{{ block.settings.text | escape }}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if section.settings.button_label != blank -%}
+      <a class="custom-button cli__cta" href="{{ section.settings.button_link | default: '#free-kit-form' }}" data-reveal>
+        <span class="button-span body uppercase">{{ section.settings.button_label | escape }}</span>
+      </a>
+    {%- endif -%}
+  </div>
+
+  <div class="cli__media">
+    {%- if section.settings.image != blank -%}
+      {{
+        section.settings.image
+        | image_url: width: 1600
+        | image_tag:
+          class: 'cli__image',
+          widths: '600, 900, 1200, 1600',
+          sizes: '(min-width: 769px) 50vw, 100vw',
+          loading: 'lazy'
+      }}
+    {%- else -%}
+      {{ 'lifestyle-2' | placeholder_svg_tag: 'cli__image' }}
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var cta = document.querySelector('#cli-{{ section.id }} .cli__cta');
+    if (!cta) return;
+    // A #link to something on this page (e.g. the free-kit form): glide there
+    // with Lenis, clear of the fixed header (the target's scroll-margin-top),
+    // and put the cursor in its first field.
+    cta.addEventListener('click', function (e) {
+      var hash = cta.getAttribute('href') || '';
+      if (hash.charAt(0) !== '#' || hash.length < 2) return;
+      var target = document.getElementById(hash.slice(1));
+      if (!target) return;
+      e.preventDefault();
+      // first field that's showing (the free-kit form may be on step 2)
+      var field = Array.prototype.filter.call(
+        target.querySelectorAll('input:not([type="hidden"]), select, textarea'),
+        function (el) { return el.offsetParent !== null; }
+      )[0];
+      var focus = function () { if (field) field.focus({ preventScroll: true }); };
+      if (window.lenis) {
+        var offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+        window.lenis.scrollTo(target, { offset: -offset, onComplete: focus });
+      } else {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(focus, 600);
+      }
+      if (history.replaceState) history.replaceState(null, '', hash);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Checklist with image",
+  "tag": "section",
+  "class": "checklist-image-section",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the headline.",
+      "default": "What's in\nyour free kit"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Get my free kit"
+    },
+    {
+      "type": "text",
+      "id": "button_link",
+      "label": "Button link",
+      "info": "Defaults to #free-kit-form, the form at the top of the free-kit page."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "A sample tee in the design and size you pick"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "Checklist with image",
+      "blocks": [
+        { "type": "item", "settings": { "text": "A sample tee in the design and size you pick" } },
+        { "type": "item", "settings": { "text": "Color catalogs for every member of your team" } },
+        { "type": "item", "settings": { "text": "A one-page guide to how your group earns" } },
+        { "type": "item", "settings": { "text": "A direct line to a person on our team" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

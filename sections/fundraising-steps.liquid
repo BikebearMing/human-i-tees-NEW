@@ -1,0 +1,524 @@
+{%- comment -%}
+  Fundraising steps — a step card set into the flower hill, with a sprout
+  growing out of the soil in front of it.
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h3 (title), .body (everything else) and --font-american-typewriter (the
+  big step number).
+
+  Layers, back to front: .has-line columns, flower hill, card, sprout (inside
+  the card), soil. The previous section (fundraising-hero) sits above this
+  one and its cards hang over the top of the hill.
+{%- endcomment -%}
+
+{%- style -%}
+  #fr-steps-{{ section.id }} {
+    --fs-orange: #ff944d; /* the theme's CTA orange (.custom-button, FAQ toggle) */
+    --fs-card-bg: #efe9e0;
+    --fs-radius: max(4px, 0.347vw); /* 5 */
+
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    overflow: hidden;
+    /* 947 tall in the mock: 195 above the card, 291 below it */
+    padding: 13.542vw 0 20.208vw;
+    box-sizing: border-box;
+  }
+
+  /* ----- Flower hill: fills the section. The image's sky is transparent, so
+     the .has-line columns show above the crest and stop at the grass. ----- */
+  #fr-steps-{{ section.id }} .fr-steps__hill {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  #fr-steps-{{ section.id }} .fr-steps__hill img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  /* ----- Strip + card: 324 in from each side (792 wide) ----- */
+  #fr-steps-{{ section.id }} .fr-steps__stack {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.833vw; /* 12 from the strip to the card (custom.css zeroes <p> margins) */
+    width: 55vw;
+    margin-inline: auto;
+  }
+  #fr-steps-{{ section.id }} .fr-steps__strip {
+    padding: max(6px, 0.486vw);
+    border-radius: var(--fs-radius);
+    background: var(--fs-card-bg);
+    color: var(--black);
+  }
+  /* Pinned deck: the section holds for a screen per extra card while each
+     one slides up over the last. The cards share one grid cell (.is-deck);
+     without JS / with reduced motion they just sit one under another. */
+  #fr-steps-{{ section.id }} .fr-steps__deck {
+    display: grid;
+    gap: 0.833vw;
+  }
+  #fr-steps-{{ section.id }} .is-deck > .fr-steps__card {
+    grid-area: 1 / 1;
+    will-change: transform;
+  }
+  /* while pinned the section is at least a screen tall, so nothing peeks in
+     above or below it; the stack sits centred in that height */
+  #fr-steps-{{ section.id }}.is-pinned {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  #fr-steps-{{ section.id }} .fr-steps__card {
+    position: relative;
+    border-radius: var(--fs-radius);
+    background: var(--fs-card-bg);
+    box-shadow: 0 0.833vw 2.778vw rgba(0, 0, 0, 0.18);
+  }
+  #fr-steps-{{ section.id }} .fr-steps__body {
+    display: grid;
+    grid-template-columns: 1fr 26.25vw; /* photo is 378 wide */
+    column-gap: 1.667vw;
+    padding: 0.556vw 0.556vw 0.556vw 1.667vw; /* photo inset 8, copy inset 24 */
+  }
+  #fr-steps-{{ section.id }} .fr-steps__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: -0.556vw; /* the ribbon hangs from the card's top edge */
+    padding-bottom: 1.111vw;
+  }
+
+  /* Orange ribbon, notched at the bottom. The mask lets the intro drop it in
+     from the card's top edge. */
+  #fr-steps-{{ section.id }} .fr-steps__ribbon-mask {
+    overflow: hidden;
+  }
+  #fr-steps-{{ section.id }} .fr-steps__ribbon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 9.514vw;
+    height: 9.931vw;
+    padding-top: 0.556vw;
+    box-sizing: border-box;
+    background: var(--fs-orange);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+    color: var(--black);
+  }
+  /* the number has no class of its own — the typewriter face is the theme's
+     small-label/number font. The mock's digits are a narrower cut than our
+     file, so this is sized and tightened to the mock's ~108px-wide "01". */
+  #fr-steps-{{ section.id }} .fr-steps__num {
+    font-family: var(--font-american-typewriter);
+    font-size: 7.5vw;
+    line-height: 0.8;
+    letter-spacing: -0.11em;
+    text-align: center;
+  }
+
+  /* 99.5 from the ribbon to the title */
+  #fr-steps-{{ section.id }} .fr-steps__title {
+    padding-top: 6.91vw;
+    /* mock: Futura PT Cond 60px / 80% / -2.4px */
+    font-size: max(36px, 4.167vw);
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+  }
+  /* .body is a fixed 14px; here it scales with the card so it keeps the
+     mock's proportions (and its 3-line wrap) on wide screens */
+  #fr-steps-{{ section.id }} .fr-steps__text {
+    margin-top: 1.111vw;
+    max-width: max(156px, 10.833vw);
+    font-size: max(14px, 0.972vw);
+    letter-spacing: -0.03em;
+    color: var(--black);
+  }
+
+  #fr-steps-{{ section.id }} .fr-steps__media {
+    position: relative;
+    min-height: 27.153vw; /* 391 */
+    overflow: hidden;
+    background: var(--beige);
+  }
+  #fr-steps-{{ section.id }} .fr-steps__media img,
+  #fr-steps-{{ section.id }} .fr-steps__media svg {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Sprout in front of the deck (so later cards slide up behind it); its
+     stem runs down behind the soil. */
+  #fr-steps-{{ section.id }} .fr-steps__sprout {
+    position: absolute;
+    left: 19.722vw;
+    bottom: -2.5vw;
+    z-index: 3;
+    width: 14.583vw;
+    height: auto;
+    pointer-events: none;
+  }
+
+  /* ----- Soil along the bottom, in front of everything ----- */
+  #fr-steps-{{ section.id }} .fr-steps__soil {
+    position: absolute;
+    left: 0;
+    bottom: -7.292vw;
+    z-index: 3;
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+  }
+
+  /* ===== TABLET (<= 1024px) — the card takes more of the width so the copy
+     column isn't squeezed by the fixed 14px text ===== */
+  @media (max-width: 1024px) {
+    #fr-steps-{{ section.id }} .fr-steps__stack {
+      width: 84vw;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__body {
+      grid-template-columns: 1fr 42%;
+      padding: 8px 8px 8px 20px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__copy {
+      margin-top: -8px;
+      padding-bottom: 20px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__sprout {
+      left: 30%;
+      width: 20vw;
+    }
+  }
+
+  /* ===== MOBILE (<= 768px) — one column: ribbon + copy, photo under it ===== */
+  @media (max-width: 768px) {
+    #fr-steps-{{ section.id }} {
+      /* clears the hill's crest, and leaves the soil room at the bottom */
+      padding: 140px 16px 44vw;
+    }
+    #fr-steps-{{ section.id }} > .line-overlay { display: none; }
+    #fr-steps-{{ section.id }} .fr-steps__stack,
+    #fr-steps-{{ section.id }} .fr-steps__deck {
+      gap: 8px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__stack {
+      width: 100%;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__card {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+    #fr-steps-{{ section.id }} .fr-steps__body {
+      grid-template-columns: 1fr;
+      row-gap: 24px;
+      padding: 8px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__copy {
+      padding: 0 8px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__ribbon {
+      width: 96px;
+      height: 104px;
+      padding-top: 12px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__num {
+      font-size: 76px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__title {
+      padding-top: 40px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__text {
+      margin-top: 12px;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__media {
+      min-height: 0;
+      aspect-ratio: 1 / 1;
+    }
+    #fr-steps-{{ section.id }} .fr-steps__sprout {
+      left: auto;
+      right: 8px;
+      bottom: -40px;
+      width: 36vw;
+    }
+    /* wider than the screen so the soil reads as a bank, not a thin strip */
+    #fr-steps-{{ section.id }} .fr-steps__soil {
+      left: -50%;
+      width: 200%;
+      bottom: -12vw;
+    }
+  }
+{%- endstyle -%}
+
+<section class="fr-steps has-line" id="fr-steps-{{ section.id }}">
+  <div class="fr-steps__hill" aria-hidden="true">
+    {%- if section.settings.hill_image != blank -%}
+      {{ section.settings.hill_image | image_url: width: 2400 | image_tag: alt: '', loading: 'lazy', sizes: '100vw' }}
+    {%- else -%}
+      <img
+        src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/brand-is-back-bg-flowers.webp?v=1778908087&width=2400"
+        alt=""
+        width="2400"
+        height="1593"
+        loading="lazy"
+      >
+    {%- endif -%}
+  </div>
+
+  <div class="fr-steps__stack">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="body uppercase fr-steps__strip">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+
+    <div class="fr-steps__deck">
+      {%- for block in section.blocks -%}
+        <article class="fr-steps__card" {{ block.shopify_attributes }}>
+          <div class="fr-steps__body">
+            <div class="fr-steps__copy">
+              <div class="fr-steps__ribbon-mask">
+                <div class="fr-steps__ribbon">
+                  <span class="body uppercase">{{ section.settings.step_label | escape }}</span>
+                  <span class="fr-steps__num">{{ block.settings.number | escape }}</span>
+                </div>
+              </div>
+
+              <h2 class="h3 fr-steps__title" data-fs-split>{{ block.settings.title | escape | newline_to_br }}</h2>
+              {%- if block.settings.text != blank -%}
+                <div class="body fr-steps__text" data-fs-split>{{ block.settings.text }}</div>
+              {%- endif -%}
+            </div>
+
+            <div class="fr-steps__media">
+              {%- if block.settings.image != blank -%}
+                {{
+                  block.settings.image
+                  | image_url: width: 1200
+                  | image_tag: loading: 'lazy', sizes: '(max-width: 768px) 100vw, 26vw', alt: block.settings.image.alt
+                }}
+              {%- else -%}
+                {%- capture placeholder -%}{% cycle 'lifestyle-1', 'lifestyle-2' %}{%- endcapture -%}
+                {{ placeholder | placeholder_svg_tag }}
+              {%- endif -%}
+            </div>
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+
+    <img
+      class="fr-steps__sprout"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/leaf-crop.webp?v=1778908210"
+      alt=""
+      width="232"
+      height="219"
+      loading="lazy"
+    >
+  </div>
+
+  <img
+    class="fr-steps__soil"
+    src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/ground-dirt-crop.webp?v=1778908175&width=2400"
+    alt=""
+    width="2000"
+    height="600"
+    loading="lazy"
+  >
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('fr-steps-{{ section.id }}');
+    if (!root) return;
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (reduce || !window.gsap || !window.ScrollTrigger) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    var stack = root.querySelector('.fr-steps__stack');
+    var deck = root.querySelector('.fr-steps__deck');
+    var cards = gsap.utils.toArray(root.querySelectorAll('.fr-steps__card'));
+    if (!stack || !cards.length) return;
+    var first = cards[0];
+    var ribbon = first.querySelector('.fr-steps__ribbon');
+    var media = first.querySelector('.fr-steps__media > *');
+    var sprout = root.querySelector('.fr-steps__sprout');
+
+    // ---- Pinned deck. Created synchronously so this trigger sits in document
+    // order ahead of the sections below (their positions depend on its spacer).
+    if (cards.length > 1) {
+      root.classList.add('is-pinned');
+      deck.classList.add('is-deck');
+
+      var pin = gsap.timeline({
+        scrollTrigger: {
+          trigger: root,
+          pin: true,
+          start: function () {
+            // hold with the card stack centred on screen, but never so far
+            // that a gap opens above or below the section
+            var vh = window.innerHeight;
+            var t = vh / 2 - (stack.offsetTop + stack.offsetHeight / 2);
+            t = Math.max(Math.min(t, 0), vh - root.offsetHeight);
+            return 'top ' + t + 'px';
+          },
+          end: function () {
+            return '+=' + window.innerHeight * (cards.length - 1); // one screen per card
+          },
+          scrub: 0.8,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // card i+1 rises whole (ribbon and all) from below the soil over card i,
+      // which settles back a touch
+      cards.slice(1).forEach(function (card, i) {
+        pin
+          .fromTo(cards[i], { scale: 1 }, { scale: 0.94, duration: 1, ease: 'none' }, i)
+          .fromTo(card, { yPercent: 130 }, { yPercent: 0, duration: 1, ease: 'none' }, i);
+      });
+    }
+
+    // ---- Intro, plays once as the first card comes up the screen: the stack
+    // lifts out of the hill, the ribbon drops from the card's top edge, the
+    // copy rises line by line and the sprout pushes up out of the soil last.
+    function intro() {
+      var tl = gsap.timeline({
+        scrollTrigger: { trigger: stack, start: 'top 80%', once: true },
+      });
+
+      tl.fromTo(stack, { y: 120, clipPath: 'inset(0% 0% 100% 0%)' },
+        { y: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 1.1, ease: 'power3.out', clearProps: 'clipPath' }, 0);
+      if (media) tl.from(media, { scale: 1.15, duration: 1.4, ease: 'power3.out' }, 0);
+      if (ribbon) tl.from(ribbon, { yPercent: -100, duration: 0.9, ease: 'power3.out' }, 0.45);
+
+      var splitEls = first.querySelectorAll('[data-fs-split]');
+      if (window.SplitText && splitEls.length) {
+        gsap.registerPlugin(SplitText);
+        var split = SplitText.create(splitEls, {
+          type: 'lines',
+          mask: 'lines',
+          linesClass: 'fr-steps-line',
+        });
+        tl.from(split.lines, { yPercent: 120, duration: 0.8, ease: 'power4.out', stagger: 0.08 }, 0.55);
+      }
+
+      if (sprout) {
+        tl.from(
+          sprout,
+          { yPercent: 70, scale: 0.6, autoAlpha: 0, transformOrigin: '50% 100%', duration: 1.1, ease: 'back.out(1.6)' },
+          0.8
+        );
+      }
+    }
+
+    // split once the webfonts are in, so the line breaks are the real ones
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(intro);
+    else intro();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Fundraising steps",
+  "tag": "section",
+  "class": "fundraising-steps-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Card label",
+      "default": "3 Simple steps"
+    },
+    {
+      "type": "text",
+      "id": "step_label",
+      "label": "Step label",
+      "default": "Step"
+    },
+    {
+      "type": "image_picker",
+      "id": "hill_image",
+      "label": "Background hill",
+      "info": "Defaults to the flower hill."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "number",
+          "label": "Number",
+          "default": "01"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Title",
+          "info": "Each new line starts a new line of the title.",
+          "default": "START IN\nTHE APP"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Start your fundraiser in the Human-i-Tees app and invite your sellers.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Photo"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fundraising steps",
+      "blocks": [
+        {
+          "type": "step",
+          "settings": {
+            "number": "01",
+            "title": "START IN\nTHE APP",
+            "text": "<p>Start your fundraiser in the Human-i-Tees app and invite your sellers.</p>"
+          }
+        },
+        {
+          "type": "step",
+          "settings": {
+            "number": "02",
+            "title": "SHARE\nYOUR LINK",
+            "text": "<p>Sellers share the fundraiser link. Supporters pick their tees and order online.</p>"
+          }
+        },
+        {
+          "type": "step",
+          "settings": {
+            "number": "03",
+            "title": "EARN ON\nEVERY TEE",
+            "text": "<p>We print, pack and ship every order. Your group earns $5 on every shirt sold.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

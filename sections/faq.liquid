@@ -1,0 +1,428 @@
+{%- comment -%}
+  FAQ — left title column + a 4-up grid of editable Q&A cells.
+  Each block is one question/answer, as click-to-open accordions (the first
+  can open by default). As a page header (the FAQ page) it fills the screen
+  and clears the fixed site header; further down a page (fundraising) it
+  sizes to its content and can carry a "View all" button. Typography reuses the theme's .h2
+  (title), .h3 (questions) and .body (answers).
+{%- endcomment -%}
+
+{%- style -%}
+  #faq-{{ section.id }} {
+    --faq-line: #d9cdb8;     /* tan horizontal divider lines */
+    --faq-orange: #ff944d;   /* + toggle */
+    --faq-ink: var(--black, #282828);
+
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  /* Tall enough that the .has-line vertical lines run from the top of the
+     page down to the footer even when the Q&A content is short. */
+  #faq-{{ section.id }}.faq--page {
+    min-height: 100vh;
+  }
+
+  /* The .has-line overlay (3 vertical lines at the 25/50/75% column boundaries)
+     is auto-injected on the section and spans its FULL height. This wrapper
+     carries the top padding so the CONTENT clears the fixed header while the
+     lines still start at the very top of the page. */
+  #faq-{{ section.id }} .faq__push {
+    position: relative;
+    z-index: 1;
+  }
+
+  #faq-{{ section.id }} .faq__inner {
+    display: grid;
+    grid-template-columns: 1fr 3fr; /* label col + 3 equal item cols, aligns to the 25/50/75% lines */
+    align-items: stretch;
+  }
+
+  /* ----- Left title column ----- */
+  /* No top border here — the horizontal line only spans the grid cells on the
+     right, not the left label column. */
+  #faq-{{ section.id }} .faq__label {
+    padding: 1.2vw 1.4vw;
+  }
+  /* The global .h2 rule (homepage-hero) forces color:#fff — beat it with
+     higher specificity so the title reads dark on the cream page. */
+  #faq-{{ section.id }} .faq__label .faq__title {
+    color: var(--faq-ink);
+  }
+  /* Smaller title for when the FAQ sits further down a page (~101px at 1440) */
+  #faq-{{ section.id }}.faq--title-small .faq__title {
+    font-size: max(40px, 7.014vw);
+    letter-spacing: -0.04em; /* .h2's -0.75vw is sized for its 180px and crushes this */
+  }
+  #faq-{{ section.id }} .faq__cta {
+    display: inline-block;
+    margin-top: 1.111vw;
+  }
+
+  /* ----- Grid of Q&A cells ----- */
+  #faq-{{ section.id }} .faq__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--faq-line);
+  }
+  /* Vertical dividers come from the full-height .has-line overlay; cells only
+     draw the horizontal (row) lines. */
+  #faq-{{ section.id }} .faq__item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 14vw;
+    padding: 1.2vw 1.4vw 1.4vw;
+    border-bottom: 1px solid var(--faq-line);
+  }
+  #faq-{{ section.id }} .faq__item--empty { min-height: 0; }
+
+  /* Typography from .body (in the markup). A full-cell-width rule sits under
+     the number: the gap above the line equals the cell's top padding (1.2vw),
+     and the negative side margins let the line reach the cell edges (meeting the
+     vertical .has-line lines) while the text stays at the normal inset. */
+  #faq-{{ section.id }} .faq__num {
+    display: block;
+    margin: 0 -1.4vw 1.2vw;
+    padding: 0 1.4vw 1.2vw;
+    border-bottom: 1px solid var(--faq-line);
+    color: var(--faq-ink);
+  }
+
+  #faq-{{ section.id }} .faq__q {
+    cursor: pointer;
+    margin: 0;
+  }
+  /* keeps hyphenated words like HUMAN-I-TEES from breaking at the hyphen */
+  #faq-{{ section.id }} .faq__nowrap { white-space: nowrap; }
+
+  /* Collapsible answer — grid-rows 0fr->1fr animates to content height */
+  #faq-{{ section.id }} .faq__a {
+    display: grid;
+    grid-template-rows: 0fr;
+    margin-bottom: 2vw;
+    transition: grid-template-rows 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  #faq-{{ section.id }} .faq__a-inner {
+    overflow: hidden;
+    padding-top: 0.9vw;     /* clipped to 0 while closed */
+    max-width: 24vw;
+  }
+  #faq-{{ section.id }} .faq__a-inner > * { color: var(--faq-ink); }
+  #faq-{{ section.id }} .faq__item.is-open .faq__a { grid-template-rows: 1fr; }
+
+  /* Orange + toggle, pinned to the bottom-left of the cell */
+  #faq-{{ section.id }} .faq__toggle {
+    margin-top: auto;
+    align-self: flex-start;
+    width: max(32px, 1.9vw);
+    height: max(32px, 1.9vw);
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: var(--faq-orange);
+    color: #fff;
+    font-size: max(18px, 1.1vw);
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1), background-color 0.25s ease;
+  }
+  #faq-{{ section.id }} .faq__toggle:hover { background: #e87d3a; }
+  #faq-{{ section.id }} .faq__item.is-open .faq__toggle { transform: rotate(45deg); } /* + -> x */
+
+  @media (prefers-reduced-motion: reduce) {
+    #faq-{{ section.id }} .faq__a,
+    #faq-{{ section.id }} .faq__toggle { transition: none; }
+  }
+
+  @media (max-width: 1024px) {
+    #faq-{{ section.id }} .faq__grid { grid-template-columns: repeat(2, 1fr); }
+    #faq-{{ section.id }} .faq__item--empty { display: none; }
+  }
+  @media (max-width: 768px) {
+    /* Single column; the 25/50/75 lines would cut through the answers. */
+    #faq-{{ section.id }} > .line-overlay { display: none; }
+    /* The editor's top padding is sized for the desktop bar; on a phone it
+       left a big empty band, so clear the measured bar height instead. */
+    #faq-{{ section.id }}.faq--page .faq__push { padding-top: calc(var(--header-height, 6rem) + 24px) !important; }
+    #faq-{{ section.id }} .faq__inner { grid-template-columns: 1fr; }
+    #faq-{{ section.id }} .faq__label { padding: 16px; }
+    #faq-{{ section.id }} .faq__cta { margin-top: 12px; }
+    #faq-{{ section.id }} .faq__grid { grid-template-columns: 1fr; }
+    #faq-{{ section.id }} .faq__item { min-height: 0; padding: 16px 16px 20px; }
+    #faq-{{ section.id }} .faq__num { margin: 0 -16px 16px; padding: 0 16px 12px; }
+    #faq-{{ section.id }} .faq__a { margin-bottom: 20px; }
+    #faq-{{ section.id }} .faq__a-inner { max-width: none; padding-top: 12px; }
+  }
+{%- endstyle -%}
+
+{%- assign open_first = section.settings.open_first -%}
+<section
+  class="faq has-line{% if section.settings.page_header %} faq--page{% endif %}{% if section.settings.title_size == 'small' %} faq--title-small{% endif %}"
+  id="faq-{{ section.id }}"
+>
+  <div
+    class="faq__push"
+    style="padding-top:{{ section.settings.padding_top }}px;padding-bottom:{{ section.settings.padding_bottom }}px;"
+  >
+    <div class="faq__inner">
+    <aside class="faq__label">
+      <h2 class="h2 faq__title">{{ section.settings.title | escape }}</h2>
+      {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+        <a class="custom-button faq__cta" href="{{ section.settings.button_link }}">
+          <span class="button-span body uppercase">{{ section.settings.button_label | escape }}</span>
+        </a>
+      {%- endif -%}
+    </aside>
+
+    <div class="faq__grid">
+      {%- for block in section.blocks -%}
+        {%- assign n = forloop.index -%}
+        <article
+          class="faq__item{% if forloop.first and open_first %} is-open{% endif %}"
+          data-faq-item
+          {{ block.shopify_attributes }}
+        >
+          <span class="faq__num body">{%- if n < 10 -%}0{% endif %}{{ n }}</span>
+
+          {%- assign words = block.settings.question | escape | split: ' ' -%}
+          <h3 class="h3 faq__q" data-faq-q>
+            {%- for word in words -%}
+              {%- if word contains '-' -%}<span class="faq__nowrap">{{ word }}</span>{%- else -%}{{ word }}{%- endif -%}
+              {%- unless forloop.last -%}{{ ' ' }}{%- endunless -%}
+            {%- endfor -%}
+          </h3>
+
+          <div class="faq__a" id="faq-a-{{ block.id }}">
+            <div class="faq__a-inner body">{{ block.settings.answer }}</div>
+          </div>
+
+          <button
+            class="faq__toggle"
+            type="button"
+            data-faq-toggle
+            aria-controls="faq-a-{{ block.id }}"
+            aria-expanded="{% if forloop.first and open_first %}true{% else %}false{% endif %}"
+            aria-label="Toggle answer"
+          >+</button>
+        </article>
+      {%- endfor -%}
+
+      {%- comment -%} Fill the last row so trailing cells keep their borders {%- endcomment -%}
+      {%- assign rem = section.blocks.size | modulo: 3 -%}
+      {%- if rem > 0 -%}
+        {%- assign fillers = 3 | minus: rem -%}
+        {%- for i in (1..fillers) -%}
+          <div class="faq__item faq__item--empty" aria-hidden="true"></div>
+        {%- endfor -%}
+      {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('faq-{{ section.id }}');
+    if (!root) return;
+    var items = Array.prototype.slice.call(root.querySelectorAll('[data-faq-item]'));
+    if (!items.length) return;
+
+    var reduce = false;
+    try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+    /* --- Split each answer into overflow-masked lines, parked below the mask,
+           so opening a panel can reveal the text with the same line-mask up
+           reveal used by .body elsewhere (homepage-hero / money-trail). Lines for
+           the default-open item start visible. Runs after fonts load so the line
+           breaks are measured correctly. --- */
+    function splitAnswers() {
+      if (reduce || !window.gsap || !window.SplitText) return;
+      gsap.registerPlugin(SplitText);
+      items.forEach(function (item) {
+        var inner = item.querySelector('.faq__a-inner');
+        if (!inner) return;
+        SplitText.create(inner, {
+          type: 'lines',
+          mask: 'lines',
+          autoSplit: true,
+          onSplit: function (self) {
+            gsap.set(self.lines, { yPercent: item.classList.contains('is-open') ? 0 : 110 });
+            item.__faqLines = self.lines;
+          },
+        });
+      });
+    }
+
+    function revealLines(item) {
+      var lines = item.__faqLines;
+      if (reduce || !window.gsap || !lines || !lines.length) return;
+      // Panel expands first (CSS grid-rows, ~0.45s); the delay lets it finish
+      // before the lines slide up out of their masks.
+      gsap.to(lines, {
+        yPercent: 0,
+        duration: 0.6,
+        ease: 'power3.out',
+        stagger: 0.08,
+        delay: 0.4,
+        overwrite: true,
+      });
+    }
+    function hideLines(item) {
+      var lines = item.__faqLines;
+      if (reduce || !window.gsap || !lines || !lines.length) return;
+      gsap.to(lines, { yPercent: 110, duration: 0.3, ease: 'power2.in', stagger: 0.03, overwrite: true });
+    }
+
+    items.forEach(function (item) {
+      var toggle = item.querySelector('[data-faq-toggle]');
+      var question = item.querySelector('[data-faq-q]');
+
+      function set(open) {
+        if (open === item.classList.contains('is-open')) return;
+        item.classList.toggle('is-open', open);
+        if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) revealLines(item); else hideLines(item);
+      }
+      function onActivate() {
+        set(!item.classList.contains('is-open'));
+      }
+
+      if (toggle) toggle.addEventListener('click', onActivate);
+      if (question) question.addEventListener('click', onActivate);
+    });
+
+    if (!reduce && window.gsap && window.SplitText && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(splitAnswers);
+    } else {
+      splitAnswers();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "FAQ",
+  "tag": "section",
+  "class": "faq-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "FAQ"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "Title size",
+      "options": [
+        { "value": "large", "label": "Large" },
+        { "value": "small", "label": "Small" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "info": "Shown under the title. Leave blank for no button."
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "page_header",
+      "label": "Use as page header",
+      "info": "Fills the screen and clears the site header. Turn off when the FAQ sits further down a page.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Open the first question",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 130
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "qa",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "Your question here?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Your answer here.</p>"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 50,
+  "presets": [
+    {
+      "name": "FAQ",
+      "blocks": [
+        {
+          "type": "qa",
+          "settings": {
+            "question": "When was Humanitees founded?",
+            "answer": "<p>Humanitees was started in the 90s by 3 founders, Tim Boylan, Dave Highbloom, and Steve Kemler. They had one mission: to make clothing that sparks conversation and action for the planet.</p>"
+          }
+        },
+        {
+          "type": "qa",
+          "settings": {
+            "question": "What happened to Humanitees after the early 2000s?",
+            "answer": "<p>Add your answer here.</p>"
+          }
+        },
+        {
+          "type": "qa",
+          "settings": {
+            "question": "Who brought Humanitees back?",
+            "answer": "<p>Add your answer here.</p>"
+          }
+        },
+        {
+          "type": "qa",
+          "settings": {
+            "question": "Why “Humanitees”?",
+            "answer": "<p>Add your answer here.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

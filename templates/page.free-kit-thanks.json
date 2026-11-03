@@ -1,0 +1,48 @@
+{
+  "sections": {
+    "main": {
+      "type": "free-kit-thanks",
+      "blocks": {
+        "next1": {
+          "type": "step",
+          "settings": {
+            "tag": "Next 2 business days",
+            "title": "We reach out",
+            "text": "<p>Someone from our team will call or text you to plan dates and a goal.</p>"
+          }
+        },
+        "next2": {
+          "type": "step",
+          "settings": {
+            "tag": "Kit delivery",
+            "title": "Your kit arrives",
+            "text": "<p>A sample tee, color catalogs for everyone selling and a one-page guide to how your group earns.</p>"
+          }
+        },
+        "next3": {
+          "type": "step",
+          "settings": {
+            "tag": "Launch day",
+            "title": "Start selling",
+            "text": "<p>Sellers share your fundraiser link, supporters order online and your group earns $5 on every tee.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "next1",
+        "next2",
+        "next3"
+      ],
+      "settings": {
+        "heading": "Your kit is\non its way",
+        "text": "Thanks[name]. We've got your request for [group].\nWe'll be in touch within 2 business days.",
+        "browse_text": "While you wait, see the designs your supporters will choose from.",
+        "button_label": "Browse the tees",
+        "support": "<p>Questions? Email <a href=\"mailto:support@humanitees.com\">support@humanitees.com</a></p>"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

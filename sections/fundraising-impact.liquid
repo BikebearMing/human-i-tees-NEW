@@ -1,0 +1,388 @@
+{%- comment -%}
+  Fundraising impact — the closing CTA: "MAKE AN … IMPACT" split across the
+  aerial field, two polaroids tossed in the middle, then the copy, the big
+  "START YOUR FUNDRAISER" button and a contact line.
+  Measurements are from the 1440 mock (px / 14.4 = vw); the section is the
+  background's 1440 x 720. Typography reuses .h2 (headline words), .h3 (button
+  label) and .body (copy).
+
+  The polaroid frame (square-polaroid.png, 273 x 328) has a transparent window
+  at x 22–253 / y 30–255; the photo sits behind it in that window.
+{%- endcomment -%}
+
+{%- style -%}
+  #fr-impact-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    height: 50vw; /* 720 */
+    overflow: hidden;
+    color: #fff;
+  }
+
+  #fr-impact-{{ section.id }} .fr-impact__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__bg img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ----- "MAKE AN" / "IMPACT": 320 down, 26 and 27 in from the edges.
+     Sized to the mock's 66px caps; .h2's -0.75vw tracking is for its 180px,
+     so it's rescaled in em here. ----- */
+  #fr-impact-{{ section.id }} .fr-impact__title {
+    position: static;
+    color: #fff;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__word {
+    position: absolute;
+    top: 22.222vw;
+    z-index: 2;
+    font-size: max(48px, 5.972vw);
+    letter-spacing: -0.04em;
+    line-height: 0.8;
+    white-space: nowrap;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__word--left { left: 1.806vw; }
+  #fr-impact-{{ section.id }} .fr-impact__word--right { right: 1.875vw; }
+
+  /* ----- Polaroids: 266 wide, the right one laid over the left ----- */
+  #fr-impact-{{ section.id }} .fr-impact__polaroid {
+    position: absolute;
+    z-index: 1;
+    width: 18.507vw;
+    aspect-ratio: 273 / 328;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__polaroid--left {
+    top: 8.507vw;
+    left: 33.542vw;
+    transform: rotate(-11.533deg);
+  }
+  #fr-impact-{{ section.id }} .fr-impact__polaroid--right {
+    top: 4.514vw;
+    left: 48.681vw;
+    z-index: 2;
+    transform: rotate(7.412deg);
+  }
+  #fr-impact-{{ section.id }} .fr-impact__photo {
+    position: absolute;
+    top: 9.146%;
+    left: 8.059%;
+    width: 84.615%;
+    height: 68.902%;
+    overflow: hidden;
+    background: var(--beige);
+  }
+  #fr-impact-{{ section.id }} .fr-impact__photo img,
+  #fr-impact-{{ section.id }} .fr-impact__photo svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__frame {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0.556vw 1.389vw rgba(0, 0, 0, 0.25));
+  }
+
+  /* ----- Copy, button and contact line, 31 off the bottom ----- */
+  #fr-impact-{{ section.id }} .fr-impact__foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2.153vw;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-inline: 16px;
+    text-align: center;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__text {
+    max-width: max(318px, 22.083vw);
+    font-size: max(14px, 0.972vw); /* .body, scaled with the layout as in the sections above */
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__cta {
+    margin-top: 1.528vw; /* 22 */
+  }
+  #fr-impact-{{ section.id }} .fr-impact__contact {
+    padding-top: 0.903vw;
+    font-size: max(14px, 0.972vw);
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  #fr-impact-{{ section.id }} .fr-impact__contact a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  /* button: the logo badge turns a little on hover */
+  #fr-impact-{{ section.id }} .fr-impact__cta .button-badge img {
+    transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  #fr-impact-{{ section.id }} .fr-impact__cta:hover .button-badge img {
+    transform: rotate(-20deg);
+  }
+
+  #fr-impact-{{ section.id }} .fr-impact-line-mask {
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  /* ===== MOBILE (<= 768px) — the words stack over the polaroids, then the
+     copy and button below ===== */
+  @media (max-width: 768px) {
+    #fr-impact-{{ section.id }} {
+      height: auto;
+      padding: 64px 16px 36px;
+    }
+    #fr-impact-{{ section.id }} .fr-impact__title {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+    #fr-impact-{{ section.id }} .fr-impact__word {
+      position: static;
+      font-size: 48px;
+    }
+    #fr-impact-{{ section.id }} .fr-impact__stage {
+      position: relative;
+      height: 96vw;
+      margin-top: 8px;
+    }
+    #fr-impact-{{ section.id }} .fr-impact__polaroid { width: 52vw; }
+    #fr-impact-{{ section.id }} .fr-impact__polaroid--left { top: 10vw; left: 2vw; }
+    #fr-impact-{{ section.id }} .fr-impact__polaroid--right { top: 2vw; left: auto; right: 2vw; }
+    #fr-impact-{{ section.id }} .fr-impact__frame {
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25));
+    }
+    #fr-impact-{{ section.id }} .fr-impact__foot {
+      position: relative;
+      bottom: auto;
+      padding-inline: 0;
+    }
+    #fr-impact-{{ section.id }} .fr-impact__cta { margin-top: 20px; }
+    #fr-impact-{{ section.id }} .fr-impact__contact { padding-top: 14px; }
+  }
+{%- endstyle -%}
+
+<section class="fr-impact" id="fr-impact-{{ section.id }}">
+  <div class="fr-impact__bg" aria-hidden="true">
+    {%- if section.settings.background != blank -%}
+      {{ section.settings.background | image_url: width: 2400 | image_tag: alt: '', loading: 'lazy', sizes: '100vw' }}
+    {%- else -%}
+      <img src="{{ 'fundraiser-makeanimpact.jpg' | asset_url }}" alt="" width="1440" height="720" loading="lazy">
+    {%- endif -%}
+  </div>
+
+  <h2 class="h2 fr-impact__title">
+    <span class="fr-impact__word fr-impact__word--left">{{ section.settings.heading_left | escape }}</span>
+    <span class="fr-impact__word fr-impact__word--right">{{ section.settings.heading_right | escape }}</span>
+  </h2>
+
+  <div class="fr-impact__stage">
+    {%- assign photos = 'image_left,image_right' | split: ',' -%}
+    {%- for key in photos -%}
+      {%- assign photo = section.settings[key] -%}
+      <div class="fr-impact__polaroid fr-impact__polaroid--{% if forloop.first %}left{% else %}right{% endif %}">
+        <div class="fr-impact__photo">
+          {%- if photo != blank -%}
+            {{ photo | image_url: width: 600 | image_tag: loading: 'lazy', sizes: '(max-width: 768px) 46vw, 16vw', alt: photo.alt }}
+          {%- else -%}
+            {%- if forloop.first -%}
+              {{ 'lifestyle-1' | placeholder_svg_tag }}
+            {%- else -%}
+              {{ 'lifestyle-2' | placeholder_svg_tag }}
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+        <img class="fr-impact__frame" src="{{ 'square-polaroid.png' | asset_url }}" alt="" width="273" height="328" loading="lazy">
+      </div>
+    {%- endfor -%}
+  </div>
+
+  <div class="fr-impact__foot">
+    {%- if section.settings.text != blank -%}
+      <div class="body fr-impact__text" data-fi-split>{{ section.settings.text }}</div>
+    {%- endif -%}
+
+    {%- if section.settings.button_label != blank -%}
+      <a class="custom-button large fr-impact__cta" href="{{ section.settings.button_link | default: '/pages/contact?subject=fundraising' }}">
+        <span class="button-badge" aria-hidden="true">
+          <img
+            src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/footer-logo-icon.webp?v=1778908175"
+            alt=""
+            width="121"
+            height="76"
+            loading="lazy"
+          >
+        </span>
+        <span class="button-span h3">{{ section.settings.button_label | escape }}</span>
+      </a>
+    {%- endif -%}
+
+    {%- if section.settings.contact != blank -%}
+      <div class="body fr-impact__contact">{{ section.settings.contact }}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('fr-impact-{{ section.id }}');
+    if (!root) return;
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (reduce || !window.gsap || !window.ScrollTrigger) return;
+
+    var left = root.querySelector('.fr-impact__word--left');
+    var right = root.querySelector('.fr-impact__word--right');
+    var polaroids = root.querySelectorAll('.fr-impact__polaroid');
+    var cta = root.querySelector('.fr-impact__cta');
+    var contact = root.querySelector('.fr-impact__contact');
+    var bg = root.querySelector('.fr-impact__bg img');
+
+    function run() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Plays once: the two words slide in from the edges, the polaroids are
+      // tossed onto the field one after the other, then the copy, button and
+      // contact line rise.
+      var tl = gsap.timeline({
+        scrollTrigger: { trigger: root, start: 'top 65%', once: true },
+      });
+
+      /* The two words slide in from the edges, wiped open from their leading
+         edge instead of faded in. */
+      if (left) {
+        tl.fromTo(left, { xPercent: -60, clipPath: 'inset(0% 0% 0% 100%)' },
+          { xPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 1.1, ease: 'power4.out', clearProps: 'clipPath' }, 0);
+      }
+      if (right) {
+        tl.fromTo(right, { xPercent: 60, clipPath: 'inset(0% 100% 0% 0%)' },
+          { xPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 1.1, ease: 'power4.out', clearProps: 'clipPath' }, 0);
+      }
+
+      polaroids.forEach(function (p, i) {
+        // rotation is relative so each lands on its CSS tilt
+        tl.from(p, {
+          y: -160,
+          rotation: i === 0 ? '-=24' : '+=24',
+          autoAlpha: 0,
+          duration: 1,
+          ease: 'back.out(1.3)',
+        }, 0.25 + i * 0.18);
+      });
+
+      var splitEls = root.querySelectorAll('[data-fi-split]');
+      if (window.SplitText && splitEls.length) {
+        gsap.registerPlugin(SplitText);
+        var split = SplitText.create(splitEls, { type: 'lines', mask: 'lines', linesClass: 'fr-impact-line' });
+        tl.from(split.lines, { yPercent: 120, duration: 0.8, ease: 'power4.out', stagger: 0.07 }, 0.6);
+      }
+      // button and contact line wipe up out of their own bottom edge, no fade
+      if (cta) {
+        tl.fromTo(cta, { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+          { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power4.out', clearProps: 'clipPath,transform' }, 0.85);
+      }
+      if (contact) {
+        tl.fromTo(contact, { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+          { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.7, ease: 'power4.out', clearProps: 'clipPath,transform' }, 1);
+      }
+
+      // the field eases in a little as the section scrolls through
+      if (bg) {
+        gsap.fromTo(bg, { scale: 1.12 }, {
+          scale: 1,
+          ease: 'none',
+          scrollTrigger: { trigger: root, start: 'top bottom', end: 'bottom bottom', scrub: true },
+        });
+      }
+    }
+
+    // split once the webfonts are in, so the line breaks are the real ones
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+    else run();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Fundraising impact",
+  "tag": "section",
+  "class": "fundraising-impact-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_left",
+      "label": "Heading (left)",
+      "default": "MAKE AN"
+    },
+    {
+      "type": "text",
+      "id": "heading_right",
+      "label": "Heading (right)",
+      "default": "IMPACT"
+    },
+    {
+      "type": "image_picker",
+      "id": "background",
+      "label": "Background",
+      "info": "Defaults to the aerial field."
+    },
+    {
+      "type": "image_picker",
+      "id": "image_left",
+      "label": "Left polaroid photo"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_right",
+      "label": "Right polaroid photo"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Every great movement starts somewhere. Yours could start with a T-shirt. Bring your people together, spread the word and turn every tee into something meaningful.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Start your fundraiser"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "richtext",
+      "id": "contact",
+      "label": "Contact line",
+      "default": "<p>Questions first? <a href=\"/pages/contact\">Contact us.</a></p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fundraising impact"
+    }
+  ]
+}
+{% endschema %}

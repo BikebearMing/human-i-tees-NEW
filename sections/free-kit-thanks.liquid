@@ -1,0 +1,292 @@
+{%- comment -%}
+  Free kit — thank-you page (/pages/free-kit-thanks), where step 2 of the
+  free-kit form (sections/free-kit.liquid) lands. A big yellow check, the
+  headline, a line confirming the request, a row of "what happens next"
+  cards (each with a yellow tag), then a button to the tees and a support
+  line. Centred under the light header.
+
+  "[name]" in the text becomes ", Jordan" and "[group]" becomes the school or
+  group name — both left in sessionStorage by the form; without them they
+  read "" and "your group".
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h1-v2 (headline), .h4 (card titles) and .body (everything else).
+{%- endcomment -%}
+
+{%- style -%}
+  #fk-thanks-{{ section.id }} {
+    --fkt-line: #d9cdb8; /* same rule colour as the .has-line columns (custom.css) */
+    --fkt-yellow: #f0de1e; /* the hand-drawn check's yellow (assets/check.svg) */
+
+    position: relative;
+    width: 100%;
+  }
+
+  #fk-thanks-{{ section.id }} .fkt__push {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    /* 33 under the header line; room at the foot */
+    padding: calc(var(--header-height, 6rem) + 2.292vw) var(--sidepadding-xs) 5.556vw;
+    box-sizing: border-box;
+    text-align: center;
+    color: var(--black);
+  }
+  #fk-thanks-{{ section.id }} .fkt__push::before {
+    content: '';
+    position: absolute;
+    top: var(--header-height, 6rem);
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--fkt-line);
+  }
+
+  #fk-thanks-{{ section.id }} .fkt__check {
+    display: block;
+    width: max(56px, 4.931vw); /* 71 */
+    height: auto;
+  }
+  #fk-thanks-{{ section.id }} .fkt__title { padding-top: 1.111vw; }
+  #fk-thanks-{{ section.id }} .fkt__text {
+    max-width: max(300px, 34.722vw); /* the mock's first line fits on one line */
+    padding-top: 0.972vw;
+  }
+
+  /* ----- Cards: 802 wide (319 in from each side), 10 apart, 22 under the text ----- */
+  #fk-thanks-{{ section.id }} .fkt__cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.694vw;
+    width: 55.694vw;
+    margin: 1.528vw 0 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+  }
+  #fk-thanks-{{ section.id }} .fkt__card {
+    padding: 0.417vw 0.417vw 0.972vw; /* the tag sits 6 in */
+    background: #f9f7f3; /* the body bg (custom.css) */
+    border: 1px solid var(--beige);
+    border-radius: max(4px, 0.347vw);
+  }
+  #fk-thanks-{{ section.id }} .fkt__tag {
+    display: block;
+    padding: max(3px, 0.278vw) max(8px, 0.556vw);
+    background: var(--fkt-yellow);
+    border-radius: 10rem;
+  }
+  /* 46 from the tag to the title; copy 14 in from the card */
+  #fk-thanks-{{ section.id }} .fkt__card-title {
+    padding: 3.194vw 0.556vw 0;
+  }
+  #fk-thanks-{{ section.id }} .fkt__card-text {
+    padding: 0.278vw 0.556vw 0;
+  }
+
+  /* ----- 45 under the cards: the line, button and support line ----- */
+  #fk-thanks-{{ section.id }} .fkt__browse { padding-top: 3.125vw; }
+  #fk-thanks-{{ section.id }} .fkt__cta {
+    display: inline-block;
+    margin-top: 1.111vw;
+  }
+  #fk-thanks-{{ section.id }} .fkt__support {
+    padding-top: 0.833vw;
+    color: rgba(51, 51, 51, 0.6); /* --black at 60% */
+  }
+  #fk-thanks-{{ section.id }} .fkt__support a { color: inherit; }
+
+  /* ===== TABLET (<= 1024px) — the 802-at-1440 row gets too narrow for three
+     cards; let it take the page width ===== */
+  @media (max-width: 1024px) {
+    #fk-thanks-{{ section.id }} .fkt__cards {
+      width: 100%;
+      max-width: 900px;
+      gap: 10px;
+    }
+    #fk-thanks-{{ section.id }} .fkt__card { padding: 6px 6px 16px; }
+    #fk-thanks-{{ section.id }} .fkt__card-title { padding: 32px 10px 0; }
+    #fk-thanks-{{ section.id }} .fkt__card-text { padding: 4px 10px 0; }
+  }
+
+  /* ===== MOBILE (<= 768px) — cards stacked, full width ===== */
+  @media (max-width: 768px) {
+    #fk-thanks-{{ section.id }} .fkt__push {
+      padding: calc(var(--header-height, 6rem) + 32px) 16px 56px;
+    }
+    #fk-thanks-{{ section.id }} .fkt__title { padding-top: 16px; }
+    #fk-thanks-{{ section.id }} .fkt__text { padding-top: 12px; }
+    #fk-thanks-{{ section.id }} .fkt__cards {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      width: 100%;
+      margin-top: 24px;
+    }
+    #fk-thanks-{{ section.id }} .fkt__card { padding: 6px 6px 16px; }
+    #fk-thanks-{{ section.id }} .fkt__card-title { padding: 28px 10px 0; }
+    #fk-thanks-{{ section.id }} .fkt__card-text { padding: 4px 10px 0; }
+    #fk-thanks-{{ section.id }} .fkt__browse { padding-top: 36px; }
+    #fk-thanks-{{ section.id }} .fkt__cta { margin-top: 14px; }
+    #fk-thanks-{{ section.id }} .fkt__support { padding-top: 12px; }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign shop_url = routes.all_products_collection_url
+  if collections['shop'].products_count > 0
+    assign shop_url = collections['shop'].url
+  endif
+-%}
+
+<section class="fkt" id="fk-thanks-{{ section.id }}">
+  <div class="fkt__push">
+    <img class="fkt__check" src="{{ 'check.svg' | asset_url }}" width="28" height="27" alt="">
+
+    <h1 class="h1-v2 uppercase fkt__title" data-reveal>{{ section.settings.heading | escape | newline_to_br }}</h1>
+
+    {%- if section.settings.text != blank -%}
+      <p class="body fkt__text" data-fkt-text data-template="{{ section.settings.text | escape }}">
+        {{- section.settings.text | replace: '[name]', '' | replace: '[group]', 'your group' | escape | newline_to_br -}}
+      </p>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <ol class="fkt__cards" role="list">
+        {%- for block in section.blocks -%}
+          <li class="fkt__card" {{ block.shopify_attributes }}>
+            {%- if block.settings.tag != blank -%}
+              <span class="body uppercase fkt__tag">{{ block.settings.tag | escape }}</span>
+            {%- endif -%}
+            <h2 class="h4 fkt__card-title">{{ block.settings.title | escape }}</h2>
+            {%- if block.settings.text != blank -%}
+              <div class="body fkt__card-text">{{ block.settings.text }}</div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ol>
+    {%- endif -%}
+
+    {%- if section.settings.browse_text != blank -%}
+      <p class="body fkt__browse">{{ section.settings.browse_text | escape }}</p>
+    {%- endif -%}
+    {%- if section.settings.button_label != blank -%}
+      <a class="custom-button fkt__cta" href="{{ section.settings.button_link | default: shop_url }}">
+        <span class="button-span body uppercase">{{ section.settings.button_label | escape }}</span>
+      </a>
+    {%- endif -%}
+    {%- if section.settings.support != blank -%}
+      <div class="body fkt__support">{{ section.settings.support }}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  (function () {
+    // the lead is finished: the form starts fresh next time
+    try { sessionStorage.removeItem('free-kit-lead'); } catch (e) {}
+    var el = document.querySelector('#fk-thanks-{{ section.id }} [data-fkt-text]');
+    if (!el) return;
+    var first = '';
+    var group = '';
+    try {
+      first = sessionStorage.getItem('free-kit-name') || '';
+      group = sessionStorage.getItem('free-kit-group') || '';
+    } catch (e) {}
+    var lines = el.getAttribute('data-template')
+      .replace('[name]', first ? ', ' + first : '')
+      .replace('[group]', group || 'your group')
+      .split('\n');
+    // textContent per line keeps their name/group as text, never markup
+    el.textContent = '';
+    lines.forEach(function (line, i) {
+      if (i) el.appendChild(document.createElement('br'));
+      el.appendChild(document.createTextNode(line));
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Free kit thank-you",
+  "tag": "section",
+  "class": "free-kit-thanks-section",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the headline.",
+      "default": "Your kit is\non its way"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "info": "[name] becomes \", Jordan\" and [group] the school or group name, both from the form.",
+      "default": "Thanks[name]. We've got your request for [group].\nWe'll be in touch within 2 business days."
+    },
+    {
+      "type": "text",
+      "id": "browse_text",
+      "label": "Line above the button",
+      "default": "While you wait, see the designs your supporters will choose from."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Browse the tees"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "info": "Defaults to the shop collection."
+    },
+    {
+      "type": "richtext",
+      "id": "support",
+      "label": "Support line",
+      "default": "<p>Questions? Email <a href=\"mailto:support@humanitees.com\">support@humanitees.com</a></p>"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "What happens next",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "Tag",
+          "default": "Next 2 business days"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "We reach out"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Someone from our team will call or text you to plan dates and a goal.</p>"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 3,
+  "presets": [
+    {
+      "name": "Free kit thank-you",
+      "blocks": [
+        { "type": "step" },
+        { "type": "step" },
+        { "type": "step" }
+      ]
+    }
+  ]
+}
+{% endschema %}

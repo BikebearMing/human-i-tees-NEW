@@ -1,0 +1,116 @@
+{%- comment -%}
+  Our Tees — 4-column product grid.
+
+  Column 1 = heading ("OUR TEES") + "SHOP ALL" custom-button.
+  Columns 2-4 = product cards (image, optional NEW badge, title, price,
+  and a VIEW custom-button that slides up from below on hover).
+
+  Add product blocks via the theme editor. Each block has a product picker
+  and a "show NEW badge" toggle. Default preset ships with 3 empty product
+  slots so the 4-column layout reads correctly the moment it's dropped in.
+
+  Uses .has-line so the theme's auto-injected partition lines (25/50/75% of
+  section width — see layout/theme.liquid + assets/custom.css) align with
+  the column boundaries.
+{%- endcomment -%}
+
+{{ 'section-our-tees.css' | asset_url | stylesheet_tag }}
+
+<section class="our-tees" data-section-id="{{ section.id }}">
+  <div class="our-tees__col our-tees__heading-col">
+    <h2 class="h1-v2 our-tees__heading" data-reveal>{{ section.settings.heading }}</h2>
+    {%- if section.settings.shop_all_label != blank -%}
+      <a class="custom-button our-tees__shop-all" data-reveal href="{{ section.settings.shop_all_url | default: collections['shop'].url | default: routes.all_products_collection_url }}">
+        <span class="button-span body">{{ section.settings.shop_all_label }}</span>
+      </a>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}
+    A slot whose product is blank (or picked on another store, so it doesn't
+    resolve here) takes the next in-stock tee from the shop collection that
+    isn't already on the row, so no card links to '#'.
+  {%- endcomment -%}
+  {%- liquid
+    assign used = ','
+    for block in section.blocks
+      if block.type == 'product' and block.settings.product != blank
+        assign used = used | append: block.settings.product.handle | append: ','
+      endif
+    endfor
+    assign pool = collections['shop'] | default: collections.all
+  -%}
+
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'product' -%}
+      {%- assign card_product = block.settings.product -%}
+      {%- if card_product == blank -%}
+        {%- for p in pool.products -%}
+          {%- assign key = ',' | append: p.handle | append: ',' -%}
+          {%- unless used contains key or p.available == false -%}
+            {%- assign card_product = p -%}
+            {%- assign used = used | append: p.handle | append: ',' -%}
+            {%- break -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- render 'tee-card', product: card_product, show_badge: block.settings.show_new_badge, block: block -%}
+    {%- endif -%}
+  {%- endfor -%}
+</section>
+
+{% schema %}
+{
+  "name": "Our Tees",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Our Tees"
+    },
+    {
+      "type": "text",
+      "id": "shop_all_label",
+      "label": "Button label",
+      "default": "SHOP ALL"
+    },
+    {
+      "type": "url",
+      "id": "shop_all_url",
+      "label": "Button link",
+      "info": "Link to the full collection / shop-all page."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_new_badge",
+          "label": "Show \"NEW\" badge",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Our Tees",
+      "blocks": [
+        { "type": "product", "settings": { "show_new_badge": true } },
+        { "type": "product" },
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

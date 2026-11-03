@@ -1,0 +1,436 @@
+{%- comment -%}
+  Where your money goes — horizontal accordion.
+  Replace the three asset URLs below:
+    - SHIRT panel video: search REPLACE_SHIRT_VIDEO
+    - ENVIRONMENT panel image: search REPLACE_ENV_IMAGE
+    - IMPACT panel image: search REPLACE_IMPACT_IMAGE
+{%- endcomment -%}
+
+{%- style -%}
+  .money-trail {
+    --mt-bar: max(72px, 8.194vw);
+    --mt-orange: #ff944d;
+    --mt-beige: #e8e0d2;
+    --mt-muted: #cbbfab; /* non-active tab text */
+    --mt-active: #282828; /* active (open) tab text */
+    --mt-border: #d9cdb8; /* divider lines */
+    --mt-ink: #000;
+    --mt-trans: 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+    --mt-panel-h: 100vh;
+    --mt-img-h: calc(100vh + 16vw);
+
+    position: relative;
+    width: 100%;
+    background: var(--mt-beige);
+    color: var(--mt-ink);
+  }
+
+  .money-trail__top {
+    margin: 0;
+    text-align: center;
+    color: #000;
+    padding: 1.1vw 0;
+    border-bottom: 1px solid var(--mt-border);
+  }
+
+  .money-trail__panels {
+    display: flex;
+    width: 100%;
+    height: var(--mt-panel-h);
+    overflow: hidden;
+  }
+
+  .money-trail__panel {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    flex: 0 1 var(--mt-bar);
+    min-width: var(--mt-bar);
+    overflow: hidden;
+    transition: flex-basis var(--mt-trans);
+  }
+
+  /* The currently open panel expands; others stay collapsed to a tab */
+  .money-trail__panel.is-open {
+    flex-basis: calc(100% - (var(--mt-bar) * 2));
+  }
+
+  .money-trail__tab {
+    position: relative;
+    flex: 0 0 var(--mt-bar);
+    width: var(--mt-bar);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1vw 0.5vw 1.4vw;
+    z-index: 2;
+    border-right: 1px solid var(--mt-border);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color var(--mt-trans), color var(--mt-trans);
+  }
+
+  .money-trail__panel.is-open .money-trail__tab {
+    cursor: default;
+  }
+
+  .money-trail__tab:focus-visible {
+    outline: 2px solid var(--mt-ink);
+    outline-offset: -4px;
+  }
+
+  .money-trail__panel:last-child .money-trail__tab { border-right: none; }
+
+  /* Default: every tab is beige/muted */
+  .money-trail__tab {
+    background: var(--mt-beige);
+    color: var(--mt-muted);
+  }
+
+  /* Only the currently open panel's tab is orange */
+  .money-trail__panel.is-open .money-trail__tab {
+    background: var(--mt-orange);
+    color: var(--mt-active);
+  }
+
+  .money-trail__num {
+    font-family: var(--font-american-typewriter);
+  }
+
+  /* Vertical tab title. Inherits the .h2 heading look (Futura, 700, uppercase)
+     but .h2 is a 12.5vw display size with -0.75vw spacing — far too big for a
+     vertical tab — so the size + spacing are scoped down here to fit. */
+  .money-trail__title {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    font-size: max(28px, 4.6vw);
+    letter-spacing: -0.18vw;
+  }
+
+  /* The global .h2 rule (from homepage-hero) forces color:#fff. Beat it with
+     higher specificity so the title follows the tab's active/inactive colour. */
+  .money-trail__tab .money-trail__title {
+    color: inherit;
+  }
+
+  .money-trail__content {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--mt-beige);
+  }
+
+  /* Image is locked to FIXED dimensions matching the open content-area width
+     and the image's natural aspect ratio (1200:780). It does NOT scale when
+     the panel expands/collapses — the panel just reveals more or less of it.
+     Image is taller than the panel by ~17vw, centered vertically — that overhang
+     gives the scroll parallax room to translate Y without revealing edges. */
+  .money-trail__content video,
+  .money-trail__content img {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: calc((var(--mt-panel-h) - var(--mt-img-h)) / 2);
+    width: calc(100vw - 13.5vw);
+    height: var(--mt-img-h);
+    object-fit: cover;
+    will-change: transform;
+  }
+
+  /* Caption inherits .body typography (geist, 14px, weight 600).
+     Position + color are the only overrides this section adds. */
+  .money-trail__caption {
+    position: absolute;
+    top: 13vw;
+    left: 4vw;
+    z-index: 2;
+    max-width: max(180px, 15vw);
+    margin: 0;
+    color: #fff;
+    text-shadow: 0 0.1vw 0.6vw rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+  }
+
+  /* Line-mask reveal pattern (matches homepage-hero.liquid usage) */
+  .money-trail .line-mask {
+    display: block;
+    overflow: hidden;
+  }
+
+  .money-trail .line {
+    display: block;
+    will-change: transform;
+  }
+
+  /* ===== MOBILE (<= 768px): vertical accordion =====
+     Tabs become full-width horizontal bars stacked in a column; the open
+     panel's media expands beneath its tab. Same .is-open class, same JS. */
+  @media (max-width: 768px) {
+    .money-trail__top {
+      padding: 10px 16px;
+    }
+    .money-trail__panels {
+      flex-direction: column;
+      height: auto;
+    }
+    .money-trail__panel {
+      flex: 0 0 auto;
+      min-width: 0;
+      flex-direction: column;
+      transition: none;
+    }
+    .money-trail__panel.is-open {
+      flex-basis: auto;
+    }
+    .money-trail__tab {
+      flex: 0 0 auto;
+      width: 100%;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 16px;
+      align-items: center;
+      padding: 10px 16px;
+      border-right: 0;
+      border-bottom: 1px solid var(--mt-border);
+    }
+    .money-trail__title {
+      writing-mode: horizontal-tb;
+      transform: none;
+      font-size: 12vw;
+      letter-spacing: -0.03em;
+    }
+    .money-trail__content {
+      flex: 0 0 auto;
+      height: 0;
+      transition: height var(--mt-trans);
+    }
+    .money-trail__panel.is-open .money-trail__content {
+      height: 140vw;
+    }
+    .money-trail__content video,
+    .money-trail__content img {
+      top: -8%;
+      width: 100%;
+      height: 116%; /* overhang keeps the +/-8% scroll parallax edge-free */
+    }
+    .money-trail__caption {
+      top: auto;
+      bottom: 20px;
+      left: 16px;
+      max-width: 60%;
+    }
+  }
+{%- endstyle -%}
+
+<section class="money-trail">
+  <p class="body money-trail__top" data-reveal>SEE WHERE YOUR MONEY GOES</p>
+
+  <div class="money-trail__panels">
+    <article class="money-trail__panel money-trail__panel--shirt is-open" data-panel="shirt">
+      <aside class="money-trail__tab">
+        <span class="money-trail__num" data-reveal>01</span>
+        <span class="h2 money-trail__title">The Shirt</span>
+      </aside>
+      <div class="money-trail__content">
+        <p class="money-trail__caption body">
+          <span class="line-mask"><span class="line">Premium 90s graphics,</span></span>
+          <span class="line-mask"><span class="line">vintage unisex crew</span></span>
+          <span class="line-mask"><span class="line">neck, baggy fit.</span></span>
+        </p>
+        <video
+          src="https://cdn.shopify.com/videos/c/o/v/9849a729e99a446db331eb43ceb81825.mp4"
+          width="1200"
+          height="780"
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="metadata"
+          aria-label="The shirt"
+        ></video>
+      </div>
+    </article>
+
+    <article class="money-trail__panel money-trail__panel--env" data-panel="env">
+      <aside class="money-trail__tab">
+        <span class="money-trail__num" data-reveal>02</span>
+        <span class="h2 money-trail__title">The Environment</span>
+      </aside>
+      <div class="money-trail__content">
+        <p class="money-trail__caption body">
+          <span class="line-mask"><span class="line">Organic cotton,</span></span>
+          <span class="line-mask"><span class="line">low-impact dyes,</span></span>
+          <span class="line-mask"><span class="line">zero plastic packaging.</span></span>
+        </p>
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_24.png?v=1779286532"
+          alt="The environment"
+          width="1200"
+          height="780"
+          loading="lazy"
+        >
+      </div>
+    </article>
+
+    <article class="money-trail__panel money-trail__panel--impact" data-panel="impact">
+      <aside class="money-trail__tab">
+        <span class="money-trail__num" data-reveal>03</span>
+        <span class="h2 money-trail__title">The Impact</span>
+      </aside>
+      <div class="money-trail__content">
+        <p class="money-trail__caption body">
+          <span class="line-mask"><span class="line">A share of every sale</span></span>
+          <span class="line-mask"><span class="line">goes to communities</span></span>
+          <span class="line-mask"><span class="line">that need it most.</span></span>
+        </p>
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_23.png?v=1779286540"
+          alt="The impact"
+          width="1200"
+          height="780"
+          loading="lazy"
+        >
+      </div>
+    </article>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var section = document.querySelector('.money-trail');
+    if (!section) return;
+
+    var panels = Array.prototype.slice.call(section.querySelectorAll('.money-trail__panel'));
+    if (!panels.length) return;
+
+    var reduce = false;
+    try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+    var hasGsap = !!window.gsap;
+
+    function getLines(panel) {
+      return panel.querySelectorAll('.money-trail__caption .line');
+    }
+
+    /* --- initial line-mask state --- */
+    if (hasGsap && !reduce) {
+      panels.forEach(function (p) {
+        var ls = getLines(p);
+        if (!ls.length) return;
+        gsap.set(ls, { yPercent: p.classList.contains('is-open') ? 0 : 110 });
+      });
+    }
+
+    /* --- click-to-open + line-mask reveal --- */
+    function animateLines(panel, opening) {
+      if (!hasGsap || reduce) return;
+      var ls = getLines(panel);
+      if (!ls.length) return;
+      if (opening) {
+        gsap.to(ls, {
+          yPercent: 0,
+          duration: 0.65,
+          ease: 'power3.out',
+          stagger: 0.08,
+          delay: 0.35,
+        });
+      } else {
+        gsap.to(ls, {
+          yPercent: 110,
+          duration: 0.35,
+          ease: 'power2.in',
+          stagger: 0.05,
+        });
+      }
+    }
+
+    function openPanel(target) {
+      if (target.classList.contains('is-open')) return;
+      panels.forEach(function (p) {
+        var wasOpen = p.classList.contains('is-open');
+        var isNow = p === target;
+        p.classList.toggle('is-open', isNow);
+        var tab = p.querySelector('.money-trail__tab');
+        if (tab) tab.setAttribute('aria-expanded', isNow ? 'true' : 'false');
+        if (isNow) animateLines(p, true);
+        else if (wasOpen) animateLines(p, false);
+      });
+    }
+
+    panels.forEach(function (p) {
+      var tab = p.querySelector('.money-trail__tab');
+      if (!tab) return;
+      tab.setAttribute('tabindex', '0');
+      tab.setAttribute('role', 'button');
+      tab.setAttribute('aria-expanded', p.classList.contains('is-open') ? 'true' : 'false');
+
+      tab.addEventListener('click', function () {
+        openPanel(p);
+      });
+      tab.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openPanel(p);
+        }
+      });
+    });
+
+    /* --- scroll-Y parallax on images (loads ScrollTrigger if needed) --- */
+    if (!hasGsap || reduce) return;
+
+    var ST_SRC = 'https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js';
+
+    function ensureScrollTrigger(cb) {
+      if (window.ScrollTrigger) return cb();
+      var existing = document.querySelector('script[data-mt-st]');
+      if (existing) {
+        existing.addEventListener('load', cb, { once: true });
+        return;
+      }
+      var s = document.createElement('script');
+      s.src = ST_SRC;
+      s.async = true;
+      s.setAttribute('data-mt-st', '');
+      s.onload = cb;
+      document.head.appendChild(s);
+    }
+
+    ensureScrollTrigger(function initParallax() {
+      if (!window.ScrollTrigger) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      var media = section.querySelectorAll('.money-trail__content img, .money-trail__content video');
+      media.forEach(function (el) {
+        gsap.fromTo(
+          el,
+          { yPercent: 8 },
+          {
+            yPercent: -8,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Where your money goes",
+  "class": "where-your-money-goes-section",
+  "settings": [],
+  "presets": [
+    { "name": "Where your money goes" }
+  ]
+}
+{% endschema %}

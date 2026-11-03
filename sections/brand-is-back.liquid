@@ -1,0 +1,1305 @@
+{%- comment -%}
+  Brand Is Back — scroll-driven collage: the people cutouts rise into place
+  over the sky (no headline — the mock has none), then the 3D-cloud mountains,
+  the fundraising marquee, the field copy and the soil CTA. The 90s TV intro
+  lives in sections/tv-section.liquid. Copy and links are section settings;
+  images are still raw CDN <img> tags.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign field_heading_lines = s.field_heading | newline_to_br | split: '<br />'
+-%}
+
+<section class="bib has-line-white" data-section-id="{{ section.id }}">
+  {%- comment -%}
+    People cutouts — an in-flow block, absolutely positioned at the mock's
+    offsets inside it. The JS rises each one in from below at its own rate so
+    they land on these spots as the block reaches the top of the screen.
+  {%- endcomment -%}
+  <div class="bib-people-stack">
+    <img
+      class="bib-person bib-person-tl"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/brand-is-back-person-group-1.webp?v=1778908085"
+      alt=""
+      loading="lazy"
+    >
+    <img
+      class="bib-person bib-person-tr"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/brand-is-back-person-1.webp?v=1778908085"
+      alt=""
+      loading="lazy"
+    >
+    <img
+      class="bib-person bib-person-center"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/brand-is-back-person-group-3.webp?v=1778908086"
+      alt=""
+      loading="lazy"
+    >
+    <img
+      class="bib-person bib-person-r"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/brand-is-back-person-2.webp?v=1778908085"
+      alt=""
+      loading="lazy"
+    >
+    <img
+      class="bib-person bib-person-l2"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/brand-is-back-person-group-2.webp?v=1778908086"
+      alt=""
+      loading="lazy"
+    >
+    <img
+      class="bib-person bib-stand-together"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/stand-together.webp?v=1778908238"
+      alt="Stand Together"
+      loading="lazy"
+    >
+    {%- if s.collage_caption != blank -%}
+      <p class="body dark bib-caption" data-reveal>{{ s.collage_caption }}</p>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} =================== MOUNTAINS + MARQUEE + FIELD + SOIL =================== {%- endcomment -%}
+  <div class="mountain-section">
+    <div class="wrapper">
+      <div class="cloud-area" data-bib-mountain>
+        <canvas class="bib-clouds-canvas" data-bib-clouds aria-hidden="true"></canvas>
+      </div>
+
+      <div class="mountains">
+        <img
+          id="left"
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/mountain-left.webp?v=1778908055"
+          alt=""
+          loading="lazy"
+          width="1920"
+          height="1280"
+        >
+        <img
+          id="right"
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/right-mountain.webp?v=1778908055"
+          alt=""
+          loading="lazy"
+          width="1920"
+          height="1280"
+        >
+      </div>
+
+      {%- comment -%} Text-only marquee on the ridge; the JS clones the track once for a seamless loop {%- endcomment -%}
+      <div class="text-marquee-wrapper" aria-hidden="true">
+        <div class="text-marquee-track">
+          {%- for i in (1..6) -%}
+            <div class="text-marquee">
+              <h1 class="h1 dark">{{ s.marquee_text }}</h1>
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      <div class="flower-stage">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/brand-is-back-bg-flowers.webp?v=1778908087"
+          alt=""
+          loading="lazy"
+          width="2000"
+          height="1200"
+        >
+
+        {%- comment -%}
+          Acorn 3D — IN-FLOW canvas, INSIDE .flower-stage so it shares that stacking
+          context: z-index above the flowers image (this <img>) but below .soil-stage
+          (z:5), so it descends in front of the flowers yet sinks behind the soil.
+          Bottom-anchored + full section height so it covers the same pixels as before
+          (positioning unchanged), just re-parented for the correct layer.
+        {%- endcomment -%}
+        <canvas class="bib-acorn-canvas" data-bib-acorn aria-hidden="true"></canvas>
+
+        {%- if s.field_text != blank -%}
+          <p class="body dark" data-reveal>{{ s.field_text }}</p>
+        {%- endif -%}
+
+        <div class="content">
+          <h5 class="subhead body" data-reveal>{{ s.field_eyebrow }}</h5>
+          <h2 class="h2" data-reveal>
+            {%- for line in field_heading_lines -%}
+              {{ line | strip }}{%- unless forloop.last -%}<br>{%- endunless -%}
+            {%- endfor -%}
+          </h2>
+        </div>
+
+        <div class="soil-stage">
+          <img
+            id="leaf"
+            src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/leaf-crop.webp?v=1778908210"
+            alt=""
+            loading="lazy"
+            width="232"
+            height="219"
+          >
+          <img
+            id="soil"
+            src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/ground-dirt-crop.webp?v=1778908175"
+            alt=""
+            loading="lazy"
+            width="2000"
+            height="600"
+          >
+          <a href="{{ s.field_cta_url | default: '/pages/fundraising' }}" class="custom-button" data-reveal><span class="button-span body">{{ s.field_cta_label }}</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ===== SCOPED RESET / TOKENS ===== */
+  .bib {
+    --bib-text: #ffffff;
+    --bib-cta: #e88742;
+    --bib-cta-text: #1a1a1a;
+    --bib-display-font: 'Futura', 'Helvetica Neue', Arial, sans-serif;
+    --bib-typewriter-font: var(--font-american-typewriter, 'Courier New', monospace);
+    position: relative;
+    width: 100%;
+    color: var(--bib-text);
+    overflow-x: clip;
+    /* Clip the top edge: the acorn waits just above it before it falls in, and
+       would otherwise sit over the bottom of the hero. Bottom left open. */
+    clip-path: inset(0 0 -100vw 0);
+    font-family: var(--bib-display-font);
+    background: linear-gradient(180deg, #88acc2 0%, #c1c3c0 60%, #cbab90 100%);
+  }
+  .bib *,
+  .bib *::before,
+  .bib *::after {
+    box-sizing: border-box;
+  }
+  .bib img {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Section-wide gradient lives on .bib above. */
+  .mountain-section {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* .has-line-white is on the outer .bib — theme.liquid auto-injects a
+     .line-overlay with three <i> lines; they show from the start. */
+
+  /* Keyframes for the mountain marquee's no-JS / reduced-motion fallback. */
+  @keyframes bib-marq {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ----- People cutouts — in-flow collage block above the mountains -----
+     Cutouts are position:absolute at the mock's offsets (vw, so the
+     composition scales with the page), width-only so the photos keep their
+     aspect ratio. z-index 2 keeps them in front of the clouds, whose canvas
+     reaches 32vw up into this block. */
+  .bib-people-stack {
+    position: relative;
+    width: 100%;
+    height: 70vw;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 2;
+  }
+  .bib-person {
+    position: absolute;
+    height: auto;
+    filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.25));
+  }
+  .bib-person-tl { top: 13vw; left: 1vw; width: 23.5vw; }
+  .bib-person-tr { top: 8.5vw; right: 4.5vw; width: 15.5vw; } /* a touch lower than the mock so the head clears the fixed bar */
+  .bib-stand-together {
+    top: 11vw;
+    left: 39vw;
+    width: 21vw;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3));
+  }
+  .bib-person-center { top: 19vw; left: 51.5vw; width: 21.5vw; }
+  .bib-person-l2 { top: 38vw; left: 26vw; width: 21vw; }
+  .bib-person-r { top: 46vw; right: 3.4vw; width: 19.3vw; }
+  /* Small caption on the sky at the left edge (.body + .dark from custom.css) */
+  .bib-caption {
+    position: absolute;
+    top: 44vw;
+    left: 1.3vw;
+    width: max(150px, 11vw);
+    z-index: 3;
+  }
+
+  /* ===== STAGE D + E: MOUNTAIN SECTION (mountains, marquee, flowers, soil) ===== */
+  .mountain-section {
+    height: 103.819vw;
+    width: 100%;
+    position: relative;
+    overflow: visible; /* let clouds extend up into stage above */
+    /* Clip the bottom edge only: the soil hangs below the section so the
+       flower-stage's parallax lift never reveals a gap, and this keeps that
+       overhang from painting over the TV section (z:1 beats its z:auto).
+       The huge negative top inset leaves the clouds free to rise. */
+    clip-path: inset(-400vw 0 0 0); /* tall enough for the acorn's start above .bib on tall phones (people stack is 100vh there) */
+    /* No own gradient — .bib-bg (brand-is-back-bg.webp) shows through behind clouds */
+    background: transparent;
+  }
+  .mountain-section .wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: visible;
+  }
+
+  /* --- 3D clouds: sit BEHIND mountains, extend up into collage --- */
+  .mountain-section .cloud-area {
+    position: absolute;
+    top: -32vw; /* push canvas up into collage area */
+    left: 0;
+    width: 100%;
+    height: 85vw; /* roomy render area for big chunky clouds */
+    z-index: 0; /* BEHIND mountains (z:1); clouds drifting low hide behind peaks */
+    pointer-events: none;
+  }
+  .mountain-section .cloud-area > canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* --- Mountains (images only; canvas lives in .cloud-area now) --- */
+  .mountain-section .mountains {
+    width: 100%;
+    height: 52.986vw;
+    position: relative;
+    z-index: 1;
+  }
+  .mountain-section .mountains > img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .mountain-section .mountains > img#left {
+    left: 0;
+  }
+  .mountain-section .mountains > img#right {
+    right: 0;
+  }
+
+  /* --- Marquee: between mountains and flowers --- */
+  .mountain-section .text-marquee-wrapper {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30vw; /* tune to sit on the mountain ridge */
+    width: 100%;
+    overflow: hidden;
+    z-index: 3; /* above clouds (z:2), below flowers (z:4) */
+    pointer-events: none;
+  }
+  .mountain-section .text-marquee-track {
+    display: inline-flex;
+    align-items: center;
+    gap: max(32px, 4.5vw); /* between repeats: about twice a word space, so each phrase reads on its own */
+    white-space: nowrap;
+    /* JS drives transform (scroll-interactive). CSS animation is the no-JS / reduced-motion fallback. */
+    animation: bib-marq 70s linear infinite;
+    will-change: transform;
+  }
+  .mountain-section .text-marquee {
+    display: inline-flex;
+    align-items: center;
+    gap: 1vw;
+    flex-shrink: 0;
+  }
+  .mountain-section .text-marquee h1 {
+    margin: 0;
+    line-height: 1;
+    /* .h1 is 12.5vw — only a word or two fit on screen, so the phrase couldn't
+       be read as it scrolled (client feedback). Size only; the rest stays .h1. */
+    font-size: max(40px, 7vw);
+    /* .h1's -0.9vw tracking is tuned for its 12.5vw size; at this size it ran the
+       letters together. In em so it scales with the size; a touch of word spacing
+       keeps "FOR A" from reading as one word. */
+    letter-spacing: -0.04em;
+    word-spacing: 0.04em;
+  }
+
+  /* --- Flower stage (covers bottom portion, overlays mountain base) --- */
+  .mountain-section .flower-stage {
+    height: 64.375vw;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 4; /* above clouds and marquee — flower covers the bottom portion */
+  }
+  .mountain-section .flower-stage > img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+  /* Dark gradient at bottom of flower-stage; sits BEHIND soil-stage (z:4 < z:5) */
+  .mountain-section .flower-stage::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40vw;
+    background: linear-gradient(180deg, rgba(20, 12, 6, 0) 0%, rgb(20 12 6 / 82%) 55%, rgb(15 8 4 / 88%) 100%);
+    z-index: 4;
+    pointer-events: none;
+  }
+  .mountain-section .flower-stage > p {
+    position: absolute;
+    left: var(--sidepadding-xs, 6vw);
+    width: max(220px, 15.625vw);
+    bottom: 20.556vw;
+    z-index: 6; /* above dark gradient (z:4) so the description stays visible */
+  }
+  .mountain-section .flower-stage .content {
+    position: absolute;
+    top: 18vw; /* sits in upper-middle of flower stage; tune to taste */
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(90%, 760px);
+    text-align: center;
+    color: #fff;
+    z-index: 6; /* above the dark gradient (z:4) and soil-stage (z:5) so text stays readable */
+    pointer-events: none;
+  }
+  .mountain-section .flower-stage .content .subhead {
+    color: #fff;
+  }
+  .mountain-section .flower-stage .content .h2 {
+    margin: 0;
+    font-family: var(--bib-display-font);
+    font-weight: 900;
+    line-height: 0.92;
+    font-size: clamp(40px, 6vw, 96px);
+    letter-spacing: -0.01em;
+    text-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  }
+  .mountain-section .flower-stage .content .h2.italic {
+    font-style: italic;
+  }
+
+  /* --- Soil stage (sits at the very bottom inside flower stage) --- */
+  .mountain-section .soil-stage {
+    height: 28.958vw;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    z-index: 5;
+    left: 0;
+  }
+  /* (gradient moved to .flower-stage::after below so it sits BEHIND the soil image) */
+  .mountain-section .soil-stage > img#leaf {
+    position: absolute;
+    top: 14vw;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1; /* behind #soil (z:2) so the leaf rises out from behind the soil */
+    width: 232px;
+    height: 219px;
+  }
+  .mountain-section .soil-stage > img#soil {
+    height: 27.556vw;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+    position: absolute;
+    bottom: -7vw; /* covers the flower-stage's -10% scroll parallax lift (64.375vw * 0.1 = 6.44vw); was -88px, which fell short above ~1440px wide */
+    z-index: 2;
+  }
+  /* START YOUR JOURNEY button — visual chrome owned by .custom-button
+     (assets/custom.css). Only its absolute placement inside the soil stage
+     lives here. */
+  .mountain-section .soil-stage > .custom-button {
+    position: absolute;
+    bottom: 3vw;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+  }
+
+  /* ===== ACORN 3D (scroll-driven) =====
+     Lives INSIDE .flower-stage so it shares that stacking context. z-index:1 sits
+     ABOVE the flowers image (the flower-stage's first <img>, z:auto) but BELOW
+     .soil-stage (z:5) — so the acorn descends in front of the flowers yet sinks
+     behind the soil/dirt. A small square box, twice the acorn's size (the 3D
+     camera frames it at half the box); the JS translates it from just above the
+     top of .bib down into the soil. Above the mountains it passes behind the
+     people cutouts (.bib-people-stack z:2 beats .mountain-section z:1). */
+  .mountain-section .flower-stage .bib-acorn-canvas {
+    position: absolute;
+    top: 0;
+    left: calc(50% - 7.3vw);
+    width: 14.6vw;
+    height: 14.6vw;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* ===== TABLET + MOBILE (<= 1024px) ===== */
+  @media (max-width: 1024px) {
+    /* Sky stays blue behind the headline, the cutouts and the mountains. The
+       desktop gradient had already turned tan by the point in the section
+       where the TV's dark backdrop fades out on a short, narrow screen. */
+    .bib {
+      background: linear-gradient(180deg, #88acc2 0%, #8fb0c5 60%, #b8c9d3 100%);
+    }
+    /* Cutouts: one viewport tall, laid out like the phone mock (the old
+       layout started 30vh down to leave room for the headline; without it
+       the run starts at the top and ends at the mountains). */
+    .bib-people-stack {
+      height: 100vh;
+    }
+    /* starts 12vh down so the caption and the top cutout clear the fixed bar */
+    .bib-person-tr { top: 12vh; right: -3vw; width: 36vw; }
+    .bib-person-tl { top: 22vh; left: -5vw; width: 46vw; }
+    .bib-stand-together { top: 42vh; left: 3vw; width: 32vw; }
+    .bib-person-center { top: 38vh; right: -5vw; width: 44vw; }
+    .bib-person-l2 { top: 58vh; left: -7vw; width: 44vw; }
+    .bib-person-r { top: 66vh; right: 0; width: 34vw; }
+    .bib-caption { top: 12vh; left: 6vw; width: 46vw; }
+
+    /* Mountains: a taller box so the cutouts scale up (object-fit: cover) and
+       their bases sit well under the flower field's horizon even after the
+       scroll parallax lifts them — at the desktop height the transparent
+       base of the cutouts showed sky between the peaks and the land. Each
+       image keeps its own mountain in view: the left one anchored left, the
+       right one anchored towards its peak. */
+    .mountain-section .mountains {
+      height: 70vw;
+    }
+    .mountain-section .mountains > img#left {
+      object-position: 0% 100%;
+    }
+    .mountain-section .mountains > img#right {
+      object-position: 75% 100%;
+    }
+  }
+
+  /* ===== MOBILE TUNING (<= 768px) — follows the phone mock ===== */
+  @media (max-width: 768px) {
+    /* Mountain / flower / soil block, top to bottom like the mock: peaks with
+       the clouds, the marquee on the ridge, the heading in the field,
+       the copy, the sprout, the soil with the CTA on it. */
+    .mountain-section {
+      height: 200vw;
+    }
+    .mountain-section .mountains {
+      height: 90vw;
+    }
+    .mountain-section .text-marquee-wrapper {
+      top: 44vw;
+      z-index: 5; /* the marquee reads whole on the field's edge instead of half under it */
+    }
+    .mountain-section .flower-stage {
+      height: 150vw; /* overlaps the mountain base like desktop does */
+    }
+    /* Heading + copy sit lower than the mock so the marquee (z:5, above the
+       whole flower stage) clears them. */
+    .mountain-section .flower-stage .content {
+      top: 44vw;
+      width: 90%;
+    }
+    .mountain-section .flower-stage .content .h2 {
+      font-size: 11vw;
+    }
+    .mountain-section .flower-stage > p {
+      left: 6vw;
+      right: 6vw;
+      width: auto;
+      top: 86vw;
+      bottom: auto;
+      text-align: center;
+    }
+    /* The bottom gradient reaches up behind the heading and copy so the white
+       text reads against the bright flowers, then deepens into the soil. */
+    .mountain-section .flower-stage::after {
+      height: 125vw;
+      background: linear-gradient(
+        180deg,
+        rgba(20, 12, 6, 0) 0%,
+        rgba(20, 12, 6, 0.45) 18%,
+        rgba(20, 12, 6, 0.5) 60%,
+        rgb(15 8 4 / 88%) 100%
+      );
+    }
+    .mountain-section .soil-stage {
+      height: 60vw;
+    }
+    .mountain-section .soil-stage > img#leaf {
+      width: 32vw;
+      height: auto;
+      top: 26vw; /* parked behind the soil's ragged top edge */
+    }
+    .mountain-section .soil-stage > img#soil {
+      height: 50vw;
+      bottom: -16vw; /* covers the flower-stage's -10% scroll parallax lift (150vw * 0.1 = 15vw) */
+    }
+    .mountain-section .soil-stage > .custom-button {
+      bottom: 6vw;
+    }
+    .mountain-section .flower-stage .bib-acorn-canvas {
+      left: calc(50% - 14vw);
+      width: 28vw;
+      height: 28vw;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mountain-section .text-marquee-track {
+      animation: none;
+    }
+  }
+</style>
+
+
+{%- comment -%} GSAP + ScrollTrigger come from layout/theme.liquid (one shared copy). {%- endcomment -%}
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+
+<script>
+  (function () {
+    'use strict';
+
+    function init() {
+      if (!window.gsap || !window.ScrollTrigger) {
+        // GSAP not ready yet — retry once
+        return setTimeout(init, 60);
+      }
+      gsap.registerPlugin(ScrollTrigger);
+
+      var root = document.querySelector('.bib');
+      if (!root) return;
+
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      /* Small screens (matches the 1024px CSS block): shorter pin, the
+         headline parks at the top of the screen so the cutouts can run in
+         under it. */
+      var phone = window.matchMedia('(max-width: 1024px)').matches;
+
+      // theme.liquid's .has-line-white injector runs AFTER this init (its
+      // DOMContentLoaded listener registers later than ours), so the lines
+      // may not exist yet. Inject ourselves; theme's script is guarded and
+      // will skip if it sees the overlay already present.
+      (function ensureLineOverlay() {
+        if (root.querySelector(':scope > .line-overlay')) return;
+        var overlay = document.createElement('div');
+        overlay.className = 'line-overlay';
+        overlay.setAttribute('aria-hidden', 'true');
+        for (var i = 0; i < 3; i++) overlay.appendChild(document.createElement('i'));
+        root.insertBefore(overlay, root.firstChild);
+      })();
+
+      /* ---------------- STAGE D: THREE.JS CLOUDS BEHIND MOUNTAINS ---------------- */
+      var canvas = root.querySelector('[data-bib-clouds]');
+      var mountainStage = root.querySelector('[data-bib-mountain]');
+
+      function initClouds() {
+        if (!window.THREE || !canvas || !mountainStage) return;
+
+        var THREE = window.THREE;
+        var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(50, 16 / 9, 0.1, 1000);
+        camera.position.z = 60;
+
+        // Soft single-puff texture. Each cloud is built from MANY of these so
+        // individual puffs can part around the cursor instead of the whole sprite sliding.
+        function makeCloudTexture() {
+          var size = 256;
+          var c = document.createElement('canvas');
+          c.width = c.height = size;
+          var ctx = c.getContext('2d');
+          var cx = size * 0.5;
+          var cy = size * 0.5;
+          var r = size * 0.46;
+          var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+          g.addColorStop(0.0, 'rgba(255,255,255,1)');
+          g.addColorStop(0.45, 'rgba(255,255,255,0.55)');
+          g.addColorStop(1.0, 'rgba(255,255,255,0)');
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, size, size);
+          var tex = new THREE.CanvasTexture(c);
+          tex.minFilter = THREE.LinearFilter;
+          return tex;
+        }
+
+        var cloudTex = makeCloudTexture();
+        var cloudMat = new THREE.SpriteMaterial({
+          map: cloudTex,
+          transparent: true,
+          opacity: 0.9,
+          depthWrite: false,
+        });
+
+        // Cloud REGIONS (centers). Tall (left) -> low (middle) -> tall (right).
+        // Each region is rendered as a cluster of small puffs so the cursor can
+        // part individual puffs around it instead of pushing one big sprite.
+        var regions = [
+          { x: -32, y: 7, z: -8 }, // left tall
+          { x: -22, y: 5, z: -4 }, // left tall
+          { x: -13, y: 8, z: -12 }, // left tall (back)
+          { x: -5, y: -2, z: -6 }, // middle low
+          { x: 5, y: -3, z: -10 }, // middle low (back)
+          { x: 13, y: 0, z: -8 }, // middle rising
+          { x: 22, y: 6, z: -4 }, // right tall
+          { x: 32, y: 8, z: -10 }, // right tall (back)
+        ];
+
+        var clouds = [];
+        var PUFFS_PER_REGION = 14; // many small particles per cloud => cleanly parts around cursor
+        for (var i = 0; i < regions.length; i++) {
+          var region = regions[i];
+          for (var p = 0; p < PUFFS_PER_REGION; p++) {
+            var s = new THREE.Sprite(cloudMat.clone());
+            // Small individual particles — cluster forms the cloud shape
+            var pw = 7 + Math.random() * 14; // 7-21
+            s.scale.set(pw, pw * 0.85, 1);
+            // Tighter cluster, more variation in depth
+            var offX = (Math.random() - 0.5) * 22;
+            var offY = (Math.random() - 0.5) * 7;
+            var offZ = (Math.random() - 0.5) * 5;
+            var bx = region.x + offX;
+            var by = region.y + offY;
+            var bz = region.z + offZ;
+            s.position.set(bx, by, bz);
+            s.material.opacity = 0.55 + Math.random() * 0.4;
+            // Per-particle phases + speeds => each particle drifts independently,
+            // collective motion reads as a real volumetric cloud (not a static image)
+            s.userData = {
+              baseX: bx,
+              baseY: by,
+              baseZ: bz,
+              phaseX: Math.random() * Math.PI * 2,
+              phaseY: Math.random() * Math.PI * 2,
+              phaseZ: Math.random() * Math.PI * 2,
+              phaseR: Math.random() * Math.PI * 2,
+              speed: 0.9 + Math.random() * 0.8, // 0.9-1.7 — quicker drift, reads as active sky
+              ampX: 2.5 + Math.random() * 3.5, // 2.5-6 — large lateral travel for flowing feel
+              ampY: 1.2 + Math.random() * 2.0, // 1.2-3.2 — visible bobbing
+              ampZ: 1.8 + Math.random() * 2.5, // 1.8-4.3 — strong depth pulsation
+              windDir: Math.random() < 0.5 ? -1 : 1, // mixed-direction wind so clouds don't all march one way
+              windAmp: 1.5 + Math.random() * 2.5, // slow low-freq sway = directional flow
+            };
+            scene.add(s);
+            clouds.push(s);
+          }
+        }
+
+        // Hold camera at a fixed position — clouds stay put, only mouse-break moves them
+        camera.position.set(0, 2, 60);
+
+        function resize() {
+          var w = mountainStage.clientWidth;
+          var h = mountainStage.clientHeight;
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        var running = false;
+        var t0 = performance.now();
+
+        function tick(now) {
+          if (!running) return;
+          var t = (now - t0) * 0.001;
+
+          for (var j = 0; j < clouds.length; j++) {
+            var c = clouds[j];
+            var ud = c.userData;
+            var s = ud.speed;
+
+            // Sum of two sines at different frequencies per axis = quasi-periodic, never
+            // exactly repeats => reads as organic drift instead of mechanical wobble.
+            // Plus a very slow third sine on X = directional wind sway (flow, not just wobble).
+            var sx = Math.sin(t * 0.6 * s + ud.phaseX) + Math.sin(t * 0.22 * s + ud.phaseX * 1.7) * 0.6;
+            var wind = Math.sin(t * 0.08 + ud.phaseX * 0.4) * ud.windDir * ud.windAmp;
+            var sy = Math.sin(t * 0.5 * s + ud.phaseY) + Math.sin(t * 0.18 * s + ud.phaseY * 2.1) * 0.6;
+            c.position.x = ud.baseX + sx * ud.ampX + wind;
+            c.position.y = ud.baseY + sy * ud.ampY;
+            // Z motion = visible scale shift as camera distance changes => 3D depth cue
+            c.position.z = ud.baseZ + Math.sin(t * 0.4 * s + ud.phaseZ) * ud.ampZ;
+
+            // Slight rotation makes particles feel volumetric, not flat
+            c.material.rotation = Math.sin(t * 0.15 * s + ud.phaseR) * 0.05;
+          }
+
+          camera.lookAt(0, 4, 0);
+          renderer.render(scene, camera);
+          requestAnimationFrame(tick);
+        }
+
+        ScrollTrigger.create({
+          trigger: mountainStage,
+          start: 'top bottom',
+          end: 'bottom top',
+          onEnter: function () {
+            if (!running) {
+              running = true;
+              requestAnimationFrame(tick);
+            }
+          },
+          onEnterBack: function () {
+            if (!running) {
+              running = true;
+              requestAnimationFrame(tick);
+            }
+          },
+          onLeave: function () {
+            running = false;
+          },
+          onLeaveBack: function () {
+            running = false;
+          },
+        });
+      }
+
+      if (window.THREE) initClouds();
+      else {
+        var threeReady = setInterval(function () {
+          if (window.THREE) {
+            clearInterval(threeReady);
+            initClouds();
+          }
+        }, 80);
+        setTimeout(function () {
+          clearInterval(threeReady);
+        }, 8000);
+      }
+
+      /* ---------------- PEOPLE CUTOUTS: SCROLL ENTRANCE + DEPTH DRIFT ----------------
+         Each cutout starts below its CSS rest spot and rises at its own rate
+         (more travel = reads as closer to the viewer). It lands exactly on the
+         rest spot — the mock frame — as the stack's top reaches the top of the
+         screen, then keeps drifting up a little so the layers keep their depth
+         while the block scrolls away. */
+      var peopleStack = root.querySelector('.bib-people-stack');
+      if (peopleStack && !reduceMotion) {
+        var parallaxRates = [
+          { sel: '.bib-person-tl',        yPct: 90  },
+          { sel: '.bib-person-tr',        yPct: 280 },
+          { sel: '.bib-person-center',    yPct: 40  },
+          { sel: '.bib-person-l2',        yPct: 200 },
+          { sel: '.bib-person-r',         yPct: 330 },
+          { sel: '.bib-stand-together',   yPct: 25  },
+          { sel: '.bib-caption',          yPct: 40  },
+        ];
+        // scroll progress (of 'top bottom' -> 'bottom top') at which the stack's top hits the viewport top
+        function restProgress() {
+          var h = peopleStack.offsetHeight;
+          return h / (h + window.innerHeight);
+        }
+        parallaxRates.forEach(function (cfg) {
+          var el = root.querySelector(cfg.sel);
+          if (!el) return;
+          // small screens: a quarter of the desktop travel so nothing rides off the composition
+          var travel = cfg.yPct * (phone ? 0.25 : 0.5);
+          gsap.fromTo(
+            el,
+            { yPercent: travel },
+            {
+              yPercent: function () {
+                var r = restProgress();
+                return -travel * (1 - r) / r;
+              },
+              ease: 'none',
+              scrollTrigger: {
+                trigger: peopleStack,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: 1,
+                invalidateOnRefresh: true,
+              },
+            }
+          );
+        });
+
+        /* Idle wobble, a quieter version of the hero's corner cutouts: each
+           rocks under a degree on its own clock. Rotation only, so it stacks
+           with the yPercent scrub above on the same element. */
+        var wobble = [
+          { sel: '.bib-person-tl',      deg: 0.8, dur: 1.6 },
+          { sel: '.bib-person-tr',      deg: 1,   dur: 1.35 },
+          { sel: '.bib-person-center',  deg: 0.6, dur: 1.9 },
+          { sel: '.bib-person-l2',      deg: 0.9, dur: 1.5 },
+          { sel: '.bib-person-r',       deg: 1,   dur: 1.75 },
+          { sel: '.bib-stand-together', deg: 0.7, dur: 2.1 },
+        ];
+        wobble.forEach(function (c, i) {
+          var el = root.querySelector(c.sel);
+          if (!el) return;
+          gsap
+            .fromTo(el, { rotation: -c.deg }, { rotation: c.deg, duration: c.dur, ease: 'sine.inOut', repeat: -1, yoyo: true })
+            .seek(i * 0.35); // stagger the phase so they never rock together
+        });
+      }
+
+      /* ---------------- MOUNTAIN TEXT MARQUEE — scroll-interactive, seamless ----------------
+         Clones children once so the track is [originals][identical clones] — wrap at scrollWidth/2
+         is now invisible (fixes the visible "snap" at loop). Velocity = base drift + smoothed
+         window scroll speed (capped), so scrolling nudges it along but never whips or reverses it. */
+      var marqueeWrapper = root.querySelector('.mountain-section .text-marquee-wrapper');
+      var marqueeTrack = root.querySelector('.mountain-section .text-marquee-track');
+      if (marqueeTrack && marqueeWrapper && !reduceMotion) {
+        marqueeTrack.style.animation = 'none';
+
+        var originalCount = marqueeTrack.children.length;
+        for (var mqi = 0; mqi < originalCount; mqi++) {
+          marqueeTrack.appendChild(marqueeTrack.children[mqi].cloneNode(true));
+        }
+
+        var halfWidth = 0;
+        function measureMarquee() {
+          halfWidth = marqueeTrack.scrollWidth / 2;
+        }
+        measureMarquee();
+        window.addEventListener('resize', measureMarquee);
+        window.addEventListener('load', measureMarquee);
+
+        var BASE_SPEED = -50;     // px/sec base leftward drift
+        var SCROLL_GAIN = 0.03;   // how strongly scroll speed (either direction) nudges it along
+        var MAX_BOOST = 50;       // px/sec cap on that nudge, so a fast scroll never whips it past
+        var SMOOTH = 0.12;        // 0..1; lower = smoother / laggier
+
+        var marqueeOffset = 0;
+        var scrollBoost = 0;
+        var prevScroll = window.scrollY || window.pageYOffset;
+        var prevTime = performance.now();
+        var marqueeRunning = false;
+
+        function marqueeTick(now) {
+          if (!marqueeRunning) return;
+          var dt = Math.min(0.05, Math.max(0.001, (now - prevTime) / 1000));
+          prevTime = now;
+
+          var curScroll = window.scrollY || window.pageYOffset;
+          var instVelocity = (curScroll - prevScroll) / dt;
+          prevScroll = curScroll;
+
+          scrollBoost += (instVelocity - scrollBoost) * SMOOTH;
+
+          // always leftward: scrolling only speeds it up a little (it used to reverse, which
+          // made the text impossible to read)
+          var totalVelocity = BASE_SPEED - Math.min(MAX_BOOST, Math.abs(scrollBoost) * SCROLL_GAIN);
+          marqueeOffset += totalVelocity * dt;
+
+          if (halfWidth > 0) {
+            marqueeOffset = marqueeOffset % halfWidth;
+            if (marqueeOffset > 0) marqueeOffset -= halfWidth;
+          }
+
+          marqueeTrack.style.transform = 'translate3d(' + marqueeOffset.toFixed(2) + 'px, 0, 0)';
+          requestAnimationFrame(marqueeTick);
+        }
+
+        try {
+          var mqio = new IntersectionObserver(function (entries) {
+            for (var k = 0; k < entries.length; k++) {
+              if (entries[k].isIntersecting) {
+                if (!marqueeRunning) {
+                  marqueeRunning = true;
+                  prevTime = performance.now();
+                  prevScroll = window.scrollY || window.pageYOffset;
+                  requestAnimationFrame(marqueeTick);
+                }
+              } else {
+                marqueeRunning = false;
+              }
+            }
+          }, { rootMargin: '200px' });
+          mqio.observe(marqueeWrapper);
+        } catch (e) {
+          marqueeRunning = true;
+          requestAnimationFrame(marqueeTick);
+        }
+      }
+
+      /* ---------------- STAGE E: MOUNTAIN + FLOWER Y PARALLAX (depth on scroll) ---------------- */
+      var mountainSection = root.querySelector('.mountain-section');
+      var mountainLeft = root.querySelector('.mountain-section .mountains > img#left');
+      var mountainRight = root.querySelector('.mountain-section .mountains > img#right');
+      var flowerStageEl = root.querySelector('.mountain-section .flower-stage');
+
+      if (mountainSection && !reduceMotion) {
+        if (mountainLeft) {
+          gsap.to(mountainLeft, {
+            yPercent: -18,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: mountainSection,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1,
+            },
+          });
+        }
+        if (mountainRight) {
+          gsap.to(mountainRight, {
+            yPercent: -28, // slightly different rate than left = depth cue
+            ease: 'none',
+            scrollTrigger: {
+              trigger: mountainSection,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1,
+            },
+          });
+        }
+        if (flowerStageEl) {
+          gsap.to(flowerStageEl, {
+            yPercent: -10, // foreground drift
+            ease: 'none',
+            scrollTrigger: {
+              trigger: mountainSection,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1,
+            },
+          });
+        }
+      }
+
+      /* Sections further down the page (where-your-money-goes) create their
+         ScrollTriggers synchronously while the HTML parses — before this init
+         runs on DOMContentLoaded — so they'd be refreshed ahead of the stage
+         pin and measured without its spacer. Re-order by document position. */
+      ScrollTrigger.sort();
+
+      // Final refresh once images settle
+      window.addEventListener('load', function () {
+        ScrollTrigger.refresh();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>
+
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+</script>
+<script type="module">
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+  /* =====================================================================
+     ACORN 3D — small canvas inside .flower-stage. The acorn spins + bobs in
+     place; GSAP scroll-drives the canvas element from just above the top of
+     .bib straight DOWN through the section, and because the canvas sits below
+     .soil-stage in z-index it sinks UNDER the soil. Then the soil #leaf rises
+     from behind the soil.
+     Runs as its own ES module (own copy of three) so the global-UMD cloud
+     code in this section is untouched. Uses the page's global gsap/ScrollTrigger.
+     ===================================================================== */
+  // Web-compressed copy of the original 14.5MB model (512px WebP textures, quantized
+  // geometry: 1.4MB) in the store's Files — the full one was still downloading by the
+  // time visitors scrolled here, so the acorn never showed.
+  var ACORN_URL = 'https://cdn.shopify.com/s/files/1/0928/2971/2677/files/acorn-web.glb?v=1793298030';
+
+  function ready(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  ready(function () {
+    var canvas = document.querySelector('[data-bib-acorn]');
+    var root = document.querySelector('.bib');
+    if (!canvas || !root || !ACORN_URL) return;
+
+    function start() {
+      var gsap = window.gsap;
+      var ScrollTrigger = window.ScrollTrigger;
+      if (!gsap || !ScrollTrigger) return setTimeout(start, 80); // wait for the deferred UMD gsap
+      gsap.registerPlugin(ScrollTrigger);
+
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var phone = window.matchMedia('(max-width: 1024px)').matches; // same gate as the main init above
+
+      var peopleStack = root.querySelector('.bib-people-stack');
+      var mountainSection = root.querySelector('.mountain-section');
+      var soilStage = root.querySelector('.mountain-section .soil-stage');
+      var leaf = root.querySelector('.mountain-section .soil-stage > img#leaf');
+
+      /* ---- Leaf reveal (DOM): rises once the acorn has buried (descent 100%).
+             Initial hidden state here; the rise is wired to the descent end below
+             (the soil's own ScrollTrigger position is unreliable on this page). ---- */
+      if (leaf) {
+        /* x: 0 is load-bearing: GSAP parses the CSS translateX(-50%) into a
+           px offset and would stack xPercent: -50 on top of it, pushing the
+           leaf half its width left of centre (it did, on phones). */
+        if (reduce) {
+          gsap.set(leaf, { x: 0, xPercent: -50, yPercent: -85, autoAlpha: 1 });
+        } else {
+          gsap.set(leaf, { x: 0, xPercent: -50, yPercent: 0, autoAlpha: 0 }); // hidden behind the soil
+        }
+      }
+
+      if (reduce) {
+        canvas.style.display = 'none'; // no moving 3D under reduced-motion
+        return;
+      }
+
+      /* ---- Three.js acorn: spins + bobs IN PLACE inside its small in-flow canvas.
+             The descent is a CSS transform on the canvas ELEMENT (GSAP, below), so
+             its z-index can carry it under the flowers/soil. ---- */
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      var ACORN_SIZE = 3.2; // world units the model is normalised to (below)
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000);
+      // Frame twice the acorn's size, so it fills half the box with room to bob and tilt.
+      camera.position.set(0, 0, ACORN_SIZE / Math.tan((15 * Math.PI) / 180));
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+      var key = new THREE.DirectionalLight(0xffffff, 1.1);
+      key.position.set(5, 8, 6);
+      scene.add(key);
+      var rim = new THREE.DirectionalLight(0xffffff, 0.5);
+      rim.position.set(-6, 2, -4);
+      scene.add(rim);
+
+      var holder = null; // group wrapping the recentered model
+      var meshes = [];
+
+      function resize() {
+        var w = canvas.clientWidth || 1;
+        var h = canvas.clientHeight || 1;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        console.log('[bib-acorn] resize  canvas=' + w + 'x' + h);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      window.addEventListener('load', resize);
+
+      new GLTFLoader().load(
+        ACORN_URL,
+        function (gltf) {
+          var model = gltf.scene;
+          var size = new THREE.Vector3();
+          var center = new THREE.Vector3();
+
+          // Scale to a normalized size, THEN recenter on the scaled bounds so the
+          // spin pivot is the model's true centre (otherwise it orbits).
+          model.updateMatrixWorld(true);
+          new THREE.Box3().setFromObject(model).getSize(size);
+          var maxDim = Math.max(size.x, size.y, size.z) || 1;
+          model.scale.setScalar(ACORN_SIZE / maxDim); // ~ acorn size — smaller = smaller seed
+          model.updateMatrixWorld(true);
+          new THREE.Box3().setFromObject(model).getCenter(center);
+          model.position.sub(center);
+
+          model.traverse(function (o) {
+            if (o.isMesh && o.material) meshes.push(o);
+          });
+
+          holder = new THREE.Group();
+          holder.add(model);
+          scene.add(holder);
+        },
+        undefined,
+        function (err) {
+          console.error('[bib-acorn] GLB load failed', err);
+        }
+      );
+
+      // Render loop — float (bob) + spin in place. Runs only while the canvas is
+      // near the viewport.
+      var running = false;
+      var placeAcorn = null; // set by DESCENT below
+      function frame(now) {
+        if (!running) return;
+        if (placeAcorn) placeAcorn();
+        if (holder) {
+          holder.position.y = Math.sin(now * 0.0018) * 0.4; // gentle bob (the fall itself is the canvas's CSS transform)
+          holder.rotation.y = now * 0.0009; // continuous slow spin
+          holder.rotation.x = 0.15 + Math.sin(now * 0.0012) * 0.08; // subtle tilt wobble
+        }
+        renderer.render(scene, camera);
+        requestAnimationFrame(frame);
+      }
+      running = true;
+      requestAnimationFrame(frame);
+
+      /* ---- DESCENT ----
+         Placed every frame from where .bib's top is on screen, not scrubbed:
+           1. Before .bib's top reaches the top of the screen it waits just
+              above that edge (clipped by .bib's clip-path).
+           2. Over the next ENTRY_VH of scroll it drops in from above the
+              screen to the middle of it.
+           3. It then stays centred on screen while the page scrolls past, so
+              the soil rises up over it, until it's BURY_DEPTH below the soil
+              top — from there it rides with the soil and the leaf pops.
+         y is in .flower-stage px (the canvas's container). The flower-stage's
+         own parallax lift is read back each frame so "centred" stays centred. ---- */
+      var flowerStage = root.querySelector('.mountain-section .flower-stage');
+      var soilImg = root.querySelector('.mountain-section .soil-stage > img#soil');
+      var ENTRY_VH = 0.35; // screens of scroll the drop from above the screen to its middle takes (smaller = faster) — tune
+      var BURY_DEPTH = 0.2; // how far below the soil top the box ends, in box heights (the acorn is the middle half) — tune
+
+      function offsetTopWithin(el, ancestor) {
+        var y = 0;
+        while (el && el !== ancestor) { y += el.offsetTop; el = el.offsetParent; }
+        return y;
+      }
+      var stageTop = 0; // flower-stage top, in .bib px
+      var soilTop = 0; // soil image top, in flower-stage px
+      function measure() {
+        if (!flowerStage) return;
+        stageTop = offsetTopWithin(flowerStage, root);
+        soilTop = soilImg ? soilStage.offsetTop + soilImg.offsetTop : flowerStage.offsetHeight * 0.7;
+      }
+      measure();
+      window.addEventListener('resize', measure);
+      window.addEventListener('load', measure);
+      ScrollTrigger.addEventListener('refresh', measure);
+
+      /* ---- Leaf rise: a TIMED pop (not scroll-scrubbed) that fires once the
+             acorn is buried. Plays on its own clock so it sprouts at a fixed
+             speed regardless of how fast you scroll; reverses if you scroll back
+             up past the point. ---- */
+      var leafTween = leaf
+        ? gsap.to(leaf, {
+            yPercent: phone ? -100 : -120, // how high it rises — tune
+            autoAlpha: 1,
+            duration: 0.6, // sprout speed (smaller = faster) — tune
+            ease: 'back.out(1.5)',
+            paused: true,
+          })
+        : null;
+
+      var setY = gsap.quickSetter(canvas, 'y', 'px');
+      var entryEase = gsap.parseEase('power2.out');
+      var buried = false;
+      placeAcorn = function () {
+        if (!flowerStage) return;
+        var vh = window.innerHeight;
+        var h = canvas.offsetHeight;
+        var scrolled = -root.getBoundingClientRect().top; // how far .bib's top has gone above the screen top
+        var lift = (gsap.getProperty(flowerStage, 'yPercent') / 100) * flowerStage.offsetHeight; // parallax, <= 0
+        var y;
+        if (scrolled <= 0) {
+          y = -stageTop - h; // waiting just above .bib's top edge
+        } else {
+          var entry = vh * ENTRY_VH;
+          var screenTop = -h + (vh / 2 + h / 2) * entryEase(Math.min(1, scrolled / entry)); // above the screen -> centred
+          y = screenTop + scrolled - stageTop - lift;
+        }
+        var bury = soilTop + h * BURY_DEPTH;
+        if (y > bury) y = bury;
+        setY(y);
+
+        var nowBuried = y >= bury;
+        if (nowBuried !== buried) {
+          buried = nowBuried;
+          if (leafTween) buried ? leafTween.play() : leafTween.reverse(); // re-hide when scrolling back above the point
+        }
+      };
+      placeAcorn();
+
+      ScrollTrigger.refresh();
+
+      window.addEventListener('load', function () {
+        ScrollTrigger.refresh();
+      });
+    }
+
+    start();
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Brand Is Back",
+  "class": "brand-is-back-wrap",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "collage_caption",
+      "label": "Collage caption",
+      "default": "Students across the country are already getting involved. And so are others ..."
+    },
+    {
+      "type": "header",
+      "content": "Mountains"
+    },
+    {
+      "type": "text",
+      "id": "marquee_text",
+      "label": "Marquee text",
+      "default": "FUNDRAISING FOR A CAUSE"
+    },
+    {
+      "type": "header",
+      "content": "Field"
+    },
+    {
+      "type": "text",
+      "id": "field_eyebrow",
+      "label": "Eyebrow",
+      "default": "INTRODUCING"
+    },
+    {
+      "type": "textarea",
+      "id": "field_heading",
+      "label": "Heading",
+      "info": "One line per line break.",
+      "default": "Good Tees.\nGreat Causes."
+    },
+    {
+      "type": "textarea",
+      "id": "field_text",
+      "label": "Text",
+      "info": "Optional paragraph in the flower field. Leave empty to hide it."
+    },
+    {
+      "type": "text",
+      "id": "field_cta_label",
+      "label": "Button label",
+      "default": "EXPLORE FUNDRAISING"
+    },
+    {
+      "type": "url",
+      "id": "field_cta_url",
+      "label": "Button link",
+      "info": "Blank links to /pages/fundraising."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand Is Back"
+    }
+  ]
+}
+{% endschema %}

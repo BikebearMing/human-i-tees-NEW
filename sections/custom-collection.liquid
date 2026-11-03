@@ -1,0 +1,445 @@
+{%- comment -%}
+  Collection page — "SHOP" sidebar + ruled 3-column product grid (the mock).
+
+  - Left column (25%): heading, then a lined list of shop links with product
+    counts; the current one is highlighted orange. The list comes from the
+    "Shop links" menu; with no menu it falls back to All / New Arrivals /
+    Best Sellers / Collections (the same tabs as the header's Shop megamenu).
+    Description and sort are optional, under the list.
+  - Right (75%): the shared tee card (snippets/tee-card.liquid, styled by
+    assets/section-our-tees.css) in 3 columns with rules between cells —
+    image centred, title + price pinned to the cell bottom. NEW badge follows
+    the product's `new` tag.
+{%- endcomment -%}
+
+{{ 'section-our-tees.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  #ccoll-{{ section.id }} {
+    --ccoll-line: rgba(51, 51, 51, 0.2);
+    --ccoll-pad: max(14px, 0.972vw);
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    background: var(--beige);
+    color: var(--black);
+  }
+
+  /* ---- sidebar ---- */
+  #ccoll-{{ section.id }} .ccoll__side {
+    position: sticky;
+    top: var(--header-height, 0px);
+    align-self: start;
+    max-height: calc(100vh - var(--header-height, 0px));
+    overflow: auto;
+    padding-top: var(--ccoll-pad);
+  }
+  #ccoll-{{ section.id }} .ccoll__heading {
+    margin: 0 0 max(24px, 2.083vw) !important;
+    padding: 0 var(--ccoll-pad);
+    font-family: var(--futura);
+    font-size: max(40px, 5.3vw);
+    font-weight: 700;
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  #ccoll-{{ section.id }} .ccoll__nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  #ccoll-{{ section.id }} .ccoll__nav li {
+    border-bottom: 1px solid var(--ccoll-line);
+  }
+  #ccoll-{{ section.id }} .ccoll__nav-link {
+    display: block;
+    padding: max(7px, 0.486vw) var(--ccoll-pad);
+    font-family: var(--futura);
+    font-size: max(18px, 1.875vw);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--black);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  #ccoll-{{ section.id }} .ccoll__nav-link:hover {
+    background: rgba(255, 148, 77, 0.35);
+  }
+  #ccoll-{{ section.id }} .ccoll__nav-link.is-active {
+    background: #ff944d;
+  }
+  #ccoll-{{ section.id }} .ccoll__nav-count {
+    margin-left: 2px;
+    font-family: var(--geist);
+    font-size: max(8px, 0.625vw);
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 0;
+    vertical-align: super;
+  }
+  #ccoll-{{ section.id }} .ccoll__desc {
+    padding: var(--ccoll-pad);
+  }
+  #ccoll-{{ section.id }} .ccoll__desc p { margin: 0; }
+
+  /* Sort — a pill, native select for accessibility. */
+  #ccoll-{{ section.id }} .ccoll__sort {
+    position: relative;
+    display: inline-block;
+    margin: var(--ccoll-pad);
+  }
+  #ccoll-{{ section.id }} .ccoll__sort select {
+    appearance: none;
+    -webkit-appearance: none;
+    color: var(--black);
+    background: transparent;
+    border: 1px solid var(--black);
+    border-radius: 10rem;
+    padding: max(6px, 0.417vw) max(30px, 2.083vw) max(6px, 0.417vw) max(12px, 0.764vw);
+    line-height: 1;
+    cursor: pointer;
+  }
+  #ccoll-{{ section.id }} .ccoll__sort::after {
+    content: '';
+    position: absolute;
+    right: max(12px, 0.833vw);
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid var(--black);
+    border-bottom: 1.5px solid var(--black);
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
+  }
+
+  /* ---- grid ---- */
+  #ccoll-{{ section.id }} .ccoll__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-content: start;
+    border-left: 1px solid var(--ccoll-line); /* the column line, full height */
+  }
+  /* section-our-tees.css draws its lines for a 4-column grid; redo them for 3. */
+  #ccoll-{{ section.id }} .ccoll__grid > .our-tees__col {
+    border-left: 0;
+  }
+  #ccoll-{{ section.id }} .ccoll__grid > .our-tees__col:not(:nth-child(3n + 1)) {
+    border-left: 1px solid var(--ccoll-line);
+  }
+  #ccoll-{{ section.id }} .ccoll__grid > .our-tees__col:nth-child(n + 4) {
+    border-top: 1px solid var(--ccoll-line);
+  }
+  /* Card: image centred in the free space, title + price pinned to the bottom. */
+  #ccoll-{{ section.id }} .ccoll__grid .our-tees__card {
+    height: 27.292vw;
+    padding: var(--ccoll-pad);
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+  #ccoll-{{ section.id }} .ccoll__grid .our-tees__media {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%; /* the tee fills the cell; sleeves run close to the edges */
+    height: auto;
+    margin: 0 auto;
+  }
+  #ccoll-{{ section.id }} .ccoll__grid .our-tees__image {
+    object-fit: contain;
+  }
+  #ccoll-{{ section.id }} .ccoll__grid .our-tees__badge {
+    top: var(--ccoll-pad);
+    left: var(--ccoll-pad);
+  }
+  #ccoll-{{ section.id }} .ccoll__grid .our-tees__meta {
+    margin-top: max(10px, 0.694vw);
+    align-items: flex-end;
+  }
+  #ccoll-{{ section.id }} .ccoll__grid .our-tees__title {
+    max-width: 62%;
+    font-size: max(14px, 1.25vw);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+  /* Empty collection fills the grid. */
+  #ccoll-{{ section.id }} .ccoll__empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5vw;
+    min-height: 27.292vw;
+    text-align: center;
+  }
+
+  #ccoll-{{ section.id }} .ccoll__pagination {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: max(16px, 1.667vw);
+    padding: max(24px, 2.778vw) 16px;
+    border-top: 1px solid var(--ccoll-line);
+  }
+  #ccoll-{{ section.id }} .ccoll__pagination .is-disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* ---- tablet + phone: sidebar on top, two ruled columns ---- */
+  @media (max-width: 1024px) {
+    #ccoll-{{ section.id }} {
+      grid-template-columns: 1fr;
+    }
+    #ccoll-{{ section.id }} .ccoll__side {
+      position: static;
+      max-height: none;
+      overflow: visible;
+    }
+    #ccoll-{{ section.id }} .ccoll__nav li:first-child {
+      border-top: 1px solid var(--ccoll-line);
+    }
+    #ccoll-{{ section.id }} .ccoll__grid {
+      grid-template-columns: repeat(2, 1fr);
+      border-left: 0;
+    }
+    #ccoll-{{ section.id }} .ccoll__grid > .our-tees__col:nth-child(n) {
+      border-left: 0;
+      border-top: 0;
+    }
+    #ccoll-{{ section.id }} .ccoll__grid > .our-tees__col:nth-child(even) {
+      border-left: 1px solid var(--ccoll-line);
+    }
+    #ccoll-{{ section.id }} .ccoll__grid > .our-tees__col:nth-child(n + 3) {
+      border-top: 1px solid var(--ccoll-line);
+    }
+    #ccoll-{{ section.id }} .ccoll__grid .our-tees__card {
+      height: auto;
+      padding: 3vw;
+    }
+    #ccoll-{{ section.id }} .ccoll__grid .our-tees__media {
+      width: 100%;
+      aspect-ratio: 1 / 1; /* the tee photos are square, so no band above and below */
+    }
+    #ccoll-{{ section.id }} .ccoll__empty {
+      min-height: 50vw;
+      gap: 16px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="ccoll" id="ccoll-{{ section.id }}">
+  {%- paginate collection.products by section.settings.products_per_page -%}
+    <aside class="ccoll__side">
+      <h1 class="ccoll__heading">{{ section.settings.heading | default: collection.title | escape }}</h1>
+
+      {%- assign nav_menu = linklists[section.settings.nav_menu] -%}
+      <ul class="ccoll__nav">
+        {%- if nav_menu.links.size > 0 -%}
+          {%- for link in nav_menu.links -%}
+            {%- liquid
+              assign count = nil
+              if link.type == 'collection_link'
+                assign count = link.object.products_count
+              elsif link.type == 'collections_link'
+                assign count = collections.size
+              endif
+              assign active = false
+              if link.current or link.url == collection.url
+                assign active = true
+              endif
+            -%}
+            <li>
+              <a
+                class="ccoll__nav-link{% if active %} is-active{% endif %}"
+                href="{{ link.url }}"
+                {% if active %}aria-current="page"{% endif %}
+              >
+                {{- link.title | escape -}}
+                {%- if count != nil %} <sup class="ccoll__nav-count">({{ count }})</sup>{% endif -%}
+              </a>
+            </li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- liquid
+            # Same tabs as the header's Shop megamenu: All / New Arrivals / Best Sellers / Collections.
+            # A store without one of these collections gets all products instead, sorted to
+            # match the tab (newest first / best-selling) — the header megamenu does the same.
+            assign tab_titles = 'All|New Arrivals|Best Sellers' | split: '|'
+            assign tab_handles = 'shop|new-arrivals|best-sellers' | split: '|'
+            assign tab_sorts = 'none|created-descending|best-selling' | split: '|'
+            assign current_sort = collection.sort_by | default: 'none'
+          -%}
+          {%- for title in tab_titles -%}
+            {%- liquid
+              assign tab_handle = tab_handles[forloop.index0]
+              assign tab_sort = tab_sorts[forloop.index0]
+              assign tab = collections[tab_handle]
+              assign active = false
+              if tab != blank
+                assign tab_url = tab.url
+                if tab.handle == collection.handle
+                  assign active = true
+                endif
+              else
+                assign tab = collections.all
+                assign tab_url = tab.url
+                if tab_sort != 'none'
+                  assign tab_url = tab_url | append: '?sort_by=' | append: tab_sort
+                endif
+                if collection.handle == 'all'
+                  if current_sort == tab_sort
+                    assign active = true
+                  elsif tab_sort == 'none' and current_sort != 'created-descending' and current_sort != 'best-selling'
+                    assign active = true
+                  endif
+                endif
+              endif
+            -%}
+            <li>
+              <a
+                class="ccoll__nav-link{% if active %} is-active{% endif %}"
+                href="{{ tab_url }}"
+                {% if active %}aria-current="page"{% endif %}
+              >
+                {{ title }} <sup class="ccoll__nav-count">({{ tab.products_count }})</sup>
+              </a>
+            </li>
+          {%- endfor -%}
+          <li>
+            <a class="ccoll__nav-link" href="{{ routes.collections_url }}">Collections</a>
+          </li>
+        {%- endif -%}
+      </ul>
+
+      {%- if section.settings.show_description and collection.description != blank -%}
+        <div class="body ccoll__desc">{{ collection.description }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.enable_sorting and collection.products_count > 1 -%}
+        {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+        <div class="ccoll__sort">
+          <label class="visually-hidden" for="CcollSort-{{ section.id }}">{{ 'products.facets.sort_by_label' | t }}</label>
+          <select
+            class="body"
+            id="CcollSort-{{ section.id }}"
+            name="sort_by"
+            onchange="var u=new URL(location.href);u.searchParams.set('sort_by',this.value);u.searchParams.delete('page');location.href=u.toString();"
+          >
+            {%- for option in collection.sort_options -%}
+              <option value="{{ option.value | escape }}"{% if option.value == sort_by %} selected="selected"{% endif %}>
+                {{- option.name | escape -}}
+              </option>
+            {%- endfor -%}
+          </select>
+        </div>
+      {%- endif -%}
+    </aside>
+
+    <section class="ccoll__grid" aria-label="{{ collection.title | escape }}">
+      {%- for product in collection.products -%}
+        {%- assign is_new = false -%}
+        {%- if product.tags contains 'new' -%}{%- assign is_new = true -%}{%- endif -%}
+        {%- render 'tee-card', product: product, show_badge: is_new, heading_tag: 'h2', show_view: false -%}
+      {%- else -%}
+        <div class="ccoll__empty">
+          <p class="body">{{ section.settings.empty_text | escape }}</p>
+          <a class="custom-button" href="{{ routes.all_products_collection_url }}">
+            <span class="button-span body">{{ section.settings.empty_button_label | escape }}</span>
+          </a>
+        </div>
+      {%- endfor -%}
+    </section>
+
+    {%- if paginate.pages > 1 -%}
+      <nav class="ccoll__pagination" aria-label="{{ 'general.pagination.label' | t }}">
+        {%- if paginate.previous -%}
+          <a class="custom-button" href="{{ paginate.previous.url }}">
+            <span class="button-span body">PREV</span>
+          </a>
+        {%- else -%}
+          <span class="custom-button is-disabled" aria-hidden="true"><span class="button-span body">PREV</span></span>
+        {%- endif -%}
+
+        <span class="body">{{ paginate.current_page }} / {{ paginate.pages }}</span>
+
+        {%- if paginate.next -%}
+          <a class="custom-button" href="{{ paginate.next.url }}">
+            <span class="button-span body">NEXT</span>
+          </a>
+        {%- else -%}
+          <span class="custom-button is-disabled" aria-hidden="true"><span class="button-span body">NEXT</span></span>
+        {%- endif -%}
+      </nav>
+    {%- endif -%}
+  {%- endpaginate -%}
+</div>
+
+{% schema %}
+{
+  "name": "Collection grid",
+  "tag": "section",
+  "class": "custom-collection-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Shown above the shop links on every collection. Leave empty to use the collection's title.",
+      "default": "Shop"
+    },
+    {
+      "type": "link_list",
+      "id": "nav_menu",
+      "label": "Shop links",
+      "info": "Menu of collection links listed under the heading, with product counts. Empty: All / New Arrivals / Best Sellers / Collections."
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "info": "Steps of 3 so the grid always fills whole rows.",
+      "min": 9,
+      "max": 48,
+      "step": 3,
+      "default": 15
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Show sort",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Empty collection"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Message",
+      "default": "Nothing here yet. New drops are on the way."
+    },
+    {
+      "type": "text",
+      "id": "empty_button_label",
+      "label": "Button label",
+      "default": "SHOP ALL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection grid"
+    }
+  ]
+}
+{% endschema %}

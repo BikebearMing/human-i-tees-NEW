@@ -1,44 +1,119 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.header.name",
   "type": "header",
   "sections": {
-    "announcement-bar": {
-      "type": "announcement-bar",
+    "custom-header": {
+      "type": "custom-header",
       "blocks": {
-        "announcement-bar-0": {
+        "mega_card_JttewT": {
+          "type": "mega_card",
+          "settings": {
+            "menu_item": "Tees",
+            "label": "",
+            "caption": "",
+            "wide": false
+          }
+        },
+        "mega_card_eEPP4k": {
+          "type": "mega_card",
+          "settings": {
+            "menu_item": "Our History",
+            "label": "",
+            "caption": "",
+            "wide": true
+          }
+        },
+        "mega_card_NHNXkj": {
+          "type": "mega_card",
+          "settings": {
+            "menu_item": "Caps",
+            "label": "",
+            "caption": "",
+            "wide": false
+          }
+        },
+        "announcement_shipping": {
           "type": "announcement",
           "settings": {
-            "text": "Welcome to our store",
-            "text_alignment": "center",
-            "color_scheme": "scheme-1",
+            "icon": "📦",
+            "text": "Enjoy free shipping over $100",
             "link": ""
-          }
+          },
+          "disabled": true
+        },
+        "announcement_drop": {
+          "type": "announcement",
+          "settings": {
+            "icon": "✨",
+            "text": "New drop every month",
+            "link": ""
+          },
+          "disabled": true
+        },
+        "announcement_planet": {
+          "type": "announcement",
+          "settings": {
+            "icon": "🧡",
+            "text": "Every shirt gives back to the planet",
+            "link": ""
+          },
+          "disabled": true
+        },
+        "announcement_fundraise": {
+          "type": "announcement",
+          "settings": {
+            "icon": "🏫",
+            "text": "Fundraise with your school or club",
+            "link": ""
+          },
+          "disabled": true
         }
       },
       "block_order": [
-        "announcement-bar-0"
-      ]
-    },
-    "header": {
-      "type": "header",
+        "mega_card_JttewT",
+        "mega_card_eEPP4k",
+        "mega_card_NHNXkj",
+        "announcement_shipping",
+        "announcement_drop",
+        "announcement_planet",
+        "announcement_fundraise"
+      ],
       "settings": {
+        "announcement_speed": 25,
+        "announcement_pause_on_hover": true,
+        "announcement_background": "#2b2926",
+        "announcement_text_color": "#f6f1e7",
+        "donations_show": true,
+        "donations_label": "Donations",
+        "donations_amount": "$2,000,000",
+        "donations_text": "<p>Through the 1990s, Human-i-Tees donated over $2 million to environmental causes, a figure documented in our original newsletters. Thirty years after the brand was born, we have revived it with a commitment to give just as much and more.</p><p>This is our first year back, so this counter will get its next update at the end of the year.</p>",
+        "donations_updated": "Updated January 1st, 2001",
+        "donations_button_label": "",
+        "donations_button_link": "",
+        "mega_default_caption": "This month's drop and every tee",
+        "header_background": "#faf5f2",
+        "header_border_color": "#d9cdb8",
+        "header_border_width": 1,
+        "menu": "",
+        "show_line_separator": false,
         "color_scheme": "scheme-1",
-        "logo_position": "middle-left",
-        "menu": "main-menu",
-        "menu_type_desktop": "dropdown",
-        "sticky_header_type": "on-scroll-up",
-        "show_line_separator": true,
-        "enable_country_selector": true,
-        "enable_language_selector": true,
-        "mobile_logo_position": "center",
         "margin_bottom": 0,
-        "padding_top": 20,
-        "padding_bottom": 20
+        "padding_top": 7,
+        "padding_bottom": 7,
+        "padding_inline": 12
       }
     }
   },
   "order": [
-    "announcement-bar",
-    "header"
+    "custom-header"
   ]
 }

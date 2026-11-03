@@ -1,0 +1,13 @@
+{%- comment -%}
+  Contents of the header cart link.
+
+  Rendered statically inside the header and re-rendered live (without a page
+  reload) by the Section Rendering API via sections/cart-icon-bubble.liquid
+  whenever the cart changes — so keep this in sync with that section file.
+{%- endcomment -%}
+<span class="custom-header__cart-label" aria-hidden="true">{{ 'templates.cart.cart' | t }}</span>
+<span class="custom-header__icon-glyph custom-header__icon-glyph--cart" aria-hidden="true"></span>
+<span class="custom-header__cart-count" aria-hidden="true">{{ cart.item_count }}</span>
+<span class="visually-hidden">
+  {{- 'templates.cart.cart' | t }}: {{ 'sections.header.cart_count' | t: count: cart.item_count -}}
+</span>

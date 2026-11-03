@@ -1,0 +1,2381 @@
+{% comment %}
+  Custom header.
+
+  - Navigation links on the left are pulled dynamically from the menu chosen in
+    the section settings. With no menu chosen, the built-in launch nav renders
+    instead (snippets/custom-header-default-nav.liquid).
+  - On the right (search and account are off by default; see the section settings):
+    an inline expanding search (reuses Shopify's predictive search
+    when it's enabled), customer login, an optional app block, and the cart link.
+
+  How to use it:
+  1. Theme editor -> Customize -> click the "Header" section group at the top.
+  2. Add section -> "Custom header". Drag it where you want it.
+  3. Hide or remove the original "Header" section in that group.
+{% endcomment %}
+
+{%- if section.settings.show_search and settings.predictive_search_enabled -%}
+  {%- comment %} prices shown inside predictive search results {%- endcomment %}
+  <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
+{%- endif -%}
+
+{%- liquid
+  assign menu = section.settings.menu
+-%}
+
+{%- style -%}
+  {%- comment %}
+    custom.css sets the header's padding with !important on
+    `header.custom-header.page-width`, so these selectors have to match its
+    specificity (and win on source order) to stay editable from the theme editor.
+  {% endcomment -%}
+  header.custom-header.page-width {
+    padding-top: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px !important;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px !important;
+    padding-inline: {{ section.settings.padding_inline }}px !important;
+  }
+  @media screen and (min-width: 990px) {
+    header.custom-header.page-width {
+      padding-top: {{ section.settings.padding_top }}px !important;
+      padding-bottom: {{ section.settings.padding_bottom }}px !important;
+    }
+  }
+  .header-wrapper {
+    --hmt-gutter: {{ section.settings.padding_inline }}px;
+  }
+  .section-header {
+    position: sticky; /* fixes a Safari z-index issue, same as the default header */
+    top: 0;
+    /* Above every section's own layers (the highest in-page z-index is 6, e.g.
+       the fundraising-impact copy sat at 3 and painted over the bar) but below
+       the cart drawer (1000) and the preloader (10000). */
+    z-index: 20;
+    margin-bottom: {{ section.settings.margin_bottom }}px;
+  }
+  {%- comment %}
+    The nav row's own background + border. It sits on .custom-header rather than
+    the wrapper so the dark announcement marquee above keeps its own colour, and
+    because custom.css forces the wrapper transparent with !important.
+  {% endcomment -%}
+  .custom-header {
+    background: {{ section.settings.header_background }};
+    border: {{ section.settings.header_border_width }}px solid {{ section.settings.header_border_color }};
+    {%- comment %}
+      The megamenu panel and the donations popup are the header's own colours,
+      so they follow the two settings above rather than hard-coding a copy.
+    {% endcomment -%}
+    --hmt-panel-bg: {{ section.settings.header_background }};
+    --hmt-panel-border: {{ section.settings.header_border_color }};
+  }
+{%- endstyle -%}
+
+<style>
+  /* ---- Announcement marquee (sits above the nav row, inside the same
+         fixed header wrapper so it slides away with the sticky header) ---- */
+  .hmt-announcement {
+    position: relative;
+    overflow: hidden;
+    background: var(--hmt-announcement-bg, #2b2926);
+    color: var(--hmt-announcement-fg, #f6f1e7);
+  }
+  .hmt-announcement__track {
+    display: flex;
+    width: max-content;
+    animation: hmt-marquee var(--hmt-marquee-duration, 25s) linear infinite;
+    will-change: transform;
+  }
+  .hmt-announcement--pausable:hover .hmt-announcement__track {
+    animation-play-state: paused;
+  }
+  .hmt-announcement__group {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+  .hmt-announcement__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    /* 4.167vw a side = 8.334vw (120px @ 1440) between announcements. It is
+       padding rather than a flex gap on purpose: the marquee slides by exactly
+       one group's width, and a gap between groups would break that. */
+    padding: 0.8rem 4.167vw;
+    color: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+    font-family: var(--geist, 'Geist', 'Helvetica Neue', Arial, sans-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  a.hmt-announcement__item:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.3rem;
+  }
+  .hmt-announcement__icon {
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  @keyframes hmt-marquee {
+    to {
+      transform: translateX(var(--hmt-marquee-shift, -50%));
+    }
+  }
+  @media screen and (max-width: 749px) {
+    .hmt-announcement__item {
+      padding-block: 0.6rem;
+      font-size: 1rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hmt-announcement {
+      overflow-x: auto;
+    }
+    .hmt-announcement__track {
+      animation: none;
+    }
+    .hmt-announcement__group[aria-hidden='true'] {
+      display: none;
+    }
+  }
+
+  .custom-header {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'nav actions';
+    align-items: center;
+    column-gap: clamp(1rem, 3vw, 4rem);
+  }
+  .custom-header__nav {
+    grid-area: nav;
+    justify-self: start;
+    min-width: 0;
+  }
+  /* Centre slot — homepage only (see the markup): the dark globe pill from
+     the hero. It is laid out at the hero video pill's size, absolutely centred
+     on the row (so it takes no grid column) and driven by bottomPin() in
+     sections/homepage-hero.liquid, which parks it over the video pill, builds
+     the panel / continents / H inside it, then scrubs it up here and scales
+     it down to its resting height (max(36px, 3.75vw) — set there). It only
+     ever downscales, so the vector stays crisp. The sizes mirror the hero's
+     pill (desktop 48.958vw x 25.556vw, phone 94cu x 49cu) — keep in step. */
+  .custom-header__logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    /* centred by GSAP (xPercent/yPercent -50) — a CSS translate here gets
+       folded into GSAP's transform and then overwritten by its x tween */
+    width: 48.958vw;
+    height: 25.556vw;
+    border-radius: 999px;
+    overflow: hidden;
+    display: block;
+    visibility: hidden; /* the hero scrub reveals it (autoAlpha) */
+    will-change: transform;
+    z-index: 1;
+  }
+  @media (max-width: 1024px) {
+    .custom-header__logo {
+      --cu: min(1vw, 0.46vh);
+      width: min(calc(94 * var(--cu)), calc(100vw - 2 * var(--sidepadding-xs, 10px)));
+      height: calc(49 * var(--cu));
+    }
+  }
+  .custom-header__logo-panel,
+  .custom-header__logo-map {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  .custom-header__logo-panel {
+    background: #333333;
+  }
+  /* assets/globe.svg as an alpha mask over a plain background-color, so
+     "the globe turns white" is one colour tween. */
+  .custom-header__logo-map {
+    background-color: #4e4e4e;
+    -webkit-mask-image: url('{{ 'globe.svg' | asset_url }}');
+    mask-image: url('{{ 'globe.svg' | asset_url }}');
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  /* "We change it / together": two masked label boxes (same look as the hero's
+     opening video pills) that the scrub raises into the pill before the H and
+     drops back out of it. */
+  .custom-header__logo-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .custom-header__logo-mask {
+    display: block;
+    overflow: hidden;
+  }
+  .custom-header__logo-line {
+    display: block;
+    padding: 0.6vw 1.6vw;
+    background: #f9f7f3;
+    color: var(--black);
+    text-align: center;
+    white-space: nowrap;
+    will-change: transform;
+  }
+  .custom-header__logo-h {
+    position: absolute;
+    inset: 0;
+    margin: 0 auto; /* centred without a CSS translate (see above) */
+    width: auto;
+    height: 100%;
+    aspect-ratio: 223 / 368;
+    display: block;
+    color: #fff;
+  }
+  /* Every page but the homepage: the pill simply sits at rest in the bar at
+     its final size and look. No GSAP touches it there, so a CSS translate is
+     safe for centring. */
+  .custom-header__logo.custom-header__logo--static {
+    visibility: visible;
+    height: max(36px, 3.75vw);
+    width: calc(max(36px, 3.75vw) * 705 / 368);
+    translate: -50% -50%;
+    will-change: auto;
+  }
+  .custom-header__logo--static .custom-header__logo-map {
+    background-color: #fff;
+  }
+  .custom-header__logo--static .custom-header__logo-text {
+    display: none;
+  }
+  /* Light header (free-kit pages): no nav, so the logo pill moves from the
+     centre to the left edge, with the back link alone on the right. */
+  .custom-header--minimal {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'nav actions';
+    min-height: max(36px, 3.75vw); /* the logo is absolute, so hold its height */
+  }
+  .custom-header--minimal .custom-header__logo.custom-header__logo--static {
+    left: 0.972vw; /* the header's padding-inline (custom.css) */
+    translate: 0 -50%;
+  }
+  /* Opacity, not display: the hero reads the pill's height on refresh, so it
+     must keep its layout box while the phone nav panel covers it. */
+  .custom-header.is-nav-open .custom-header__logo {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+  .custom-header__actions {
+    grid-area: actions;
+    justify-self: end;
+  }
+  .custom-header__menu,
+  .custom-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.694vw;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .custom-header__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: rgb(var(--color-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.06rem;
+    font-size: 1.3rem;
+    line-height: 1;
+    white-space: nowrap;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .custom-header__link:hover,
+  .custom-header__link[aria-current='page'] {
+    text-decoration: underline;
+  }
+  .custom-header__item {
+    position: relative;
+  }
+
+  /* ---- Nav button roll-up hover ---- */
+  .custom-header__link--roll {
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.4s cubic-bezier(0.76, 0, 0.24, 1),
+      border-color 0.4s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .custom-header__link--roll:hover {
+    text-decoration: none;
+    background: var(--black, #111);
+    border-color: var(--black, #111);
+  }
+  .custom-header__link--roll .link-roll {
+    position: relative;
+    display: block;
+    overflow: hidden;
+  }
+  .custom-header__link--roll .link-roll__line {
+    display: block;
+    transition: transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .custom-header__link--roll .link-roll__line--in {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    color: #fff;
+  }
+  .custom-header__link--roll:hover .link-roll__line {
+    transform: translateY(-100%);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .custom-header__link--roll .link-roll__line {
+      transition: none;
+    }
+  }
+
+  /* Cart button: simple colour change on hover (no roll) */
+  .custom-header__cart {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+  .custom-header__cart:hover {
+    text-decoration: none;
+    background: var(--black, #111);
+    border-color: var(--black, #111);
+    color: #fff;
+  }
+  /* ---- Pill-style nav buttons (matches the megamenu mock) ---- */
+  .custom-header {
+    --hmt-orange: #ef8a4d;
+    {%- comment %} --hmt-panel-bg / --hmt-panel-border come from the Liquid style block above. {% endcomment -%}
+    /* Height every header control shares. It is what the mock's nav pill comes
+       out at: 17px line box + 6.79px/8.79px padding + 2 borders. */
+    --hmt-control-h: 3.5rem;
+  }
+  .custom-header__link--pill {
+    padding: 1rem 1.5rem;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.4);
+    border-radius: 10rem;
+  }
+  {%- comment %}
+    Plus icon. Painted as a mask rather than an <img> so it picks up the pill's
+    current text colour — white on the dark hover fill, #111 on the open orange
+    pill — which a flat SVG file could not do.
+  {% endcomment -%}
+  .custom-header__pill-plus {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: max(8px, 0.694vw); /* 10px @ 1440 */
+    height: max(8px, 0.694vw);
+    background-color: currentColor;
+    -webkit-mask: url('{{ 'header-plus.svg' | asset_url }}')
+      no-repeat center / contain;
+    mask: url('{{ 'header-plus.svg' | asset_url }}') no-repeat center /
+      contain;
+    transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  /* ---- Megamenu (desktop only, >= 990px) ---- */
+  .header-wrapper {
+    position: relative; /* --hmt-gutter comes from the Liquid style block above */
+  }
+
+  /* Nav pills. `.custom-header__nav a…` is two classes + a type so it also beats
+     custom.css's `a.custom-header__link` rule, keeping the <button> toggles and
+     the plain <a> links identical. Height matches the icon buttons on the right
+     so both sides of the header sit on the same baseline. */
+  .custom-header__mega-toggle,
+  .custom-header__nav a.custom-header__link--pill,
+  .custom-header__actions a.custom-header__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.694vw; /* 10px @ 1440 between the label and the plus */
+    min-height: var(--hmt-control-h);
+    padding-block: 0.679rem 0.879rem;
+    padding-inline: 1.2rem;
+    font-family: var(--futura, 'Futura PT Cond', 'Arial Narrow', Arial, sans-serif);
+    font-size: 2rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 85%;
+    letter-spacing: -0.08rem;
+    color: var(--black, #333);
+    background: transparent;
+    border: 1px solid var(--beige, #e9ded7);
+    border-radius: 10rem;
+  }
+  {%- comment %}
+    The roll-up hover swaps in a second, white line of text. The rule above
+    outranks the older `--roll:hover` fill, so the fill has to be restated here
+    or the white line lands on a white pill and reads as empty.
+  {% endcomment -%}
+  .custom-header__mega-toggle:hover,
+  .custom-header__mega-toggle:focus-visible,
+  .custom-header__nav a.custom-header__link--pill:hover,
+  .custom-header__nav a.custom-header__link--pill:focus-visible,
+  .custom-header__actions a.custom-header__back:hover,
+  .custom-header__actions a.custom-header__back:focus-visible {
+    background: var(--black, #333);
+    border-color: var(--black, #333);
+    color: #fff;
+    text-decoration: none;
+  }
+  .custom-header__mega-toggle:hover .custom-header__pill-plus,
+  .custom-header__nav a.custom-header__link--pill:hover .custom-header__pill-plus {
+    color: #fff;
+  }
+  .custom-header__item--mega.is-open > .custom-header__mega-toggle {
+    background: var(--hmt-orange);
+    border-color: var(--hmt-orange);
+  }
+  .custom-header__item--mega.is-open > .custom-header__mega-toggle .link-roll__line,
+  .custom-header__item--mega.is-open > .custom-header__mega-toggle .custom-header__pill-plus {
+    color: #111;
+  }
+  .custom-header__item--mega.is-open > .custom-header__mega-toggle .custom-header__pill-plus {
+    transform: rotate(45deg);
+  }
+
+  /* The panel is a floating "card" that drops under the header, left-aligned
+     to the page gutter and only as wide as the cards inside it. */
+  .mega-panel {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: var(--hmt-gutter);
+    z-index: 4;
+    /* max-content so the cards always sit in one row, bounded by the viewport
+       rather than by the containing block — an ancestor with a transform (the
+       hero intro animates the nav) would otherwise squeeze it. */
+    width: max-content;
+    max-width: calc(100vw - 2 * var(--hmt-gutter));
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.8rem);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+  }
+  .custom-header__item--mega.is-open > .mega-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  {%- comment %}
+    The panel body. `.custom-megamenu` carries the cream card, `.wrapper` is the
+    row of links — same shape as the design mock. It shares the element with
+    `.mega-panel` so the dropdown positioning above stays in one place.
+  {% endcomment -%}
+  .custom-megamenu {
+    background: var(--hmt-panel-bg);
+    border: 1px solid var(--hmt-panel-border);
+    border-radius: 1.389vw;
+    padding: 0.972vw;
+    box-shadow: 0 1.6rem 4rem rgba(0, 0, 0, 0.16);
+  }
+  .custom-megamenu .wrapper {
+    display: flex;
+    gap: 0.694vw;
+  }
+
+  /* ---- Card: full-bleed image, title + plus on top, caption at the bottom ---- */
+  .custom-megamenu .megamenu-child {
+    position: relative;
+    flex: 0 0 auto;
+    width: 16.667vw;
+    height: 16.667vw;
+    padding: 0.59vw;
+    border: 0.39px solid var(--hmt-panel-border);
+    border-radius: 0.694vw;
+    /* clips the cover image (and its hover scale) to the card's corners */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+
+    /* staggered reveal, driven by .is-open on the nav item */
+    opacity: 0;
+    transform: translateY(1.4rem);
+    transition: opacity 0.4s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .custom-header__item--mega.is-open .megamenu-child {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .custom-header__item--mega.is-open .megamenu-child:nth-child(1) { transition-delay: 0.04s; }
+  .custom-header__item--mega.is-open .megamenu-child:nth-child(2) { transition-delay: 0.1s; }
+  .custom-header__item--mega.is-open .megamenu-child:nth-child(3) { transition-delay: 0.16s; }
+  .custom-header__item--mega.is-open .megamenu-child:nth-child(4) { transition-delay: 0.22s; }
+  .custom-header__item--mega.is-open .megamenu-child:nth-child(5) { transition-delay: 0.28s; }
+  .custom-header__item--mega.is-open .megamenu-child:nth-child(6) { transition-delay: 0.34s; }
+
+  .custom-megamenu .megamenu-child > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .custom-megamenu .megamenu-child:hover > img {
+    transform: scale(1.04);
+  }
+  {%- comment %}
+    Torn-paper strip the card title sits on. A ::before rather than a real
+    element on purpose — the global `div:empty { display: none }` reset would
+    swallow an empty overlay div. It has to carry an explicit z-index because
+    generated content counts as the element's FIRST child, so at z-index auto
+    it would paint under the cover image instead of over it.
+  {% endcomment -%}
+  .custom-megamenu .megamenu-child::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* the PNG at its natural size: 201px x 68px at 1440 */
+    width: 13.958vw;
+    height: 4.722vw;
+    z-index: 1;
+    background-image: url('{{ 'header-frame.png' | asset_url }}');
+    background-size: 100% 100%;
+    pointer-events: none;
+  }
+  {%- comment %}
+    .top / .bottom are static while the cover image is absolutely positioned,
+    so without a position of their own the image paints over them. The z-index
+    lifts them above the paper strip too.
+  {% endcomment -%}
+  .custom-megamenu .megamenu-child .top,
+  .custom-megamenu .megamenu-child .bottom {
+    position: relative;
+    z-index: 2;
+  }
+  .custom-megamenu .megamenu-child .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.694vw;
+  }
+  {%- comment %}
+    Card title. Smaller and more tightly tracked than the global .h3, with a
+    tighter 75% line-height so two-line titles like "Our History" close up. px
+    values from the design are converted at the 1440 reference width:
+    35px = 2.431vw, -3px = -0.208vw. min-width/overflow-wrap let long titles
+    wrap instead of shoving the plus off the card.
+  {% endcomment -%}
+  .custom-megamenu .megamenu-child .top .h3 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 2.431vw;
+    font-weight: 700;
+    line-height: 75%;
+    letter-spacing: -0.208vw;
+    text-transform: uppercase;
+  }
+  .custom-megamenu .megamenu-child .top img {
+    flex: 0 0 auto;
+    width: 1.667vw;
+    height: 1.667vw;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .custom-megamenu .megamenu-child:hover .top img {
+    transform: rotate(90deg);
+  }
+  .custom-megamenu .megamenu-child .bottom {
+    max-width: 8.403vw;
+  }
+  {%- comment %}
+    Feature card ("Wide card" on the Megamenu card block). 28.333vw = 408px at
+    1440, against the 16.667vw/240px the rest of the row uses. Height is left
+    alone on purpose so it still lines up with its neighbours.
+  {% endcomment -%}
+  .custom-megamenu .megamenu-child--wide {
+    width: 28.333vw;
+  }
+
+  @media screen and (min-width: 990px) {
+    .custom-header__item--mega {
+      position: static; /* lets the mega panel anchor to the header, not the pill */
+    }
+    .custom-header__item--mega > .custom-header__submenu {
+      display: none !important; /* mega panel replaces the plain dropdown */
+    }
+  }
+  @media screen and (max-width: 989px) {
+    .mega-panel {
+      display: none !important; /* below desktop, the plain submenu takes over */
+    }
+    .custom-header__pill-plus {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mega-panel,
+    .custom-megamenu .megamenu-child,
+    .custom-megamenu .megamenu-child > img,
+    .custom-megamenu .megamenu-child .top img,
+    .custom-header__pill-plus {
+      transition: none !important;
+    }
+  }
+
+  .custom-header__submenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 18rem;
+    margin: 0;
+    padding: 1rem 0;
+    list-style: none;
+    background: rgb(var(--color-background));
+    border: 0.1rem solid rgba(var(--color-foreground), 0.1);
+    box-shadow: var(--shadow-drop, 0 0.4rem 1.2rem rgba(0, 0, 0, 0.12));
+    display: none;
+    z-index: 4;
+  }
+  .custom-header__item:hover > .custom-header__submenu,
+  .custom-header__item:focus-within > .custom-header__submenu {
+    display: block;
+  }
+  .custom-header__submenu .custom-header__link {
+    padding: 0.6rem 2rem;
+    width: 100%;
+  }
+  .custom-header__cart-count {
+    font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    padding: 0 0.5rem;
+    margin-left: 0.4rem;
+    border-radius: 10rem;
+    background: rgba(var(--color-foreground), 0.14);
+    font-size: 1.1rem;
+  }
+
+  /* ---- Circular icon buttons (search / account / cart) ---- */
+  .custom-header__icon-btn {
+    --hmt-icon-btn-size: var(--hmt-control-h);
+    /* Glyph size inside the circle — whatever is left over is the padding
+       ring. Deliberately rem, not vw: the icons used to be sized in vw inside
+       a rem-sized button, so the padding shrank as the viewport grew (at 1920
+       the cart glyph was 43px inside a 35px circle and spilled out of it). */
+    --hmt-icon-glyph: 1.6rem;
+    position: relative;
+    flex: 0 0 auto;
+    width: var(--hmt-icon-btn-size);
+    height: var(--hmt-icon-btn-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--beige, #e9ded7);
+    border-radius: 50%;
+    color: var(--black, #333);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+  .custom-header__icon-btn:hover,
+  .custom-header__icon-btn:focus-visible {
+    background: var(--black, #333);
+    border-color: var(--black, #333);
+    color: #fff;
+    text-decoration: none;
+  }
+  .custom-header__icon-btn .svg-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    line-height: 0;
+  }
+  .custom-header__icon-btn svg {
+    display: block;
+    width: var(--hmt-icon-glyph);
+    height: auto;
+    color: currentColor;
+  }
+  {%- comment %}
+    Search + cart are painted as CSS masks rather than inline <svg>, the same
+    way .custom-header__pill-plus is. Those two source files carry a hard-coded
+    #333 fill, so inlining them would leave a dark glyph sitting on the dark
+    hover fill; a mask takes only the shape and paints it in currentColor, so
+    they invert with the button. Both size off --hmt-icon-glyph, which keeps
+    them in step with the account icon (still a real <svg>).
+  {% endcomment -%}
+  .custom-header__icon-glyph {
+    display: block;
+    flex: 0 0 auto;
+    height: var(--hmt-icon-glyph, 1.6rem);
+    background-color: currentColor;
+    -webkit-mask: var(--hmt-icon-src) no-repeat center / contain;
+    mask: var(--hmt-icon-src) no-repeat center / contain;
+  }
+  /* 18x18 source — square */
+  .custom-header__icon-glyph--search {
+    width: var(--hmt-icon-glyph, 1.6rem);
+    --hmt-icon-src: url('{{ 'header-search.svg' | asset_url }}');
+  }
+  /* 23x20 source — wider than tall, so the width is scaled to keep it undistorted */
+  .custom-header__icon-glyph--cart {
+    width: calc(var(--hmt-icon-glyph, 1.6rem) * 1.15);
+    --hmt-icon-src: url('{{ 'header-cart.svg' | asset_url }}');
+  }
+  {%- comment %}
+    The two supplied glyphs get their weight from a stroke laid over their fill
+    (0.3 on search's 18-unit box, 0.7 on cart's 23-unit box — ~0.27px and
+    ~0.56px once rendered). icon-account.svg is fill-only, so it reads thinner
+    beside them. 0.5 on its 18x19 box lands at ~0.42px, between the two.
+    Applied here rather than by editing the asset so the stroke stays
+    currentColor and still inverts on hover.
+  {% endcomment -%}
+  .custom-header__icon-btn .icon-account {
+    stroke: currentColor;
+    stroke-width: 0.5;
+  }
+  .custom-header__icon-btn .custom-header__cart-count {
+    position: absolute;
+    top: -0.3rem;
+    right: -0.5rem;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    margin: 0;
+    padding: 0 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10rem;
+    background: var(--hmt-orange);
+    color: #111;
+    font-family: var(--geist, 'Geist', 'Helvetica Neue', Arial, sans-serif);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Donations counter (button + popup, not a link) ---- */
+  .donation {
+    position: relative;
+    flex: 0 0 auto;
+  }
+  /* Redlined: 42 tall, 4 top / 5 bottom / 16 right padding, 22 between the
+     leaf cut-out and the copy column. Left padding is 0 so the leaf sits flush
+     into the rounded end, as in the mock. */
+  .donation__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 2.2rem;
+    height: 4.2rem;
+    padding: 0.4rem 1.6rem 0.5rem 0;
+    background: transparent;
+    border: 1px solid var(--beige, #e9ded7);
+    border-radius: 10rem;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+  }
+  .donation__pill:hover,
+  .donation.is-open .donation__pill {
+    border-color: rgba(var(--color-foreground), 0.35);
+    background: rgba(255, 255, 255, 0.55);
+  }
+  .donation__sprout {
+    flex: 0 0 auto;
+    /* natural size of the cut-out (49x45) — it's taller than the 42 pill on
+       purpose, so it breaks the top and bottom edges like the mock. */
+    width: 4.9rem;
+    display: block;
+  }
+  .donation__sprout svg,
+  .donation__sprout img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .donation__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.2rem;
+    font-family: var(--geist, 'Geist', 'Helvetica Neue', Arial, sans-serif);
+    text-align: right;
+  }
+  .donation__label {
+    font-size: 1rem;
+    /* pinned so label + divider + amount add up to the redlined 42 pill */
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.45);
+    padding-bottom: 0.3rem;
+    border-bottom: 0.1rem dotted #d9cdb8;
+  }
+  .donation__amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--black, #333);
+    font-variant-numeric: tabular-nums;
+  }
+
+  {%- comment %}
+    Full-screen donations takeover. Every measurement below comes from the mock
+    and is converted at the 1440 reference width (px / 14.4 = vw):
+      48 top gap · 229 side gutter on the amount · 34 label-to-copy ·
+      357 copy width · 30 copy-to-sprout · 168 sprout · 140 soil · 16 CTA inset.
+    The panel is portalled to <body> by the script at the bottom of this file,
+    so it is a child of <body> at runtime — hence .donation__popup.is-open
+    rather than a .donation.is-open descendant selector.
+  {% endcomment -%}
+  .donation__popup {
+    --hmt-donation-accent: #c9d419;
+    {%- comment %}
+      Restated locally, NOT inherited. --hmt-orange lives on .custom-header, and
+      the script portals this panel to <body> — outside that scope the variable
+      resolves to nothing, which left the close button with no fill and a #111
+      glyph on dark green, i.e. invisible. --futura/--geist/--black are on :root
+      so they survive the move; anything scoped to the header must be repeated.
+    {% endcomment -%}
+    --hmt-orange: #ef8a4d;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: max(48px, 3.333vw);
+    overflow: hidden;
+    background: #12301a url('{{ 'header-green-bg.png' | asset_url }}')
+      center / cover no-repeat;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+  }
+  .donation__popup.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.4s ease;
+  }
+  .donation__close {
+    position: absolute;
+    top: 1.667vw;
+    right: 1.667vw;
+    z-index: 4;
+    width: max(40px, 3.472vw);
+    height: max(40px, 3.472vw);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: var(--hmt-orange);
+    border: 0;
+    border-radius: 50%;
+    color: #111;
+    cursor: pointer;
+    transition: filter 0.3s ease, transform 0.3s ease;
+  }
+  .donation__close:hover {
+    filter: brightness(1.06);
+    transform: scale(1.05);
+  }
+  .donation__close svg {
+    width: max(14px, 1.25vw);
+    height: max(14px, 1.25vw);
+  }
+
+  .donation__hero {
+    width: 100%;
+    text-align: center;
+  }
+  {%- comment %}
+    Sized so the mock's "$2,000,000+" spans the 982px the two 229 gutters leave
+    — i.e. 68.194vw, the width declared below. Futura PT Cond has no predictable
+    advance width so the size is measured against a render, not derived; nudge
+    it if the ends miss the gutters. letter-spacing is in em, not vw, so the
+    tracking stays proportional if the size changes.
+    nowrap because a wrapped amount would collide with the label underneath.
+    Full width + text-align rather than a 68.194vw box: once the text is wider
+    than a fixed box it overflows it, and the result stopped reading as centred
+    on the viewport. Centring the line box keeps it true at any size.
+  {% endcomment -%}
+  .donation__hero-amount {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    font-family: var(--futura, 'Futura PT Cond', 'Arial Narrow', Arial, sans-serif);
+    font-size: 13.75vw;
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+    color: #fff;
+  }
+  .donation__hero-currency {
+    color: var(--hmt-donation-accent);
+  }
+  .donation__hero-label {
+    margin: 0;
+    font-family: var(--futura, 'Futura PT Cond', 'Arial Narrow', Arial, sans-serif);
+    font-size: max(18px, 2.5vw);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.1vw;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .donation__hero-text {
+    max-width: max(280px, 24.792vw);
+    margin: 2.361vw auto 0;
+    font-family: var(--geist, 'Geist', 'Helvetica Neue', Arial, sans-serif);
+    font-size: max(13px, 0.972vw);
+    font-weight: 500;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .donation__hero-text > * {
+    margin: 0;
+  }
+  .donation__hero-updated {
+    margin: 1.111vw 0 0;
+    font-family: var(--geist, 'Geist', 'Helvetica Neue', Arial, sans-serif);
+    font-size: max(11px, 0.764vw);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  {%- comment %}
+    Sprout + soil are pinned to the floor of the panel rather than sitting in
+    flow, so the hero block keeps its 48 offset from the top on any viewport
+    height. The negative margin tucks the sprout's roots behind the soil.
+  {% endcomment -%}
+  .donation__soil {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .donation__leaf {
+    display: block;
+    width: max(96px, 11.667vw);
+    height: auto;
+    /* sinks the sprout to its own midpoint behind the soil. The image is
+       232x219, so at 11.667vw wide it stands 11.01vw tall — half is 5.5vw. */
+    margin: 0 auto calc(max(96px, 11.667vw) * -0.472);
+    position: relative;
+    z-index: 1;
+  }
+  .donation__soil-img {
+    display: block;
+    width: 100%;
+    height: max(80px, 9.722vw);
+    object-fit: cover;
+    object-position: center top;
+    position: relative;
+    z-index: 2;
+  }
+  {%- comment %}
+    .custom-button owns the fill, border, radius and padding — only placement
+    belongs here.
+  {% endcomment -%}
+  .donation__cta {
+    position: absolute;
+    left: 50%;
+    bottom: 1.111vw;
+    z-index: 3;
+    transform: translateX(-50%);
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+  .donation__cta:hover {
+    filter: brightness(1.06);
+    transform: translate(-50%, -0.2rem);
+  }
+  {%- comment %}
+    Below desktop the vw scale collapses, so the takeover switches to rem and
+    lets the hero column breathe to the screen edges.
+  {% endcomment -%}
+  @media screen and (max-width: 749px) {
+    .donation__label {
+      display: none;
+    }
+    .donation__pill {
+      padding-right: 1.2rem;
+    }
+    .donation__popup {
+      padding-top: 7rem;
+    }
+    .donation__close {
+      top: 1.6rem;
+      right: 1.6rem;
+      width: 4.4rem;
+      height: 4.4rem;
+    }
+    .donation__close svg {
+      width: 1.6rem;
+      height: 1.6rem;
+    }
+    .donation__hero-amount {
+      width: 90vw;
+      font-size: 19vw;
+      letter-spacing: -0.6vw;
+    }
+    .donation__hero-label {
+      font-size: 4.4vw;
+    }
+    .donation__hero-text {
+      max-width: 78vw;
+      margin-top: 2.4rem;
+      font-size: 1.3rem;
+    }
+    .donation__hero-updated {
+      margin-top: 1.6rem;
+      font-size: 1.1rem;
+    }
+    .donation__leaf {
+      width: 26vw;
+      margin-bottom: -4vw;
+    }
+    .donation__soil-img {
+      height: 22vw;
+    }
+    .donation__cta {
+      bottom: 2rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .donation__popup,
+    .donation__cta,
+    .donation__close,
+    .custom-header__icon-btn {
+      transition: none !important;
+    }
+  }
+
+  /* ---- Inline expanding search ---- */
+  .inline-search {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  {%- comment %}
+    Two-class selectors on purpose: `.custom-header__icon-btn .svg-wrapper`
+    above also matches these spans, so the show/hide rules need equal
+    specificity (and they come later, so they win).
+  {% endcomment -%}
+  .inline-search .inline-search__icon {
+    display: none;
+    align-items: center;
+  }
+  .inline-search .inline-search__icon--open {
+    display: inline-flex;
+  }
+  .inline-search[open] .inline-search__icon--open {
+    display: none;
+  }
+  .inline-search[open] .inline-search__icon--close {
+    display: inline-flex;
+  }
+
+  .inline-search__wrapper,
+  .inline-search__form {
+    display: flex;
+    align-items: center;
+  }
+  .inline-search__field {
+    display: flex;
+    align-items: center;
+    position: relative;
+    flex: 0 0 auto;
+    width: 0;
+    margin-left: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-radius: 10rem;
+    transition: width 0.28s ease, margin 0.28s ease, opacity 0.2s ease;
+  }
+  .inline-search[open] .inline-search__field {
+    width: clamp(16rem, 26vw, 30rem);
+    /* same rhythm as the gap between the header action buttons */
+    margin-left: 0.694vw;
+    opacity: 1;
+  }
+  {%- comment %}
+    The field is dressed as one more header control rather than a raw input:
+    same height as the nav pills and icon buttons, same beige hairline, same
+    fully-rounded end caps, and the same dark fill on focus that the pills use
+    on hover. Dawn's --inputs-radius / --inputs-border-width defaults are
+    deliberately not used here — they render a square, hard-bordered box that
+    belongs to the rest of the storefront, not to this header.
+  {% endcomment -%}
+  .inline-search__input {
+    width: 100%;
+    height: var(--hmt-control-h);
+    padding: 0 6.6rem 0 1.6rem;
+    font-family: var(--geist, 'Geist', 'Helvetica Neue', Arial, sans-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--black, #333);
+    background-color: rgba(255, 255, 255, 0.55);
+    border: 1px solid var(--beige, #e9ded7);
+    border-radius: 10rem;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+  }
+  .inline-search__input::placeholder {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.45);
+  }
+  .inline-search__input:hover {
+    border-color: rgba(var(--color-foreground), 0.35);
+  }
+  .inline-search__input:focus,
+  .inline-search__input:focus-visible {
+    outline: none;
+    box-shadow: none;
+    border-color: var(--black, #333);
+    background-color: #fff;
+  }
+  .inline-search__input::-webkit-search-decoration,
+  .inline-search__input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+  {%- comment %}
+    Both in-field buttons echo the header's circular icon buttons — round, and
+    they take the same dark fill on hover.
+  {% endcomment -%}
+  .inline-search__reset,
+  .inline-search__submit {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.6rem;
+    height: 2.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    color: rgba(var(--color-foreground), 0.55);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .inline-search__reset:hover,
+  .inline-search__submit:hover {
+    background: var(--black, #333);
+    color: #fff;
+  }
+  .inline-search__submit {
+    right: 0.45rem;
+    /* the in-field glyph runs smaller than the header buttons' 1.6rem */
+    --hmt-icon-glyph: 1.4rem;
+  }
+  .inline-search__reset {
+    right: 3.3rem;
+  }
+  .inline-search__reset.hidden {
+    display: none;
+  }
+  .inline-search__reset svg,
+  .inline-search__submit svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  /* predictive results dropdown — anchor to the right edge so it doesn't run off screen */
+  .inline-search predictive-search {
+    position: relative;
+    display: block;
+  }
+  .inline-search .predictive-search {
+    left: auto;
+    right: -0.1rem;
+    top: calc(100% + 1rem);
+  }
+  /* Keep the results panel out of flow until it opens. Its stylesheet loads
+     async (media=print swap) and until it lands the unstyled panel sat inline
+     in the header row — the sticky header measured that moment as 355px and
+     published it as --header-height, which the hero pads for. */
+  .inline-search predictive-search:not([open]) .predictive-search {
+    display: none;
+  }
+
+
+  /* ---- Burger nav (below the megamenu breakpoint, < 990px) ----
+     The nav collapses behind a toggle in the bar's left slot. The open panel
+     lists the top-level pills in a column, each megamenu's children indented
+     beneath their parent (the mega panel itself is desktop-only). ---- */
+  .custom-header__burger {
+    display: none;
+    grid-area: burger;
+  }
+  .custom-header__icon-btn .custom-header__burger-close {
+    display: none;
+  }
+  .custom-header.is-nav-open .custom-header__burger-open {
+    display: none;
+  }
+  .custom-header.is-nav-open .custom-header__icon-btn .custom-header__burger-close {
+    display: inline-flex;
+  }
+  /* Text labels for the phone header's MENU / CART pills (shown <= 768px). */
+  .custom-header__burger-label,
+  .custom-header__cart-label {
+    display: none;
+    font-family: var(--geist, 'Geist', 'Helvetica Neue', Arial, sans-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  @media screen and (max-width: 989px) {
+    .custom-header {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        'burger actions'
+        'nav nav';
+      row-gap: 0;
+    }
+    .custom-header__burger {
+      display: inline-flex;
+    }
+    .custom-header__nav {
+      display: none;
+      justify-self: stretch;
+      padding-top: 1.2rem;
+    }
+    .custom-header.is-nav-open .custom-header__nav {
+      display: block;
+    }
+    /* The open panel fills the screen, so the page no longer peeks out under
+       a half-height list. The bar keeps its own row; the nav row takes the
+       rest and scrolls on its own (data-lenis-prevent on the nav). */
+    .custom-header.is-nav-open {
+      height: 100vh;
+      height: 100dvh;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .custom-header.is-nav-open .custom-header__nav {
+      align-self: stretch;
+      overflow-y: auto;
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+    .custom-header__menu {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2rem;
+    }
+    .custom-header__mega-toggle,
+    .custom-header__nav a.custom-header__link--pill {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .custom-header__submenu {
+      position: static;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      min-width: 0;
+      margin: 0.8rem 0 0;
+      padding: 0 0 0 1.2rem;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    /* Child links share the bar's control height so they line up with the
+       pills above and make a comfortable tap target. */
+    .custom-header__submenu .custom-header__link {
+      display: flex;
+      align-items: center;
+      min-height: var(--hmt-control-h);
+      padding-inline: 1.2rem;
+    }
+  }
+  @media screen and (max-width: 749px) {
+    /* The open search drops under the bar instead of shoving the other
+       action buttons off the right edge. custom.css sets the open width with
+       !important, so this one has to as well (later source order wins). */
+    .inline-search__field {
+      position: absolute;
+      top: calc(100% + 0.6rem);
+      right: 0;
+      z-index: 5;
+    }
+    .inline-search[open] .inline-search__field {
+      width: min(80vw, 32rem) !important;
+      margin-left: 0;
+    }
+    .inline-search .predictive-search {
+      width: min(80vw, 32rem);
+      top: calc(100% + 1.2rem + var(--hmt-control-h));
+    }
+    .inline-search__input {
+      font-size: 1.6rem; /* 16px stops iOS zooming the field on focus */
+    }
+  }
+  @media screen and (max-width: 768px) {
+    /* Phone header per the mobile mock: no announcement bar, a MENU pill on
+       the left and a CART pill on the right. Search, account and the
+       donations counter are hidden on phones — delete the matching selector
+       below to bring one back. */
+    .hmt-announcement {
+      display: none;
+    }
+    .custom-header__actions .donation,
+    .custom-header__actions .inline-search,
+    .custom-header__actions > a.custom-header__icon-btn:not(.custom-header__cart) {
+      display: none;
+    }
+    .custom-header__burger,
+    .custom-header__cart {
+      width: auto;
+      border-radius: 10rem;
+      gap: 0.8rem;
+    }
+    .custom-header__burger {
+      padding: 0 1.4rem;
+    }
+    .custom-header__cart {
+      padding: 0 0.5rem 0 1.4rem;
+    }
+    .custom-header__burger-label,
+    .custom-header__cart-label {
+      display: inline;
+    }
+    .custom-header__icon-btn .custom-header__burger-open,
+    .custom-header__cart .custom-header__icon-glyph--cart {
+      display: none;
+    }
+    .custom-header.is-nav-open .custom-header__burger-label {
+      display: none;
+    }
+    /* With the label gone the open toggle is just the ×, so it goes back to a
+       true circle instead of an oval pill. */
+    .custom-header.is-nav-open .custom-header__burger {
+      width: var(--hmt-control-h);
+      padding: 0;
+    }
+    .custom-header__icon-btn .custom-header__cart-count {
+      position: static;
+      margin: 0;
+      min-width: 2.4rem;
+      height: 2.4rem;
+      background: var(--beige, #e9ded7);
+      color: var(--black, #333);
+    }
+  }
+</style>
+
+{%- liquid
+  # Light header (logo + one back link, no shop nav) on the page templates
+  # listed in "Light header templates", e.g. the free-kit lead pages.
+  assign minimal_header = false
+  assign minimal_templates = section.settings.minimal_templates | split: ','
+  for minimal_template in minimal_templates
+    assign minimal_suffix = minimal_template | strip
+    if minimal_suffix != blank and template.name == 'page' and template.suffix == minimal_suffix
+      assign minimal_header = true
+    endif
+  endfor
+-%}
+
+<sticky-header
+  class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}"
+>
+  {%- liquid
+    assign announcements = section.blocks | where: 'type', 'announcement'
+    if minimal_header
+      assign announcements = section.blocks | where: 'type', 'none'
+    endif
+    # The track holds N identical groups and slides exactly one group's width
+    # (-100% / N), so the loop is seamless. Short lists get more copies so the
+    # track is always wider than the viewport.
+    assign copies = 2
+    if announcements.size < 3
+      assign copies = 6
+    elsif announcements.size < 5
+      assign copies = 4
+    endif
+    assign marquee_shift = 100.0 | divided_by: copies | times: -1
+  -%}
+  {%- if announcements.size > 0 -%}
+    <div
+      class="hmt-announcement{% if section.settings.announcement_pause_on_hover %} hmt-announcement--pausable{% endif %}"
+      role="region"
+      aria-label="{{ 'sections.header.announcement' | t }}"
+      style="
+        --hmt-announcement-bg: {{ section.settings.announcement_background }};
+        --hmt-announcement-fg: {{ section.settings.announcement_text_color }};
+        --hmt-marquee-duration: {{ section.settings.announcement_speed }}s;
+        --hmt-marquee-shift: {{ marquee_shift }}%;
+      "
+    >
+      <div class="hmt-announcement__track">
+        {%- for i in (1..copies) -%}
+          <div
+            class="hmt-announcement__group"
+            {% unless forloop.first %}
+              aria-hidden="true"
+            {% endunless %}
+          >
+            {%- for block in announcements -%}
+              {%- capture announcement_body -%}
+                {%- if block.settings.icon != blank -%}
+                  <span class="hmt-announcement__icon" aria-hidden="true">{{ block.settings.icon | escape }}</span>
+                {%- endif -%}
+                <span>{{ block.settings.text | escape }}</span>
+              {%- endcapture -%}
+              {%- comment %}
+                Only the first group carries the editor attributes / focusable links —
+                the rest are visual duplicates that keep the loop seamless.
+              {%- endcomment %}
+              {%- capture editor_attributes -%}
+                {%- if forloop.parentloop.first -%}{{ block.shopify_attributes }}{%- endif -%}
+              {%- endcapture -%}
+              {%- if block.settings.link != blank -%}
+                <a
+                  href="{{ block.settings.link }}"
+                  class="hmt-announcement__item"
+                  {% unless forloop.parentloop.first %}
+                    tabindex="-1" aria-hidden="true"
+                  {% endunless %}
+                  {{ editor_attributes }}
+                >
+                  {{ announcement_body }}
+                </a>
+              {%- else -%}
+                <span class="hmt-announcement__item" {{ editor_attributes }}>{{ announcement_body }}</span>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  <header class="custom-header page-width{% if minimal_header %} custom-header--minimal{% endif %}">
+    {%- unless minimal_header -%}
+    <button
+      type="button"
+      class="custom-header__burger custom-header__icon-btn"
+      aria-expanded="false"
+      aria-controls="CustomHeaderNav-{{ section.id }}"
+      aria-label="{{ 'sections.header.menu' | t }}"
+      data-nav-toggle
+    >
+      <span class="svg-wrapper custom-header__burger-open" aria-hidden="true">{{- 'icon-hamburger.svg' | inline_asset_content -}}</span>
+      <span class="svg-wrapper custom-header__burger-close" aria-hidden="true">{{- 'icon-close.svg' | inline_asset_content -}}</span>
+      <span class="custom-header__burger-label" aria-hidden="true">{{ 'sections.header.menu' | t }}</span>
+    </button>
+
+    <nav class="custom-header__nav" id="CustomHeaderNav-{{ section.id }}" aria-label="Primary" data-lenis-prevent>
+      <ul class="custom-header__menu" role="list">
+        {%- if menu.links == blank -%}
+          {%- render 'custom-header-default-nav', section: section -%}
+        {%- endif -%}
+        {%- for link in menu.links -%}
+          {%- liquid
+            assign has_mega = false
+            if link.links != blank
+              assign has_mega = true
+            endif
+          -%}
+          <li
+            class="custom-header__item{% if has_mega %} custom-header__item--mega{% endif %}"
+            {% if has_mega %}
+              data-mega-item
+            {% endif %}
+          >
+            {%- if has_mega -%}
+              <button
+                type="button"
+                class="custom-header__link custom-header__link--pill custom-header__link--roll custom-header__mega-toggle"
+                aria-expanded="false"
+                aria-controls="MegaPanel-{{ section.id }}-{{ forloop.index }}"
+              >
+                <span class="link-roll">
+                  <span class="link-roll__line">{{- link.title | escape -}}</span>
+                  <span class="link-roll__line link-roll__line--in" aria-hidden="true">
+                    {{- link.title | escape -}}
+                  </span>
+                </span>
+                <span class="custom-header__pill-plus" aria-hidden="true"></span>
+              </button>
+            {%- else -%}
+              <a
+                href="{{ link.url }}"
+                class="custom-header__link custom-header__link--pill custom-header__link--roll"
+                {% if link.current or link.child_active %}
+                  aria-current="page"
+                {% endif %}
+              >
+                <span class="link-roll">
+                  <span class="link-roll__line">{{- link.title | escape -}}</span>
+                  <span class="link-roll__line link-roll__line--in" aria-hidden="true">
+                    {{- link.title | escape -}}
+                  </span>
+                </span>
+              </a>
+            {%- endif -%}
+
+            {%- if has_mega -%}
+              {%- comment %} Plain nested list — used below 990px (static on mobile, hover dropdown on tablet). {%- endcomment %}
+              <ul class="custom-header__submenu" role="list">
+                {%- for childlink in link.links -%}
+                  <li>
+                    <a
+                      href="{{ childlink.url }}"
+                      class="custom-header__link"
+                      {% if childlink.current %}
+                        aria-current="page"
+                      {% endif %}
+                    >
+                      {{- childlink.title | escape -}}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+
+              <div class="mega-panel custom-megamenu" id="MegaPanel-{{ section.id }}-{{ forloop.index }}">
+                <div class="wrapper">
+                  {%- for childlink in link.links -%}
+                    {%- liquid
+                      # Pages and plain URL links have no image of their own; a card block can supply one.
+                      assign link_image = blank
+                      case childlink.type
+                        when 'collection_link'
+                          assign link_image = childlink.object.featured_image
+                        when 'product_link'
+                          assign link_image = childlink.object.featured_image
+                        when 'article_link'
+                          assign link_image = childlink.object.image
+                      endcase
+                    -%}
+                    {%- render 'custom-header-mega-card',
+                      section: section,
+                      title: childlink.title,
+                      url: childlink.url,
+                      handle: childlink.handle,
+                      image: link_image
+                    -%}
+                  {%- endfor -%}
+                </div>
+              </div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+    {%- endunless -%}
+
+    {%- comment %}
+      Centre pill, linking home. On the homepage it starts hidden: the hero's
+      scroll scrub parks it over the video pill, builds it up there, then flies
+      it up into this slot (bottomPin() in sections/homepage-hero.liquid owns
+      every transform in here). Every other page shows it at rest (--static).
+    {%- endcomment %}
+    <a
+      href="{{ routes.root_url }}"
+      class="custom-header__logo{% unless request.page_type == 'index' %} custom-header__logo--static{% endunless %}"
+      aria-label="{{ shop.name | escape }}"
+    >
+        <span class="custom-header__logo-panel" aria-hidden="true"></span>
+        <span class="custom-header__logo-map" aria-hidden="true"></span>
+        <span class="custom-header__logo-text" aria-hidden="true">
+          <span class="custom-header__logo-mask"><span class="custom-header__logo-line h3">We change it</span></span>
+          <span class="custom-header__logo-mask"><span class="custom-header__logo-line h3">Together</span></span>
+        </span>
+        <svg class="custom-header__logo-h" viewBox="0 0 223 368" fill="currentColor" aria-hidden="true" focusable="false">
+          <path d="M190.396 320.558V45.672C190.576 21.8795 202.169 10.1511 211.484 4.56316C217.353 2.09439 223 -0.185547 223 -0.185547H123.451C123.451 -0.185547 155.756 5.843 156.048 45.672V163.159H66.9451V45.672C67.2438 5.843 99.5495 -0.185547 99.5495 -0.185547H0C0 -0.185547 5.64706 2.0874 11.5164 4.56316C20.8309 10.1511 32.4237 21.8795 32.6043 45.672V320.558C32.4237 344.351 20.8309 356.079 11.5164 361.667C5.64706 364.136 0 367.814 0 367.814H99.5495C99.5495 367.814 67.2438 360.387 66.9521 320.558V197.54H156.048V320.558C155.749 360.387 123.451 367.814 123.451 367.814H223C223 367.814 217.353 364.143 211.484 361.667C202.169 356.079 190.576 344.351 190.396 320.558Z"/>
+        </svg>
+      </a>
+
+    <div class="custom-header__actions">
+      {%- if minimal_header -%}
+        {%- assign back_label = section.settings.minimal_back_label | default: 'Back to shop' -%}
+        <a
+          href="{{ section.settings.minimal_back_link | default: routes.root_url }}"
+          class="custom-header__link custom-header__link--pill custom-header__link--roll custom-header__back"
+        >
+          <span class="link-roll">
+            <span class="link-roll__line">{{- back_label | escape -}}</span>
+            <span class="link-roll__line link-roll__line--in" aria-hidden="true">{{- back_label | escape -}}</span>
+          </span>
+        </a>
+      {%- else -%}
+      {%- if section.settings.donations_show -%}
+        {%- render 'donation-counter', section: section -%}
+      {%- endif -%}
+
+      {%- if section.settings.show_search -%}
+        {%- render 'custom-header-search', input_id: 'CustomHeaderSearch' -%}
+      {%- endif -%}
+
+      {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+        {%- capture account_label -%}
+          {%- if customer -%}
+            {{- 'customer.account_fallback' | t -}}
+          {%- else -%}
+            {{- 'customer.log_in' | t -}}
+          {%- endif -%}
+        {%- endcapture -%}
+        <a
+          href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}"
+          class="custom-header__icon-btn"
+          rel="nofollow"
+        >
+          <span class="svg-wrapper" aria-hidden="true">{{- 'icon-account.svg' | inline_asset_content -}}</span>
+          <span class="visually-hidden">{{ account_label | strip }}</span>
+        </a>
+      {%- endif -%}
+
+      {%- for block in section.blocks -%}
+        {%- if block.type == '@app' -%}
+          {% render block %}
+        {%- endif -%}
+      {%- endfor -%}
+
+      <a
+        href="{{ routes.cart_url }}"
+        class="custom-header__icon-btn custom-header__cart"
+        id="cart-icon-bubble"
+      >
+        {%- render 'cart-icon-bubble' -%}
+      </a>
+      {%- endif -%}
+    </div>
+  </header>
+</sticky-header>
+
+{%- if settings.cart_type == 'notification' -%}
+  {%- render 'cart-notification', color_scheme: section.settings.color_scheme, desktop_menu_type: 'dropdown' -%}
+{%- endif -%}
+
+{%- comment %}
+  Publishes the bar's measured height as --header-height (custom.css offsets
+  the first section of every non-homepage page by it). The default header
+  section also defines <sticky-header>; this guard keeps things working
+  whether or not that section is still in the group.
+{%- endcomment %}
+<script>
+  if (!customElements.get('sticky-header')) {
+    class StickyHeader extends HTMLElement {
+      connectedCallback() {
+        this.header = document.querySelector('.section-header');
+        this.onResizeHandler = this.setHeaderHeight.bind(this);
+        this.setHeaderHeight();
+        window.addEventListener('resize', this.onResizeHandler);
+        /* The bar's height settles late (async stylesheets, webfonts, the
+           announcement marquee), so re-publish it whenever it actually
+           changes rather than trusting the first measurement. */
+        if ('ResizeObserver' in window) {
+          this.resizeObserver = new ResizeObserver(this.onResizeHandler);
+          this.resizeObserver.observe(this.header);
+        }
+      }
+      disconnectedCallback() {
+        window.removeEventListener('resize', this.onResizeHandler);
+        if (this.resizeObserver) this.resizeObserver.disconnect();
+      }
+      setHeaderHeight() {
+        /* The open burger panel is part of the bar; don't let it push the
+           page content down while it is showing. */
+        if (this.header.querySelector('.custom-header.is-nav-open')) return;
+        document.documentElement.style.setProperty('--header-height', `${this.header.offsetHeight}px`);
+      }
+    }
+    customElements.define('sticky-header', StickyHeader);
+  }
+</script>
+
+<script>
+  if (!customElements.get('inline-search')) {
+    class InlineSearch extends HTMLElement {
+      connectedCallback() {
+        if (this._initialized) return;
+        this.toggle = this.querySelector('.inline-search__toggle');
+        this.input = this.querySelector('input[type="search"]');
+        if (!this.toggle || !this.input) return;
+        this._initialized = true;
+        this._onDocPointer = (event) => {
+          if (this.isOpen && !this.contains(event.target)) this.setOpen(false);
+        };
+        this.toggle.addEventListener('click', () => this.setOpen(!this.isOpen));
+        this.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && this.isOpen) {
+            this.setOpen(false);
+            this.toggle.focus();
+          }
+        });
+      }
+
+      get isOpen() {
+        return this.hasAttribute('open');
+      }
+
+      setOpen(value) {
+        value = Boolean(value);
+        if (value === this.isOpen) return;
+        this.toggleAttribute('open', value);
+        if (this.toggle) this.toggle.setAttribute('aria-expanded', String(value));
+        if (value) {
+          this.input.removeAttribute('tabindex');
+          document.addEventListener('click', this._onDocPointer);
+          requestAnimationFrame(() => this.input.focus());
+        } else {
+          this.input.setAttribute('tabindex', '-1');
+          document.removeEventListener('click', this._onDocPointer);
+          const predictive = this.querySelector('predictive-search');
+          if (predictive && typeof predictive.close === 'function') predictive.close();
+        }
+      }
+    }
+    customElements.define('inline-search', InlineSearch);
+  }
+</script>
+
+<script>
+  /* Burger nav (< 990px). Delegated so theme-editor re-renders keep working. */
+  (() => {
+    if (window.__hmtBurgerInit) return;
+    window.__hmtBurgerInit = true;
+
+    const setOpen = (header, open) => {
+      header.classList.toggle('is-nav-open', open);
+      const btn = header.querySelector('[data-nav-toggle]');
+      if (btn) btn.setAttribute('aria-expanded', String(open));
+      /* The open panel covers the screen — hold the page still behind it.
+         Lenis owns the scroll, so stopping the document alone is not enough. */
+      const anyOpen = !!document.querySelector('.custom-header.is-nav-open');
+      document.documentElement.style.overflow = anyOpen ? 'hidden' : '';
+      if (window.lenis) {
+        if (anyOpen && window.lenis.stop) window.lenis.stop();
+        if (!anyOpen && window.lenis.start) window.lenis.start();
+      }
+    };
+    const closeAll = () => document.querySelectorAll('.custom-header.is-nav-open').forEach((h) => setOpen(h, false));
+    window.hmtCloseNav = closeAll;
+
+    document.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-nav-toggle]');
+      if (!btn) return;
+      const header = btn.closest('.custom-header');
+      setOpen(header, !header.classList.contains('is-nav-open'));
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeAll();
+    });
+    /* Back on desktop the nav is always visible — drop the open state. */
+    window.matchMedia('(min-width: 990px)').addEventListener('change', (e) => {
+      if (e.matches) closeAll();
+    });
+  })();
+</script>
+
+<script>
+  /* Megamenu open/close. Fully event-delegated so it survives theme-editor
+     section re-renders. Desktop (>= 990px) only — below that the plain
+     submenu markup takes over via CSS. */
+  (() => {
+    if (window.__hmtMegaMenuInit) return;
+    window.__hmtMegaMenuInit = true;
+
+    const desktop = window.matchMedia('(min-width: 990px)');
+    const finePointer = window.matchMedia('(pointer: fine)');
+    const items = () => Array.from(document.querySelectorAll('[data-mega-item]'));
+    let hoverCloseTimer = null;
+
+    const setOpen = (item, open) => {
+      item.classList.toggle('is-open', open);
+      const toggle = item.querySelector('.custom-header__mega-toggle');
+      if (toggle) toggle.setAttribute('aria-expanded', String(open));
+    };
+    const closeAll = (except) => {
+      items().forEach((item) => {
+        if (item !== except) setOpen(item, false);
+      });
+    };
+    window.hmtCloseMegaMenus = () => closeAll(null);
+
+    document.addEventListener('click', (event) => {
+      const toggle = event.target.closest('.custom-header__mega-toggle');
+      if (toggle) {
+        if (!desktop.matches) return;
+        const item = toggle.closest('[data-mega-item]');
+        const willOpen = !item.classList.contains('is-open');
+        closeAll(item);
+        setOpen(item, willOpen);
+        return;
+      }
+      if (!event.target.closest('[data-mega-item]')) closeAll(null);
+    });
+
+    document.addEventListener('mouseover', (event) => {
+      if (!desktop.matches || !finePointer.matches) return;
+      const item = event.target.closest('[data-mega-item]');
+      if (!item) return;
+      clearTimeout(hoverCloseTimer);
+      if (!item.classList.contains('is-open')) {
+        closeAll(item);
+        setOpen(item, true);
+      }
+    });
+
+    document.addEventListener('mouseout', (event) => {
+      if (!desktop.matches || !finePointer.matches) return;
+      const item = event.target.closest('[data-mega-item]');
+      if (!item) return;
+      if (event.relatedTarget && item.contains(event.relatedTarget)) return;
+      clearTimeout(hoverCloseTimer);
+      hoverCloseTimer = setTimeout(() => setOpen(item, false), 200);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const openItem = items().find((item) => item.classList.contains('is-open'));
+      if (!openItem) return;
+      closeAll(null);
+      const toggle = openItem.querySelector('.custom-header__mega-toggle');
+      if (toggle) toggle.focus();
+    });
+  })();
+</script>
+
+<script>
+  /* Donations popup. The pill is a button, not a link — clicking it toggles the
+     panel underneath. Event-delegated so theme-editor re-renders keep working. */
+  (() => {
+    if (window.__hmtDonationInit) return;
+    window.__hmtDonationInit = true;
+
+    const roots = () => Array.from(document.querySelectorAll('[data-donation]'));
+
+    /* The panel is a position: fixed full-screen takeover, but it is authored
+       inside the header — and the hero-intro script puts a GSAP transform on
+       .header-wrapper while it drops in. A transformed ancestor becomes the
+       containing block for fixed descendants, which would size the takeover to
+       the header bar instead of the viewport. Moving it to <body> on first open
+       sidesteps that for good. The reference is cached on the root because the
+       element is no longer findable underneath it afterwards. */
+    const popupFor = (root) => {
+      if (root.__hmtPopup && root.__hmtPopup.isConnected) return root.__hmtPopup;
+      const popup = root.querySelector('.donation__popup');
+      if (!popup) return null;
+      document.body.appendChild(popup);
+      root.__hmtPopup = popup;
+      return popup;
+    };
+
+    /* Pulls the target out of whatever the merchant typed, so "2,000,000+" and
+       "2000000" both count. The original string is cached on the element the
+       first time — after one run the text has been rewritten by the counter and
+       is no longer a reliable source. */
+    const readAmount = (el) => {
+      if (!el.dataset.amount) el.dataset.amount = el.textContent.trim();
+      const raw = el.dataset.amount;
+      const match = raw.match(/\d[\d.,\s]*\d|\d/);
+      if (!match) return null;
+      const target = parseInt(match[0].replace(/\D/g, ''), 10);
+      if (!isFinite(target)) return null;
+      return {
+        target,
+        grouped: /[,\s]/.test(match[0]),
+        before: raw.slice(0, match.index),
+        after: raw.slice(match.index + match[0].length),
+      };
+    };
+
+    /* Entrance sequence. The panel's own fade is CSS, so the green ground is
+       already on screen before this starts — the delay below is what lets it
+       read for a beat first. */
+    const playIntro = (popup) => {
+      const valueEl = popup.querySelector('[data-donation-value]');
+      const amount = popup.querySelector('.donation__hero-amount');
+      const label = popup.querySelector('.donation__hero-label');
+      const copy = Array.from(popup.querySelectorAll('.donation__hero-text, .donation__hero-updated'));
+      const leaf = popup.querySelector('.donation__leaf');
+      const cta = popup.querySelector('.donation__cta');
+      const info = valueEl ? readAmount(valueEl) : null;
+      const draw = (n) => info.before + (info.grouped ? n.toLocaleString('en-US') : String(n)) + info.after;
+
+      let reduce = false;
+      try {
+        reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (e) {}
+
+      if (!window.gsap || reduce) {
+        if (info) valueEl.textContent = draw(info.target);
+        return;
+      }
+
+      /* No fades: the amount, label and button wipe up out of their own bottom
+         edge; the copy rises line by line out of its masks (split on the first
+         open, then kept). */
+      const WIPE_FROM = { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' };
+      const WIPE_TO = { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', clearProps: 'clipPath,transform' };
+      if (!popup.__hmtCopyLines && window.SplitText && copy.length) {
+        popup.__hmtCopyLines = SplitText.create(copy, { type: 'lines', mask: 'lines' }).lines;
+      }
+      const copyLines = popup.__hmtCopyLines || [];
+      const wipe = [amount, label, cta].concat(copyLines.length ? [] : copy).filter(Boolean);
+      if (popup.__hmtIntro) popup.__hmtIntro.kill();
+      /* Parked synchronously, before the panel's fade has finished — parking
+         them inside the delayed timeline instead would show everything at rest
+         for a frame and then snap it back to the start. */
+      gsap.set(wipe, WIPE_FROM);
+      if (copyLines.length) gsap.set(copyLines, { yPercent: 120 });
+      if (leaf) gsap.set(leaf, { yPercent: 55 });
+      if (info) valueEl.textContent = draw(0);
+
+      const counter = { v: 0 };
+      const tl = gsap.timeline({ delay: 0.25 });
+      popup.__hmtIntro = tl;
+
+      if (amount) tl.to(amount, Object.assign({ duration: 0.8, ease: 'power4.out' }, WIPE_TO), 0);
+      if (info) {
+        tl.to(
+          counter,
+          {
+            v: info.target,
+            duration: 1.5,
+            ease: 'power2.out',
+            onUpdate: () => {
+              valueEl.textContent = draw(Math.round(counter.v));
+            },
+          },
+          0
+        );
+      }
+      if (label) tl.to(label, Object.assign({ duration: 0.7, ease: 'power4.out' }, WIPE_TO), 0.15);
+      if (copyLines.length) tl.to(copyLines, { yPercent: 0, duration: 0.8, ease: 'power4.out', stagger: 0.06 }, 0.28);
+      else if (copy.length) tl.to(copy, Object.assign({ duration: 0.7, ease: 'power4.out', stagger: 0.08 }, WIPE_TO), 0.28);
+      // sprout pushes up out of the soil it was parked behind
+      if (leaf) tl.to(leaf, { yPercent: 0, duration: 1.1, ease: 'power3.out' }, 0.4);
+      if (cta) tl.to(cta, Object.assign({ duration: 0.8, ease: 'power4.out' }, WIPE_TO), 0.85);
+    };
+
+    const setOpen = (root, open) => {
+      const popup = popupFor(root);
+      root.classList.toggle('is-open', open);
+      if (popup) popup.classList.toggle('is-open', open);
+      const pill = root.querySelector('.donation__pill');
+      if (pill) pill.setAttribute('aria-expanded', String(open));
+      if (popup && open) playIntro(popup);
+    };
+    const closeAll = () => {
+      roots().forEach((root) => setOpen(root, false));
+      syncScrollLock();
+    };
+    /* Lenis owns the scroll, so stopping the document alone is not enough. */
+    const syncScrollLock = () => {
+      const anyOpen = roots().some((root) => root.classList.contains('is-open'));
+      document.documentElement.style.overflow = anyOpen ? 'hidden' : '';
+      if (window.lenis) {
+        if (anyOpen && window.lenis.stop) window.lenis.stop();
+        if (!anyOpen && window.lenis.start) window.lenis.start();
+      }
+    };
+    window.hmtCloseDonationPopups = closeAll;
+
+    document.addEventListener('click', (event) => {
+      const pill = event.target.closest('.donation__pill');
+      if (pill) {
+        const root = pill.closest('[data-donation]');
+        const willOpen = !root.classList.contains('is-open');
+        roots().forEach((other) => setOpen(other, false));
+        setOpen(root, willOpen);
+        syncScrollLock();
+        if (willOpen && window.hmtCloseMegaMenus) window.hmtCloseMegaMenus();
+        return;
+      }
+      if (event.target.closest('[data-donation-close]')) {
+        const openRoot = roots().find((root) => root.classList.contains('is-open'));
+        closeAll();
+        if (openRoot) {
+          const openPill = openRoot.querySelector('.donation__pill');
+          if (openPill) openPill.focus();
+        }
+        return;
+      }
+      /* The takeover covers the screen, so only the × and Escape dismiss it —
+         a background click would otherwise close on every click inside it. */
+      if (!event.target.closest('[data-donation]') && !event.target.closest('.donation__popup')) closeAll();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const openRoot = roots().find((root) => root.classList.contains('is-open'));
+      if (!openRoot) return;
+      setOpen(openRoot, false);
+      syncScrollLock();
+      const pill = openRoot.querySelector('.donation__pill');
+      if (pill) pill.focus();
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Custom header",
+  "class": "section-header",
+  "max_blocks": 24,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Announcement bar"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add \"Announcement\" blocks below to fill the scrolling bar. With no announcement blocks the bar is hidden."
+    },
+    {
+      "type": "range",
+      "id": "announcement_speed",
+      "min": 10,
+      "max": 80,
+      "step": 5,
+      "unit": "s",
+      "label": "Scroll duration",
+      "info": "Seconds for the messages to travel one full loop. Higher is slower.",
+      "default": 25
+    },
+    {
+      "type": "checkbox",
+      "id": "announcement_pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "announcement_background",
+      "label": "Bar background",
+      "default": "#2b2926"
+    },
+    {
+      "type": "color",
+      "id": "announcement_text_color",
+      "label": "Bar text",
+      "default": "#f6f1e7"
+    },
+    {
+      "type": "header",
+      "content": "Donations counter"
+    },
+    {
+      "type": "paragraph",
+      "content": "Sits in the header actions. It is a button, not a link — clicking it opens the popup below."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Light header"
+    },
+    {
+      "type": "text",
+      "id": "minimal_templates",
+      "label": "Light header templates",
+      "info": "Page templates that get the logo and a back link only, no shop nav. Comma-separated template names, e.g. free-kit, free-kit-thanks.",
+      "default": "free-kit, free-kit-thanks"
+    },
+    {
+      "type": "text",
+      "id": "minimal_back_label",
+      "label": "Back link label",
+      "default": "Back to shop"
+    },
+    {
+      "type": "url",
+      "id": "minimal_back_link",
+      "label": "Back link",
+      "info": "Defaults to the homepage."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Show account icon",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "donations_show",
+      "label": "Show donations counter",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "donations_label",
+      "label": "Label",
+      "default": "Donations"
+    },
+    {
+      "type": "text",
+      "id": "donations_amount",
+      "label": "Amount",
+      "info": "Free text, so you control the formatting.",
+      "default": "$2,000,000"
+    },
+    {
+      "type": "image_picker",
+      "id": "donations_image",
+      "label": "Sprout image",
+      "info": "Optional cut-out shown on the left of the pill. The default leaf cut-out is used if empty."
+    },
+    {
+      "type": "richtext",
+      "id": "donations_text",
+      "label": "Popup text",
+      "default": "<p>Through the 1990s, Human-i-Tees donated over $2 million to environmental causes, a figure documented in our original newsletters. Thirty years after the brand was born, we have revived it with a commitment to give just as much and more.</p><p>This is our first year back, so this counter will get its next update at the end of the year.</p>"
+    },
+    {
+      "type": "text",
+      "id": "donations_updated",
+      "label": "Popup footnote",
+      "info": "Small timestamp line under the text. Leave empty to hide it.",
+      "default": "Updated January 1st, 2001"
+    },
+    {
+      "type": "text",
+      "id": "donations_button_label",
+      "label": "Popup button label",
+      "default": "LEARN MORE ABOUT THE 90S"
+    },
+    {
+      "type": "url",
+      "id": "donations_button_link",
+      "label": "Popup button link"
+    },
+    {
+      "type": "header",
+      "content": "Megamenu"
+    },
+    {
+      "type": "text",
+      "id": "mega_default_caption",
+      "label": "Default card caption",
+      "info": "Shown on the bottom of every megamenu card unless the card block overrides it.",
+      "default": "This month's drop and every tee"
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "color",
+      "id": "header_background",
+      "label": "Header background",
+      "default": "#FAF5F2"
+    },
+    {
+      "type": "color",
+      "id": "header_border_color",
+      "label": "Header border",
+      "default": "#D9CDB8"
+    },
+    {
+      "type": "range",
+      "id": "header_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Header border width",
+      "default": 1
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "Menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_line_separator",
+      "default": true,
+      "label": "Show separator line"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.header.settings.margin_bottom.label",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "padding_inline",
+      "min": 0,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "label": "Side padding",
+      "info": "Also sets how far the megamenu panel sits from the screen edge.",
+      "default": 12
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "mega_card",
+      "name": "Megamenu card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "Menu item name",
+          "info": "Exact name of the dropdown link this card belongs to, e.g. \"Tees\" or \"Fundraising\"."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Card image",
+          "info": "If empty and the link points to a collection, the collection's image is used."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label override",
+          "info": "Optional. Shown on the card instead of the menu item name."
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Caption",
+          "info": "Small line at the bottom of the card. Falls back to the section's default caption."
+        },
+        {
+          "type": "checkbox",
+          "id": "wide",
+          "label": "Wide card",
+          "info": "Makes this one card wider than the rest of the row (same height). Use it for a feature card such as Our History.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "announcement",
+      "name": "Announcement",
+      "settings": [
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Emoji",
+          "info": "Optional. Shown before the message, e.g. 📦",
+          "default": "📦"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Message",
+          "default": "Enjoy free shipping over $100"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "presets": [
+    {
+      "name": "Custom header",
+      "blocks": [
+        {
+          "type": "announcement",
+          "settings": { "icon": "📦", "text": "Enjoy free shipping over $100" }
+        },
+        {
+          "type": "announcement",
+          "settings": { "icon": "✨", "text": "New drop every month" }
+        },
+        {
+          "type": "announcement",
+          "settings": { "icon": "🧡", "text": "Every shirt gives back to the planet" }
+        },
+        {
+          "type": "announcement",
+          "settings": { "icon": "🏫", "text": "Fundraise with your school or club" }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,15 +1,11 @@
 {
-  "editor.formatOnSave": false,
-  "[javascript]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  // Treat Liquid files as HTML for Emmet so abbreviations like
+  // ".preloader" + Tab expand to <div class="preloader"></div>.
+  "emmet.includeLanguages": {
+    "liquid": "html"
   },
-  "[css]": {
-    "editor.formatOnSave": true
-  },
-  "[liquid]": {
-    "editor.defaultFormatter": "Shopify.theme-check-vscode",
-    "editor.formatOnSave": true
-  },
-  "themeCheck.checkOnSave": true
+  // Make sure .liquid files are always detected as the Liquid language.
+  "files.associations": {
+    "*.liquid": "liquid"
+  }
 }

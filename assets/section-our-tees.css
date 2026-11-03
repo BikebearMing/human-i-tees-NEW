@@ -1,0 +1,225 @@
+/* Our Tees grid + product card — shared by sections/our-tees.liquid (homepage)
+   and sections/custom-collection.liquid (collection pages). Card markup lives
+   in snippets/tee-card.liquid. */
+.our-tees {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 0;
+  row-gap: 2vw;
+  width: 100%;
+  background: var(--beige);
+}
+
+/* Partition lines between the 4 columns. Each cell gets a left border
+   EXCEPT cells in column 1 (1st, 5th, 9th ... = :nth-child(4n+1)). This
+   gives exactly one 1px line at each of the 25/50/75% column boundaries,
+   with no overlap. Works automatically for multi-row layouts (a 5th
+   product wraps to row-2 col-1 and correctly gets no left border). */
+.our-tees__col {
+}
+.our-tees__col:not(:nth-child(4n+1)) {
+  border-left: 1px solid rgba(51, 51, 51, 0.2);
+}
+
+/* ----- Heading column ----- */
+.our-tees__heading-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5vw;
+}
+.our-tees__heading {
+  color: var(--black);
+  text-transform: uppercase !important;
+  width: 16.111vw;
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* ----- Product card ----- */
+.our-tees__card {
+  position: relative; /* containing block for the absolutely-positioned .our-tees__badge */
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--black);
+  overflow: hidden; /* clip the VIEW button until hover */
+  isolation: isolate;
+  align-items: center;
+  width: 100%;
+  height: 27.292vw;
+  padding-inline: 0.486vw;
+  justify-content: center;
+}
+
+.our-tees__media {
+  position: relative;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18.75vw;
+  height: 17.014vw;
+  overflow: hidden;
+}
+.our-tees__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.our-tees__image--placeholder {
+  width: 60%;
+  height: 60%;
+  opacity: 0.5;
+}
+
+/* NEW badge — small dark circle anchored to the top-left of the .our-tees__card
+   (sibling of .our-tees__media, not a child of it). font-size override is
+   justified by the small-circle layout: .body's 14px would overflow the badge. */
+.our-tees__badge {
+  position: absolute;
+  top: 18px;
+  left: 9px;
+  width: 2.5vw;
+  height: 2.5vw;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  background: var(--black);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--geist);
+  font-size: max(9px, 0.625vw);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  z-index: 2;
+}
+
+.our-tees__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1vw;
+  width: 100% ;
+  margin-top: 0.9vw;
+}
+.our-tees__title {
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--black);
+  font-family: var(--futura);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 85%;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  /* clamp to 2 lines so long titles don't push the price down */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.our-tees__price {
+  flex: 0 0 auto;
+  color: var(--black);
+  white-space: nowrap;
+}
+
+/* VIEW button — sits below the card content but is clipped by .our-tees__card's
+   overflow:hidden + a matching margin-bottom so it pulls itself UP into view
+   on hover (same trick as sections/featured-shop.liquid's CTA). */
+.our-tees__view {
+  display: block;
+  margin-top: 0.9vw;
+  margin-bottom: -3.5vw;
+  text-align: center;
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.3s ease,
+    margin 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.our-tees__card:hover .our-tees__view,
+.our-tees__card:focus-visible .our-tees__view {
+  transform: translateY(0);
+  opacity: 1;
+  margin-bottom: 0;
+}
+
+/* ----- Tablet + mobile (<= 1024px) -----
+   The desktop card / media sizes above are fixed in vw (18.75vw × 17.014vw,
+   card height 27.292vw) which collapse to ~70-130px on a phone. Override
+   to fluid + fill-the-column on small screens, two cards per row. */
+@media (max-width: 1024px) {
+  .our-tees {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 6vw;
+    padding: 6vw 0;
+  }
+  .our-tees__heading-col {
+    grid-column: 1 / -1;
+    padding: 6vw 4vw 0;
+  }
+  .our-tees__heading {
+    width: auto;
+  }
+  /* Two columns: only the second column carries a partition line. The
+     heading spans the first row, so cards start at child 2 and the
+     right-hand column is the odd children. */
+  .our-tees > .our-tees__col {
+    border-left: 0;
+  }
+  .our-tees > .our-tees__card:nth-child(odd) {
+    border-left: 1px solid rgba(51, 51, 51, 0.2);
+  }
+  .our-tees__col {
+    padding: 4vw;
+  }
+  .our-tees__card {
+    width: 100%;
+    height: auto;
+  }
+  .our-tees__media {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
+  /* No hover on touch — show VIEW button by default so it's tappable. */
+  .our-tees__view {
+    opacity: 1;
+    transform: none;
+    margin-bottom: 0;
+  }
+}
+
+/* ----- Phone (<= 768px) -----
+   One card per row, with a horizontal separator above each card in place
+   of the vertical column partitions. */
+@media (max-width: 768px) {
+  .our-tees {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+    padding-bottom: 0;
+  }
+  /* beats the partition rules above (incl. the tablet :nth-child(odd)) */
+  .our-tees > .our-tees__col:nth-child(n) {
+    border-left: 0;
+  }
+  .our-tees__heading-col {
+    padding-bottom: 6vw;
+  }
+  .our-tees__card {
+    border-top: 1px solid rgba(51, 51, 51, 0.2);
+    padding: 6vw;
+  }
+  .our-tees__meta {
+    margin-top: 3vw;
+  }
+  .our-tees__view {
+    margin-top: 3vw;
+  }
+}

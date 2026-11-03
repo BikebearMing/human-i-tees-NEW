@@ -1,0 +1,421 @@
+{%- comment -%}
+  Fundraising hero — eyebrow, big two-line headline, intro copy and CTA,
+  then three staggered stat cards. The cards hang off the bottom edge onto the
+  flower hill that opens the next section (fundraising-steps).
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses the
+  theme's .h2 (headline), .h3 (card titles) and .body (everything else).
+
+  Card titles take an inline icon: write [icon] where it goes in the title
+  ("[icon]5 PER TEE", "100[icon]ONLINE"). The block's "Icon text" is the
+  icon's alt text, and stands in for it until an image is picked. [br] breaks
+  a title too long for one line (desktop titles don't wrap on their own).
+{%- endcomment -%}
+
+{%- style -%}
+  #fr-hero-{{ section.id }} {
+    /* same as the body bg (custom.css) — the cards are opaque so the
+       .has-line columns don't run through the copy */
+    --fr-card-bg: #f9f7f3;
+
+    position: relative;
+    /* above the next section (fundraising-steps), whose flower hill starts
+       behind the bottom of these cards */
+    z-index: 2;
+    width: 100%;
+    /* x only — the cards hang off the bottom edge on purpose */
+    overflow-x: clip;
+  }
+
+  /* Carries the header clearance (like .faq__push) so the .has-line overlay
+     still starts at the very top of the page. */
+  #fr-hero-{{ section.id }} .fr-hero__push {
+    position: relative;
+    z-index: 1;
+    padding-top: calc(var(--header-height, 6rem) + 7.708vw);
+  }
+
+  #fr-hero-{{ section.id }} .fr-hero__intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-inline: var(--sidepadding-xs);
+  }
+  /* custom.css zeroes h1–p margins with !important, so the title's spacing
+     is padding and the rest sit on non-heading elements. */
+  #fr-hero-{{ section.id }} .fr-hero__eyebrow {
+    color: var(--black);
+  }
+  #fr-hero-{{ section.id }} .fr-hero__title {
+    padding-top: 0.556vw;
+    color: var(--black);
+  }
+  #fr-hero-{{ section.id }} .fr-hero__text {
+    margin-top: 1.042vw;
+    max-width: max(300px, 20.833vw);
+    color: var(--black);
+  }
+  #fr-hero-{{ section.id }} .fr-hero__cta {
+    display: inline-block;
+    margin-top: 1.181vw;
+  }
+  /* "Ready to launch now? Start your campaign" — small link line under the CTA */
+  #fr-hero-{{ section.id }} .fr-hero__secondary {
+    padding-top: 0.833vw; /* padding: custom.css zeroes p margins with !important */
+    color: var(--black);
+  }
+  #fr-hero-{{ section.id }} .fr-hero__secondary a { color: inherit; }
+
+  /* SplitText line masks: a little room above/below so the 0.8 line-height
+     on .h2 doesn't shave the cap tops while the lines rise in. */
+  #fr-hero-{{ section.id }} .fr-hero-line-mask {
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  /* ----- Cards: 210 / 211 side insets, 300 wide, staggered tops ----- */
+  #fr-hero-{{ section.id }} .fr-hero__cards {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 2.222vw; /* 140 from the CTA to the middle card, less its 108 drop */
+    /* the lowest card overlaps the top of the next section's flower hill */
+    margin-bottom: -1.736vw;
+    padding-inline: 14.583vw 14.653vw;
+  }
+  #fr-hero-{{ section.id }} .fr-hero__card {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 2vw;
+    width: 20.833vw;
+    /* equal heights; the copy is pushed to the bottom, so a longer blurb
+       eats into the gap under the title (95 vs 78 in the mock) */
+    min-height: 16.389vw;
+    padding: 1.111vw 1.875vw 1.181vw 1.053vw;
+    background: var(--fr-card-bg);
+    border: 1px solid var(--beige);
+    border-radius: max(6px, 0.556vw);
+    text-align: left;
+  }
+  #fr-hero-{{ section.id }} .fr-hero__card:nth-child(2) { margin-top: 7.5vw; }
+  #fr-hero-{{ section.id }} .fr-hero__card:nth-child(3) { margin-top: 2.778vw; }
+
+  /* .h3 is 40px; the card titles are 48px in the mock and sit on one line
+     across the card, so only the size is lifted — family/weight/tracking stay
+     .h3's. nowrap is desktop-only: the size is in vw like the card, so the
+     ratio holds at every width above 1024. */
+  #fr-hero-{{ section.id }} .fr-hero__card-title {
+    font-size: max(32px, 3.333vw);
+    white-space: nowrap;
+  }
+  /* Inline icon, same treatment as the globe in the homepage hero's .h3 */
+  #fr-hero-{{ section.id }} .fr-hero__icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-inline: 0.04em;
+    object-fit: contain;
+    vertical-align: -0.1em;
+  }
+  #fr-hero-{{ section.id }} .fr-hero__card-text {
+    margin-top: auto;
+    max-width: max(200px, 13.889vw);
+    color: var(--black);
+  }
+
+  /* Held back until the intro has parked them (script below). Every path in
+     the script ends by adding .is-intro-ready, including no-GSAP and
+     reduced motion. */
+  #fr-hero-{{ section.id }}:not(.is-intro-ready) [data-fr-split],
+  #fr-hero-{{ section.id }}:not(.is-intro-ready) [data-fr-anim] {
+    visibility: hidden;
+  }
+
+  /* ===== TABLET (<= 1024px) — still three across, but the cards share the
+     row instead of keeping the desktop's 300px-at-1440 width ===== */
+  @media (max-width: 1024px) {
+    #fr-hero-{{ section.id }} .fr-hero__cards {
+      gap: 2vw;
+      margin-top: 4vw;
+      padding-inline: 4vw;
+    }
+    #fr-hero-{{ section.id }} .fr-hero__card {
+      flex: 1 1 0;
+      width: auto;
+      min-height: 0;
+      gap: 48px;
+      padding: 16px 20px 18px 16px;
+    }
+    #fr-hero-{{ section.id }} .fr-hero__card-title {
+      white-space: normal;
+    }
+  }
+
+  /* ===== MOBILE (<= 768px) — one column: intro, then the cards stacked ===== */
+  @media (max-width: 768px) {
+    #fr-hero-{{ section.id }} .fr-hero__push {
+      padding-top: calc(var(--header-height, 6rem) + 48px);
+    }
+    #fr-hero-{{ section.id }} .fr-hero__intro {
+      padding-inline: 16px;
+    }
+    #fr-hero-{{ section.id }} .fr-hero__title { padding-top: 8px; }
+    #fr-hero-{{ section.id }} .fr-hero__text { margin-top: 16px; }
+    #fr-hero-{{ section.id }} .fr-hero__cta { margin-top: 20px; }
+    #fr-hero-{{ section.id }} .fr-hero__secondary { padding-top: 12px; }
+    #fr-hero-{{ section.id }} .fr-hero__cards {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      margin-top: 48px;
+      margin-bottom: -24px;
+      padding-inline: 16px;
+    }
+    /* flex: none — the tablet rule's 0 basis would collapse a stacked card */
+    #fr-hero-{{ section.id }} .fr-hero__card {
+      flex: none;
+      gap: 40px;
+    }
+    #fr-hero-{{ section.id }} .fr-hero__card:nth-child(n) { margin-top: 0; }
+  }
+{%- endstyle -%}
+
+<section class="fr-hero has-line" id="fr-hero-{{ section.id }}">
+  <div class="fr-hero__push">
+    <div class="fr-hero__intro">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="body uppercase fr-hero__eyebrow" data-fr-split>{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+
+      <h1 class="h2 fr-hero__title" data-fr-split>{{ section.settings.heading | escape | newline_to_br }}</h1>
+
+      {%- if section.settings.text != blank -%}
+        <div class="body fr-hero__text" data-fr-split>{{ section.settings.text }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.button_label != blank -%}
+        <a
+          class="custom-button fr-hero__cta"
+          href="{{ section.settings.button_link | default: '/pages/contact?subject=fundraising' }}"
+          data-fr-anim
+        >
+          <span class="button-span body uppercase">{{ section.settings.button_label | escape }}</span>
+        </a>
+      {%- endif -%}
+
+      {%- if section.settings.secondary_text != blank -%}
+        <p class="body fr-hero__secondary" data-fr-split>{{ section.settings.secondary_text }}</p>
+      {%- endif -%}
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="fr-hero__cards">
+        {%- for block in section.blocks -%}
+          {%- capture icon_html -%}
+            {%- if block.settings.icon != blank -%}
+              {{ block.settings.icon | image_url: width: 160 | image_tag: class: 'fr-hero__icon', alt: block.settings.icon_text, loading: 'lazy' }}
+            {%- elsif block.settings.icon_text == '$' -%}
+              <img class="fr-hero__icon" src="{{ 'coin.svg' | asset_url }}" alt="$" width="232" height="227" loading="lazy">
+            {%- else -%}
+              {{ block.settings.icon_text | escape }}
+            {%- endif -%}
+          {%- endcapture -%}
+
+          <article class="fr-hero__card" data-fr-anim {{ block.shopify_attributes }}>
+            <h2 class="h3 fr-hero__card-title">{{ block.settings.title | escape | replace: '[icon]', icon_html | replace: '[br]', '<br>' }}</h2>
+            <div class="body fr-hero__card-text">{{ block.settings.text }}</div>
+          </article>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('fr-hero-{{ section.id }}');
+    if (!root) return;
+
+    function reveal() {
+      root.classList.add('is-intro-ready');
+    }
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+
+    if (reduce || !window.gsap || !window.SplitText) {
+      reveal();
+      return;
+    }
+
+    var ran = false;
+    function run() {
+      if (ran) return;
+      ran = true;
+      gsap.registerPlugin(SplitText);
+
+      var splitEls = root.querySelectorAll('[data-fr-split]');
+      if (splitEls.length) {
+        // Eyebrow, headline and copy rise out of their masks line by line, as
+        // one stagger down the stack.
+        SplitText.create(splitEls, {
+          type: 'lines',
+          mask: 'lines',
+          linesClass: 'fr-hero-line',
+          autoSplit: true,
+          onSplit: function (self) {
+            /* Returned so autoSplit can kill it and time-sync its replacement
+               if a resize re-splits the lines mid-reveal. */
+            return gsap.fromTo(
+              self.lines,
+              { yPercent: 120 },
+              { yPercent: 0, duration: 0.9, ease: 'power4.out', stagger: 0.08 }
+            );
+          },
+        });
+      }
+
+      var cta = root.querySelector('.fr-hero__cta');
+      var cards = root.querySelectorAll('.fr-hero__card');
+
+      /* No fades: the button and cards wipe up out of their own bottom edge
+         (clip-path), the same entrance text-reveal.js gives .custom-button. */
+      var tl = gsap.timeline({ delay: 0.45 });
+      if (cta) {
+        tl.fromTo(cta, { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' },
+          { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power4.out', clearProps: 'clipPath,transform' }, 0);
+      }
+      if (cards.length) {
+        tl.fromTo(cards, { y: 80, clipPath: 'inset(0% 0% 100% 0%)' },
+          { y: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power3.out', stagger: 0.12, clearProps: 'clipPath' }, 0.1);
+      }
+
+      // everything is parked now — safe to drop the CSS hold
+      reveal();
+    }
+
+    // Split after the webfonts land so the line breaks are measured on Futura /
+    // Geist, not the fallback. The timeout is a backstop: the content is held
+    // hidden until run() fires, so it must fire.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(run);
+      setTimeout(run, 2500);
+    } else {
+      run();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Fundraising hero",
+  "tag": "section",
+  "class": "fundraising-hero-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Fundraising"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the headline.",
+      "default": "GOOD TEES.\nGREAT CAUSES."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Big ideas deserve big support. Raise funds for what matters with T-shirts people actually want to wear. <strong>No upfront costs, no inventory,</strong> just good tees doing good things.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Start fundraising"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "secondary_text",
+      "label": "Secondary link line",
+      "info": "Small line under the button, e.g. Ready to launch now? with a link on Start your campaign. Leave blank to hide."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "info": "Write [icon] where the icon goes, e.g. [icon]5 PER TEE or 100[icon]ONLINE. [br] starts a new line, e.g. NO UPFRONT[br]COST.",
+          "default": "[icon]5 PER TEE"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon"
+        },
+        {
+          "type": "text",
+          "id": "icon_text",
+          "label": "Icon text",
+          "info": "Read out in place of the icon, and shown until an icon is picked (e.g. $ or %).",
+          "default": "$"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Every shirt sold earns $5 for your group. More tees, more funds, more possibilities.</p>"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 3,
+  "presets": [
+    {
+      "name": "Fundraising hero",
+      "blocks": [
+        {
+          "type": "card",
+          "settings": {
+            "title": "[icon]5 PER TEE",
+            "icon_text": "$",
+            "text": "<p>Every shirt sold earns $5 for your group. More tees, more funds, more possibilities.</p>"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "title": "NO UPFRONT[br]COSTS",
+            "text": "<p>No inventory to manage and no financial risk. Just start sharing and raising with no minimum order required.</p>"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "title": "100% ONLINE",
+            "text": "<p>From ordering to shipping, we've got the details covered. You focus on your cause. We'll handle the rest.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

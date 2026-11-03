@@ -1,0 +1,302 @@
+{%- comment -%}
+  Fundraising planet — "YOUR FUNDRAISER DOES MORE": a tilted photo with a
+  postage stamp laid over it reading "20% OF OUR PROFITS GO TO THE PLANET."
+  Measurements are from the 1440 mock (px / 14.4 = vw). Typography reuses
+  .h3 (heading, stamp copy) with the mock's 60px / 80% / -2.4px sizing.
+
+  stamp-bg.png already carries the stamp's -2.793deg tilt (and a transparent
+  margin), so only the stamp's contents are rotated here. Everything inside
+  the stamp is sized in cqw — % of the stamp's width (858 at 1440) — so the
+  stamp scales as one piece when it grows to full width on mobile.
+{%- endcomment -%}
+
+{%- style -%}
+  #fr-planet-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    height: 62.708vw; /* 903: 112 above the heading, ~112 under the stamp */
+    overflow: hidden;
+    background: var(--black);
+    color: #fff;
+  }
+
+  /* mock: Futura PT Cond 60px / 80% / -2.4px */
+  #fr-planet-{{ section.id }} .fr-planet__title,
+  #fr-planet-{{ section.id }} .fr-planet__copy {
+    font-size: max(28px, 4.167vw);
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+  }
+  #fr-planet-{{ section.id }} .fr-planet__title {
+    position: absolute;
+    top: 7.778vw; /* 112 */
+    left: 0;
+    right: 0;
+    z-index: 3;
+    text-align: center;
+    color: #fff;
+  }
+
+  /* ----- Photo: 705 x 466.882, tilted 1.513deg ----- */
+  #fr-planet-{{ section.id }} .fr-planet__photo {
+    position: absolute;
+    top: 12.361vw;
+    left: 9.583vw;
+    z-index: 1;
+    width: 48.958vw;
+    height: 32.422vw;
+    overflow: hidden;
+    border-radius: max(6px, 0.694vw);
+    background: #444;
+    transform: rotate(1.513deg);
+  }
+  #fr-planet-{{ section.id }} .fr-planet__photo img,
+  #fr-planet-{{ section.id }} .fr-planet__photo svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ----- Stamp: the PNG at 1:1 (858 wide) ----- */
+  #fr-planet-{{ section.id }} .fr-planet__stamp {
+    position: absolute;
+    top: 13.472vw;
+    left: 31.389vw;
+    z-index: 2;
+    width: 59.583vw;
+    container-type: inline-size;
+  }
+  #fr-planet-{{ section.id }} .fr-planet__stamp-bg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  /* the contents take the stamp's -2.793deg tilt */
+  #fr-planet-{{ section.id }} .fr-planet__stamp-inner {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-2.793deg);
+    color: var(--black);
+  }
+  /* The mock's 602.5px "20" is a narrower Futura cut than ours; at that size
+     ours runs into the % and the copy, so it's sized to the mock's footprint
+     (~457 x 424 at 1440) instead. */
+  #fr-planet-{{ section.id }} .fr-planet__num {
+    position: absolute;
+    top: 14.452cqw;
+    left: 9.324cqw;
+    font-family: var(--futura);
+    font-size: 57.11cqw;
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+  }
+  #fr-planet-{{ section.id }} .fr-planet__pct {
+    position: absolute;
+    top: 12.82cqw;
+    left: 66.9cqw;
+    width: 10.256cqw; /* 88 */
+    height: auto;
+  }
+  #fr-planet-{{ section.id }} .fr-planet__copy {
+    position: absolute;
+    top: 39.16cqw;
+    left: 66.2cqw;
+    /* 54 at 1440, not the mock's 60 — our wider Futura would run "GO TO THE"
+       into the stamp's perforated edge */
+    font-size: 6.294cqw;
+    color: var(--black);
+  }
+
+  #fr-planet-{{ section.id }} .fr-planet-line-mask {
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  /* ===== MOBILE (<= 768px) — heading, photo, then the stamp laid over the
+     photo's bottom edge at full width ===== */
+  @media (max-width: 768px) {
+    #fr-planet-{{ section.id }} {
+      height: auto;
+      padding: 64px 16px 56px;
+    }
+    #fr-planet-{{ section.id }} .fr-planet__title {
+      position: relative;
+      top: auto;
+      font-size: 36px;
+    }
+    #fr-planet-{{ section.id }} .fr-planet__photo {
+      position: relative;
+      top: auto;
+      left: auto;
+      width: 88%;
+      height: auto;
+      aspect-ratio: 705 / 467;
+      margin-top: 28px;
+    }
+    #fr-planet-{{ section.id }} .fr-planet__stamp {
+      position: relative;
+      top: auto;
+      left: auto;
+      width: calc(100% + 16px); /* the PNG's transparent margin pulls in the edges */
+      margin: -18% -8px 0;
+    }
+  }
+{%- endstyle -%}
+
+<section class="fr-planet" id="fr-planet-{{ section.id }}">
+  <h2 class="h3 fr-planet__title" data-fp-split>{{ section.settings.heading | escape | newline_to_br }}</h2>
+
+  <div class="fr-planet__photo">
+    {%- if section.settings.image != blank -%}
+      {{
+        section.settings.image
+        | image_url: width: 1600
+        | image_tag: loading: 'lazy', sizes: '(max-width: 768px) 88vw, 49vw', alt: section.settings.image.alt
+      }}
+    {%- else -%}
+      {{ 'lifestyle-2' | placeholder_svg_tag }}
+    {%- endif -%}
+  </div>
+
+  <div class="fr-planet__stamp">
+    <img
+      class="fr-planet__stamp-bg"
+      src="{{ 'stamp-bg.png' | asset_url }}"
+      alt=""
+      width="858"
+      height="631"
+      loading="lazy"
+    >
+    <div class="fr-planet__stamp-inner">
+      <span class="fr-planet__num" data-fp-count>{{ section.settings.number | escape }}</span>
+      <img
+        class="fr-planet__pct"
+        src="{{ 'percentage.svg' | asset_url }}"
+        alt="%"
+        width="94"
+        height="118"
+        loading="lazy"
+      >
+      <p class="h3 fr-planet__copy" data-fp-split>{{ section.settings.copy | escape | newline_to_br }}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('fr-planet-{{ section.id }}');
+    if (!root) return;
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (reduce || !window.gsap || !window.ScrollTrigger) return;
+
+    var photo = root.querySelector('.fr-planet__photo');
+    var stamp = root.querySelector('.fr-planet__stamp');
+    var num = root.querySelector('[data-fp-count]');
+    var pct = root.querySelector('.fr-planet__pct');
+
+    function run() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      var split = null;
+      var splitEls = root.querySelectorAll('[data-fp-split]');
+      if (window.SplitText && splitEls.length) {
+        gsap.registerPlugin(SplitText);
+        split = SplitText.create(splitEls, { type: 'lines', mask: 'lines', linesClass: 'fr-planet-line' });
+      }
+
+      // Plays once: the heading rises, the photo settles into its tilt, the
+      // stamp slaps down over it, the number counts up and the % and copy
+      // follow.
+      var tl = gsap.timeline({
+        scrollTrigger: { trigger: root, start: 'top 70%', once: true },
+      });
+
+      var titleLines = split ? root.querySelectorAll('.fr-planet__title .fr-planet-line') : [];
+      if (titleLines.length) tl.from(titleLines, { yPercent: 120, duration: 0.9, ease: 'power4.out', stagger: 0.08 }, 0);
+
+      if (photo) tl.from(photo, { y: 80, rotation: -4, autoAlpha: 0, duration: 1.1, ease: 'power3.out' }, 0.1);
+      if (stamp) tl.from(stamp, { scale: 1.25, rotation: 8, autoAlpha: 0, duration: 0.8, ease: 'back.out(1.4)' }, 0.45);
+
+      if (num) {
+        var target = parseInt(num.textContent, 10);
+        if (!isNaN(target)) {
+          var counter = { v: 0 };
+          num.textContent = '0';
+          tl.to(counter, {
+            v: target,
+            duration: 1.2,
+            ease: 'power2.out',
+            snap: { v: 1 },
+            onUpdate: function () {
+              num.textContent = counter.v;
+            },
+          }, 0.75);
+        }
+      }
+      if (pct) tl.from(pct, { scale: 0, rotation: -30, transformOrigin: '50% 50%', duration: 0.6, ease: 'back.out(2)' }, 1.4);
+
+      var copyLines = split ? root.querySelectorAll('.fr-planet__copy .fr-planet-line') : [];
+      if (copyLines.length) tl.from(copyLines, { yPercent: 120, duration: 0.8, ease: 'power4.out', stagger: 0.07 }, 1.3);
+
+      // the photo drifts a touch slower than the stamp as the section scrolls
+      if (photo) {
+        gsap.to(photo, {
+          yPercent: -8,
+          ease: 'none',
+          scrollTrigger: { trigger: root, start: 'top bottom', end: 'bottom top', scrub: true },
+        });
+      }
+    }
+
+    // split once the webfonts are in, so the line breaks are the real ones
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+    else run();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Fundraising planet",
+  "tag": "section",
+  "class": "fundraising-planet-section",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Each new line starts a new line of the heading.",
+      "default": "YOUR FUNDRAISER\nDOES MORE"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Photo"
+    },
+    {
+      "type": "text",
+      "id": "number",
+      "label": "Stamp number",
+      "info": "Counts up from 0 when it's a whole number.",
+      "default": "20"
+    },
+    {
+      "type": "textarea",
+      "id": "copy",
+      "label": "Stamp text",
+      "info": "Each new line starts a new line.",
+      "default": "OF OUR\nPROFITS\nGO TO THE\nPLANET."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fundraising planet"
+    }
+  ]
+}
+{% endschema %}

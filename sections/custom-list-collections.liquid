@@ -1,0 +1,223 @@
+{%- comment -%}
+  Collections list (/collections) — the "Collections" shop tab. A ruled
+  3-column grid of collection cards on the shop's beige, laid out like the
+  collection page grid (sections/custom-collection.liquid): image centred in
+  the cell, title + tee count pinned to the bottom, VIEW button.
+
+  Skips the home page / shop-all collections and anything empty. A collection
+  without its own image falls back to its first product's image.
+{%- endcomment -%}
+
+{{ 'section-utility-page.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign skip_handles = 'frontpage,shop,all' | split: ','
+  assign shown = 0
+  for c in collections
+    if skip_handles contains c.handle or c.products_count == 0
+      continue
+    endif
+    assign shown = shown | plus: 1
+  endfor
+-%}
+
+{%- style -%}
+  #clist-{{ section.id }} {
+    background: var(--beige);
+  }
+  #clist-{{ section.id }} .util__band {
+    border-color: rgba(51, 51, 51, 0.2);
+  }
+  #clist-{{ section.id }} .clist__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  #clist-{{ section.id }} .clist__card:not(:nth-child(3n + 1)) {
+    border-left: 1px solid rgba(51, 51, 51, 0.2);
+  }
+  #clist-{{ section.id }} .clist__card:nth-child(n + 4) {
+    border-top: 1px solid rgba(51, 51, 51, 0.2);
+  }
+  #clist-{{ section.id }} .clist__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 33.333vw;
+    padding: var(--util-pad);
+    color: var(--black);
+    text-decoration: none;
+    overflow: hidden; /* clips the VIEW button until hover, like the tee card */
+  }
+  #clist-{{ section.id }} .clist__media {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 68%;
+    margin: 0 auto;
+  }
+  #clist-{{ section.id }} .clist__media img,
+  #clist-{{ section.id }} .clist__media svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  #clist-{{ section.id }} .clist__card:hover .clist__media img {
+    transform: scale(1.04);
+  }
+  #clist-{{ section.id }} .clist__meta {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: max(10px, 0.694vw);
+    margin-top: max(10px, 0.694vw);
+  }
+  #clist-{{ section.id }} .clist__count {
+    white-space: nowrap;
+  }
+  /* VIEW slides up on hover; same motion as .our-tees__view. */
+  #clist-{{ section.id }} .clist__view {
+    display: block;
+    margin-top: max(10px, 0.694vw);
+    margin-bottom: -3.5vw;
+    text-align: center;
+    transform: translateY(120%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.3s ease,
+      margin 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  #clist-{{ section.id }} .clist__card:hover .clist__view,
+  #clist-{{ section.id }} .clist__card:focus-visible .clist__view {
+    transform: none;
+    opacity: 1;
+    margin-bottom: 0;
+  }
+
+  /* ---- tablet: two columns ---- */
+  @media (max-width: 1024px) {
+    #clist-{{ section.id }} .clist__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    #clist-{{ section.id }} .clist__card:nth-child(n) {
+      border-left: 0;
+      border-top: 0;
+    }
+    #clist-{{ section.id }} .clist__card:nth-child(even) {
+      border-left: 1px solid rgba(51, 51, 51, 0.2);
+    }
+    #clist-{{ section.id }} .clist__card:nth-child(n + 3) {
+      border-top: 1px solid rgba(51, 51, 51, 0.2);
+    }
+    #clist-{{ section.id }} .clist__card {
+      height: auto;
+      padding: 4vw;
+    }
+    #clist-{{ section.id }} .clist__media {
+      width: 80%;
+      aspect-ratio: 4 / 5;
+    }
+    /* no hover on touch — the button shows so it reads as tappable */
+    #clist-{{ section.id }} .clist__view {
+      opacity: 1;
+      transform: none;
+      margin-bottom: 0;
+    }
+  }
+
+  /* ---- phone: one per row ---- */
+  @media (max-width: 768px) {
+    #clist-{{ section.id }} .clist__grid {
+      grid-template-columns: 1fr;
+    }
+    #clist-{{ section.id }} .clist__card:nth-child(n) {
+      border-left: 0;
+    }
+    #clist-{{ section.id }} .clist__card:nth-child(n + 2) {
+      border-top: 1px solid rgba(51, 51, 51, 0.2);
+    }
+    #clist-{{ section.id }} .clist__card {
+      padding: 6vw;
+    }
+    #clist-{{ section.id }} .clist__media {
+      width: 70%;
+    }
+  }
+{%- endstyle -%}
+
+<div class="util clist" id="clist-{{ section.id }}">
+  <header class="util__head">
+    <p class="body util__crumb">{{ section.settings.crumb | escape }}</p>
+    <h1 class="h2-v2 util__title">{{ section.settings.heading | escape }}</h1>
+  </header>
+  <p class="body util__band">{{ shown }} collection{% if shown != 1 %}s{% endif %}</p>
+
+  {%- if shown > 0 -%}
+    <div class="clist__grid">
+      {%- for c in collections -%}
+        {%- if skip_handles contains c.handle or c.products_count == 0 -%}{%- continue -%}{%- endif -%}
+        {%- assign card_image = c.featured_image | default: c.products.first.featured_image -%}
+        <a class="clist__card" href="{{ c.url }}">
+          <div class="clist__media">
+            {%- if card_image -%}
+              {{
+                card_image
+                | image_url: width: 1200
+                | image_tag:
+                  widths: '400, 600, 800, 1200',
+                  sizes: '(max-width: 768px) 70vw, (max-width: 1024px) 40vw, 23vw',
+                  loading: 'lazy',
+                  alt: c.title
+              }}
+            {%- else -%}
+              {{ 'collection-1' | placeholder_svg_tag }}
+            {%- endif -%}
+          </div>
+          <div class="clist__meta">
+            <h2 class="h3">{{ c.title | escape }}</h2>
+            <span class="body clist__count">{{ c.products_count }} tee{% if c.products_count != 1 %}s{% endif %}</span>
+          </div>
+          <span class="clist__view custom-button full-width" aria-hidden="true">
+            <span class="button-span body">VIEW</span>
+          </span>
+        </a>
+      {%- endfor -%}
+    </div>
+  {%- else -%}
+    <div class="util__empty">
+      <h2 class="h3">{{ section.settings.empty_heading | escape }}</h2>
+      <a class="custom-button" href="{{ routes.all_products_collection_url }}">
+        <span class="button-span body">SHOP ALL</span>
+      </a>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Collections list",
+  "tag": "section",
+  "class": "custom-list-collections-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "crumb",
+      "label": "Small label",
+      "default": "Shop"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Collections"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Empty message",
+      "default": "Collections are on the way"
+    }
+  ]
+}
+{% endschema %}

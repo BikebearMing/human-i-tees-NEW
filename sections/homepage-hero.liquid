@@ -1,0 +1,1135 @@
+{%- style -%}
+  .lowercase {
+    text-transform: capitalize;
+  }
+  .homepage-banner {
+    position: relative;
+    /* background-color: var(--beige, #ffffff); */
+
+    /* The hero's two vertical spacings. Both feed the section height further
+       down, so changing either here resizes the section with it — don't hard-
+       code these numbers anywhere else.
+
+       --hero-top-pad: clearance above the vol line. --header-height is published
+       by the sticky header and covers the announcement marquee + nav row, so the
+       line always clears the fixed header however tall it gets; the addend is
+       the visible breathing room on top of that. custom.css reads this var.
+
+       --hero-vol-gap: the gap between the vol line and the video below it.
+
+       --hero-video-w: the video's resting width. The vol line derives its own
+       inline padding from this so the two always share an edge. The GSAP
+       fromTo in bottomPin() below repeats the number as a literal — keep them
+       in step if this changes. */
+    --hero-top-pad: calc(var(--header-height, 8rem) + 1.25vw);
+    --hero-vol-gap: 1vw;
+    --hero-video-w: 97.917vw;
+
+    & > .wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      padding-inline: var(--sidepadding-xs);
+    }
+  }
+  .vol-wrapper {
+    display: flex;
+    justify-content: space-between;
+    /* Line the vol row up with the video's edges. The video is --hero-video-w
+       centred by margin-inline: auto inside this same .wrapper, so half the
+       leftover is exactly its inset. 100% (not 100vw) on purpose: it resolves
+       against .wrapper's content box, so the two stay aligned whether or not a
+       scrollbar is taking width out of the viewport. */
+    padding-inline: calc((100% - var(--hero-video-w)) / 2);
+  }
+
+  /* The whole header bar (announcement marquee + nav row) waits above the
+     viewport until the intro drops it in — not just its contents. The class is
+     added the instant the drop starts, so the bar is never seen at rest first. */
+  html:not(.header-in) .header-wrapper {
+    transform: translateY(-100%);
+  }
+
+  .vol-wrapper p {
+    visibility: hidden;
+  }
+  .vol-wrapper.is-intro-ready p {
+    visibility: visible;
+  }
+
+  .h2 {
+    font-family: 'Futura PT Cond', var(--futura);
+    font-size: 4.861vw;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.243vw;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  /* .homepage-banner .bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  } */
+
+  .homepage-banner {
+    /* the 52.403vw design height assumed 5vw of top padding and no gap under
+       the vol line — grow the section by whatever those two now add up to over
+       that, so the video still fits */
+    height: calc(52.403vw - 5vw + var(--hero-top-pad) + var(--hero-vol-gap)) !important;
+  }
+
+  /* Breathing room between the vol line and the video. Margin rather than a
+     flex gap on .wrapper: .abso-content is absolutely positioned in there and a
+     flex context would change how the rest of the section resolves. */
+  .homepage-banner .bottom {
+    margin-top: var(--hero-vol-gap);
+  }
+
+  .homepage-banner .bottom .opening-video {
+    position: relative;
+    width: var(--hero-video-w);
+    height: 45.833vw;
+    margin-inline: auto;
+    pointer-events: auto;
+    transform: none;
+    overflow: hidden;
+    border-radius: 0;
+    will-change: width, height, border-radius;
+  }
+
+  .homepage-banner .bottom .opening-video video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .homepage-banner .bottom .opening-video .video-text {
+    position: absolute;
+    top: 6.875vw;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    will-change: transform;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Shared line-by-line reveal pattern — used by .abso-tag */
+  .homepage-banner .line-mask {
+    display: block;
+    overflow: hidden;
+  }
+
+  .homepage-banner .line {
+    display: block;
+    will-change: transform;
+  }
+
+  .homepage-banner .bottom .opening-video .video-text .video-text-pill {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    align-self: center;
+  }
+
+  .homepage-banner .bottom .opening-video .video-text .video-text-inner {
+    position: relative;
+    will-change: transform;
+    padding: 0.6vw 1.6vw;
+    background: #fff;
+  }
+
+  .homepage-banner .bottom .opening-video .video-text .video-text-bg {
+    display: none;
+  }
+
+  .homepage-banner .bottom .opening-video .video-text .video-text-text {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: var(--black);
+  }
+
+  .homepage-banner .bottom .opening-video .video-text img {
+    width: 1em;
+    height: 1em;
+    object-fit: cover;
+    display: inline-block;
+    vertical-align: -0.1em;
+  }
+
+
+  .homepage-banner .abso-content {
+    position: absolute;
+    /* The fixed header covers the top of the pinned section; the JS publishes
+       where the visible stage starts (header bottom, in section px) so the
+       top-anchored cutouts hang from it rather than from under the bar. */
+    top: var(--hero-stage-top, 0px);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: clip;
+  }
+  .homepage-banner .abso-content > * {
+    position: absolute;
+    visibility: hidden;
+    will-change: transform;
+    color: #000;
+    text-transform: uppercase;
+  }
+  .homepage-banner .abso-content #guy {
+    width: 18.965vw;
+    height: 41.806vw;
+    bottom: -14.847vw;
+    right: 6.944vw;
+    transform: rotate(-6.098deg);
+    z-index: 1; /* above the group polaroid (#topright, later in the markup) — on wide, short screens it covered his head */
+  }
+  .homepage-banner .abso-content #top-left {
+    width: 25.271vw;
+    height: 22.925vw;
+    top: 4.361vw;
+    left: -1.958vw;
+  }
+  .homepage-banner .abso-content #topright {
+    top: 1.23vw;
+    right: 0.208vw;
+    width: 20.585vw;
+    height: 31.224vw;
+    transform: rotate(-86.384deg);
+  }
+  .homepage-banner .abso-content #bottom-left {
+    width: 28.056vw;
+    height: 20.486vw;
+    transform: rotate(6.098deg);
+    bottom: -5.139vw;
+    left: 3.151vw;
+  }
+  /* Centred under the pill's spot (the pill has flown off by the time the tag
+     lands). It used to sit under the shirt, but the shirt now hangs from the
+     header offset and ran into it on shorter screens. */
+  .homepage-banner .abso-content .abso-tag {
+    left: calc(50% - 9.653vw);
+    bottom: 3.472vw;
+    width: 19.306vw;
+    text-align: center;
+  }
+  .homepage-banner .abso-content img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Top-left shirt link: make the <a> fill the box so the CTA can absolute-center inside it */
+  .homepage-banner .abso-content #top-left a {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* CTA overlay button on top of the shirt, centered within #top-left */
+  .homepage-banner .abso-content #top-left .top-left-cta {
+    position: absolute;
+    bottom: 4vw;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.667vw;
+    height: 1.667vw;
+    z-index: 2;
+    pointer-events: auto;
+  }
+  /* Two rings ripple out of the dot, half a beat apart, so it reads as
+     something to tap. z-index -1 keeps them under the dot (the CTA's own
+     z-index makes it their stacking context). */
+  .homepage-banner .abso-content #top-left .top-left-cta::before,
+  .homepage-banner .abso-content #top-left .top-left-cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border: 2px solid #f28c4b; /* the dot's own orange (Group_84.png) */
+    border-radius: 50%;
+    pointer-events: none;
+    animation: hero-cta-pulse 2s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  }
+  .homepage-banner .abso-content #top-left .top-left-cta::after {
+    animation-delay: 1s;
+  }
+  @keyframes hero-cta-pulse {
+    0% { transform: scale(1); opacity: 0.9; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* one still ring instead of the ripple */
+    .homepage-banner .abso-content #top-left .top-left-cta::before {
+      animation: none;
+      transform: scale(1.6);
+      opacity: 0.6;
+    }
+    .homepage-banner .abso-content #top-left .top-left-cta::after { display: none; }
+  }
+
+  /* ===== TABLET + MOBILE (<= 1024px) =====
+     The desktop composition is proportional (vw @ 1440) and collapses to a
+     ~180px strip on a phone; on a tablet the pin ('bottom bottom') parks it
+     with half the screen empty. Below 1024 the section is exactly one viewport
+     tall and follows the mobile mock: vol line under the header, a portrait
+     video filling the rest; after the scrub the video pill sits mid-screen with
+     the shirt + group photo above it and the tag, polaroid and guy below.
+
+     --cu is the unit everything here is sized in: 1vw, capped so it also
+     shrinks on short/landscape screens (0.46vh). bottomPin() below computes
+     the same unit for the pill + globe tween — keep the two in step. */
+  @media (max-width: 1024px) {
+    .homepage-banner {
+      --cu: min(1vw, 0.46vh);
+      /* side inset of the vol line + video; the wrapper reads it below */
+      --hero-pad: var(--sidepadding-xs);
+      /* the shrunk pill is centred on the section (pillY() below) */
+      --hero-pill-bottom: calc(50vh + 24.5 * var(--cu));
+      /* 100vh, not svh: the section is pinned for most of the hero, and by
+         then the phone's address bar has collapsed to the large viewport. */
+      height: 100vh !important;
+    }
+    /* Two lines each side, like the mock. Fixed height so the video below
+       (100svh minus this) is the same before and after SplitText re-splits. */
+    .vol-wrapper {
+      height: 3rem; /* two 12px lines at 1.2 — fixed so the video calc below holds */
+      align-items: flex-start;
+      gap: 12px;
+      padding-inline: 0;
+    }
+    .vol-wrapper p {
+      max-width: 46%;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    .vol-wrapper p:last-child {
+      text-align: right;
+    }
+    .homepage-banner > .wrapper {
+      padding-inline: var(--hero-pad);
+    }
+    /* Fill the padded wrapper. The desktop 97.917vw is wider than the space
+       left inside the padding on small screens, so the video spilled out of
+       the right edge. videoRestWidth() in the JS reads this same box. */
+    .homepage-banner .bottom .opening-video {
+      width: 100%;
+      height: calc(100vh - var(--hero-top-pad) - var(--hero-vol-gap) - 3rem);
+    }
+    /* One white box, centred on the video, holding both lines. */
+    .homepage-banner .bottom .opening-video .video-text {
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: max-content;
+      max-width: 92%;
+      padding: 8px 14px;
+      background: #fff;
+    }
+    .homepage-banner .bottom .opening-video .video-text .video-text-inner {
+      padding: 0;
+      background: transparent;
+    }
+    /* Above the pill: shirt top-left, group photo top-right. */
+    .homepage-banner .abso-content #top-left {
+      width: calc(54 * var(--cu));
+      height: calc(49 * var(--cu));
+      top: calc(var(--hero-top-pad) - 12 * var(--cu));
+      left: calc(-6 * var(--cu));
+    }
+    .homepage-banner .abso-content #top-left .top-left-cta {
+      width: 28px;
+      height: 28px;
+      bottom: calc(8 * var(--cu));
+    }
+    .homepage-banner .abso-content #topright {
+      width: calc(34 * var(--cu));
+      height: calc(52 * var(--cu));
+      top: calc(var(--hero-top-pad) - 4 * var(--cu));
+      right: 0;
+    }
+    /* Below the pill: tag, then polaroid bottom-left, guy bottom-right. */
+    .homepage-banner .abso-content .abso-tag {
+      top: calc(var(--hero-pill-bottom) + 4 * var(--cu));
+      bottom: auto;
+      left: calc(3 * var(--cu));
+      width: calc(58 * var(--cu));
+      text-align: left;
+    }
+    .homepage-banner .abso-content #bottom-left {
+      width: calc(50 * var(--cu));
+      height: calc(39 * var(--cu));
+      bottom: calc(-5 * var(--cu));
+      left: calc(-4 * var(--cu));
+    }
+    .homepage-banner .abso-content #guy {
+      width: calc(38 * var(--cu));
+      height: calc(70 * var(--cu));
+      bottom: calc(-18 * var(--cu));
+      right: calc(-3 * var(--cu));
+    }
+  }
+  @media (max-width: 768px) {
+    .homepage-banner {
+      --hero-pad: 16px; /* the mock's inset */
+    }
+    .homepage-banner .bottom .opening-video .video-text .h3 {
+      font-size: 7vw;
+    }
+  }
+{%- endstyle -%}
+
+<section class="homepage-banner has-line">
+  <div class="wrapper">
+    <div class="vol-wrapper">
+      <p class="body uppercase">Vol. 02 — The Revival | Est. 1993</p>
+      <p class="body">MADE WITH THE WORLD IN MIND</p>
+    </div>
+
+    <div class="bottom">
+      <div class="opening-video">
+        <div class="video-text">
+          <!-- ADDED BY AI START -->
+          <!--
+            Video-text: TWO pills (one per <br> line). Each pill masks its own inner content "down into the floor".
+          -->
+          <div class="video-text-pill">
+            <div class="video-text-inner">
+              <div class="video-text-bg" aria-hidden="true"></div>
+              <div class="video-text-text">
+                <h3 class="h3">HUMANS DON'T CHANGE</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-text-pill">
+            <div class="video-text-inner">
+              <div class="video-text-bg" aria-hidden="true"></div>
+              <div class="video-text-text">
+                <h3 class="h3">
+                  THE WORLD
+                  <img src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Group_8.png?v=1778655090" alt="">
+                  ALONE
+                </h3>
+              </div>
+            </div>
+          </div>
+          <!-- ADDED BY AI END -->
+        </div>
+
+        <video
+          src="https://cdn.shopify.com/videos/c/o/v/c42b64e1bf664fa1a6822af5e8cc7b9a.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        ></video>
+
+        {%- comment %}
+          The dark globe pill that ends up over this video is the header's
+          .custom-header__logo: bottomPin() below parks it here, builds it up,
+          then flies it into the bar.
+        {%- endcomment %}
+      </div>
+    </div>
+
+    <div class="abso-content" aria-hidden="true">
+      <div id="top-left">
+        {%- comment %} The barcode tee in the corner opens its product page (the shop if it's missing). {%- endcomment %}
+        <a href="{{ all_products['nature-can-t-be-restocked'].url | default: collections['shop'].url | default: routes.all_products_collection_url }}" aria-label="Nature Can't Be Restocked" tabindex="-1">
+          <img
+            class="top-left-shirt"
+            src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/topleft-shirt.png?v=1779209777"
+            alt=""
+            width="364"
+            height="331"
+          >
+          <span class="top-left-cta">
+            <img
+              src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Group_84.png?v=1779209903"
+              alt=""
+              width="24"
+              height="24"
+            >
+          </span>
+        </a>
+      </div>
+      <div id="guy">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/guy.png?v=1779156882"
+          alt=""
+          width="273"
+          height="602"
+        >
+      </div>
+      <div id="topright">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/topright.png?v=1779156935"
+          alt=""
+          width="296"
+          height="449"
+        >
+      </div>
+      <div id="bottom-left">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/bottomleft.png?v=1779156967"
+          alt=""
+          width="404"
+          height="295"
+        >
+      </div>
+      <p class="body abso-tag">
+        <span class="line-mask"><span class="line">In a world of noise,</span></span>
+        <span class="line-mask"><span class="line">the most powerful voice</span></span>
+        <span class="line-mask"><span class="line">is one that stands</span></span>
+        <span class="line-mask"><span class="line">for others.</span></span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function intro() {
+    var headerWrapEl = document.querySelector('.header-wrapper');
+    var headerEl = document.querySelector('.custom-header');
+    var volEl = document.querySelector('.vol-wrapper');
+
+    /* Published for volExit() below. Its toggle tweens the vol lines, and
+       ScrollTrigger can fire it on creation and on refresh — a show there
+       would wipe the yPercent:110 park the intro relies on. It has to stay
+       off the lines until the intro has actually run them in. */
+    window.__heroIntroDone = false;
+    function markIntroDone() {
+      window.__heroIntroDone = true;
+    }
+
+    function clearHides() {
+      document.documentElement.classList.add('intro-ready');
+      if (volEl) volEl.classList.add('is-intro-ready');
+    }
+
+    /* Releases the CSS rule that parks the header above the viewport. Only safe
+       to call once an equivalent inline transform is in place (or when there is
+       no animation to run at all), so the bar is never seen at rest first. */
+    function releaseHeader() {
+      document.documentElement.classList.add('header-in');
+    }
+
+    if (!window.gsap || !window.SplitText) {
+      clearHides();
+      releaseHeader();
+      // no intro to wait for — let the scrub take the lines immediately
+      markIntroDone();
+      return;
+    }
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+
+    var openingVideoEl = document.querySelector('.homepage-banner .opening-video');
+
+    if (headerWrapEl && !reduce) {
+      /* reduced motion skips this entirely — even a y:0 transform would make the
+         wrapper a containing block for the megamenu panel */
+
+      /* Release the CSS park BEFORE GSAP first touches the element, and pin y
+         to 0 explicitly.
+         The park rule sets transform: translateY(-100%). gsap.set() caches
+         whatever transform it finds on the element, so reading it while the
+         rule still applied recorded y:-87px (the resolved pixel value of that
+         -100%) and then stacked yPercent:-100 on top of it. The tween only
+         animates yPercent, so the phantom -87px survived the whole drop: the
+         bar landed 87px high and clearProps closed the gap in a single frame.
+         That was the snap.
+         Nothing paints between these two statements — same synchronous task —
+         so the bar still never appears at rest. */
+      releaseHeader();
+      gsap.set(headerWrapEl, { y: 0, yPercent: -100 });
+    }
+    if (openingVideoEl && !reduce) {
+      gsap.set(openingVideoEl, { yPercent: 110 });
+    }
+
+    function lockScroll() {
+      if (window.lenis && window.lenis.stop) window.lenis.stop();
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    }
+    function unlockScroll() {
+      markIntroDone();
+      /* The scroll can already be past the vol exit (a reload mid-page restores
+         scrollY) and its toggle was gated until now — apply it once. */
+      if (window.__volPastExit && window.__volPastExit() && window.__volSplitLines) {
+        gsap.set(window.__volSplitLines, { yPercent: 110 });
+      }
+      if (window.lenis && window.lenis.start) window.lenis.start();
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      /* smooth-scroll.liquid holds its ScrollTrigger.refresh() until this fires
+         — the reflow would otherwise land mid-drop, and measure a page that is
+         still scroll-locked. */
+      try {
+        document.dispatchEvent(new CustomEvent('intro:done'));
+      } catch (e) {}
+    }
+    lockScroll();
+
+    var volSplit = null;
+    if (volEl) {
+      volSplit = SplitText.create(volEl.querySelectorAll('p'), {
+        type: 'lines',
+        mask: 'lines',
+        autoSplit: true,
+        onSplit: function (self) {
+          /* autoSplit re-runs this whenever the lines re-wrap (late webfont,
+             resize). Before the intro the fresh lines wait under their masks;
+             after it they must match the exit state, or a re-split at the top
+             of the page leaves the vol line parked out of sight. */
+          var hidden = window.__heroIntroDone
+            ? !!(window.__volPastExit && window.__volPastExit())
+            : !reduce;
+          gsap.set(self.lines, { yPercent: hidden ? 110 : 0 });
+          window.__volSplitLines = self.lines;
+        },
+      });
+      window.__volSplitLines = volSplit.lines;
+    }
+
+    clearHides();
+
+    var played = false;
+    function play() {
+      if (played) return;
+      played = true;
+      if (reduce) {
+        releaseHeader();
+        unlockScroll();
+        return;
+      }
+      releaseHeader();
+
+      var tl = gsap.timeline({ onComplete: unlockScroll });
+
+      if (headerWrapEl) {
+        // The whole bar drops in as one piece — announcement marquee, background
+        // and border included — rather than the nav and actions sliding down
+        // inside an already-visible header.
+        //
+        // fromTo, not to: the start value is asserted at the moment the tween
+        // runs. With a plain .to() the bar just popped in whenever anything had
+        // cleared the inline transform set at init (a re-render, a second run of
+        // this script, ScrollTrigger refreshing) — the tween then had no
+        // distance left to travel.
+        tl.fromTo(
+          headerWrapEl,
+          // y:0 on both sides is load-bearing, not decoration — it stops any
+          // stale pixel offset (from the CSS park, a re-render, or an earlier
+          // run of this script) surviving the tween and being dumped in one
+          // frame by clearProps below.
+          { y: 0, yPercent: -100 },
+          {
+            y: 0,
+            yPercent: 0,
+            duration: 1,
+            ease: 'power3.out',
+            // A leftover transform would make the wrapper the containing block for
+            // the absolutely-positioned megamenu panel and would also fight the
+            // sticky-header scroll animation. Wipe it once the intro has landed.
+            onComplete: function () {
+              gsap.set(headerWrapEl, { clearProps: 'transform' });
+            },
+          }
+        );
+      }
+
+      if (volSplit) {
+        tl.to(
+          volSplit.lines,
+          {
+            yPercent: 0,
+            duration: 0.8,
+            ease: 'power4.out',
+            stagger: 0.08,
+          },
+          '-=0.15'
+        );
+      }
+
+      if (openingVideoEl) {
+        tl.to(
+          openingVideoEl,
+          {
+            yPercent: 0,
+            duration: 1.1,
+            ease: 'power4.out',
+          },
+          '-=0.4'
+        );
+      }
+    }
+
+    if (document.querySelector('.preloader')) {
+      /* Two frames, not zero. 'preloader:done' is dispatched from inside the
+         preloader's own GSAP onComplete, in the same tick that rips the
+         full-screen overlay out of the DOM — so the frame the event lands on is
+         a long one (overlay removal, then the first real paint of everything it
+         was covering). Starting the tween there means its opening frames are
+         already spent by the time anything reaches the screen. The double rAF
+         puts the tween's clock on the far side of that paint. */
+      document.addEventListener(
+        'preloader:done',
+        function () {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(play);
+          });
+        },
+        { once: true }
+      );
+      setTimeout(play, 8000);
+    } else {
+      play();
+    }
+  })();
+
+  (function volExit() {
+    var section = document.querySelector('.homepage-banner');
+    var volWrap = section ? section.querySelector('.vol-wrapper') : null;
+    if (!section || !volWrap) return;
+    if (!window.gsap || !window.ScrollTrigger) return;
+
+    var prev = ScrollTrigger.getById('homepage-vol-exit');
+    if (prev) {
+      var pa = prev.animation;
+      prev.kill();
+      if (pa && pa.kill) pa.kill();
+    }
+
+    var reduce = false;
+    try {
+      reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+
+    /* The first few px of scroll mask the vol lines down out of sight, and
+       scrolling back to the top brings them back.
+       A played tween, not a scrub. The scrub tied the mask to the scroll
+       position, and where the hero is shorter than the window it pins from
+       the top, so the line doesn't move while you scroll: stop anywhere in
+       the exit band and the text sat sliced through, which read as a glitch.
+       A toggle only ever rests fully in or fully out. */
+    function setVol(hidden) {
+      /* Hands off until the intro has run the lines in. ScrollTrigger fires
+         these on creation and on refresh, and an early show would undo the
+         intro's park before the preloader clears. */
+      if (!window.__heroIntroDone) return;
+      var lines = window.__volSplitLines;
+      if (!lines || !lines.length) return;
+      if (reduce) {
+        gsap.set(lines, { yPercent: hidden ? 110 : 0, overwrite: true });
+      } else if (hidden) {
+        gsap.to(lines, { yPercent: 110, duration: 0.45, ease: 'power3.in', stagger: 0.04, overwrite: true });
+      } else {
+        // same rise as the intro
+        gsap.to(lines, { yPercent: 0, duration: 0.8, ease: 'power4.out', stagger: 0.08, overwrite: true });
+      }
+    }
+
+    ScrollTrigger.create({
+      id: 'homepage-vol-exit',
+      /* A plain scroll distance, not the line's position: the line sits
+         inside the pinned hero, and measuring it put the switch wherever the
+         pin happened to hold it (110px down on a tall window). The line rests
+         at scroll 0, so 20px is about where it used to meet the header.
+         end 'max' keeps it a plain before/after switch. */
+      start: 20,
+      end: 'max',
+      onEnter: function () { setVol(true); },
+      onLeaveBack: function () { setVol(false); },
+    });
+
+    /* Read by the intro (unlockScroll, and SplitText re-splits) to start
+       the lines in whichever state the scroll calls for. */
+    window.__volPastExit = function () {
+      var st = ScrollTrigger.getById('homepage-vol-exit');
+      return !!st && st.scroll() > st.start;
+    };
+  })();
+
+  (function bottomPin() {
+    var section = document.querySelector('.homepage-banner');
+    var openingVideo = document.querySelector('.homepage-banner .opening-video');
+    var videoText = document.querySelector('.homepage-banner .opening-video .video-text:not(.video-text-next)');
+    var videoTextInners = videoText ? videoText.querySelectorAll('.video-text-inner') : [];
+    /* The dark globe pill lives in the fixed header (custom-header.liquid
+       renders it on the homepage only) so it is still there once this pin
+       releases. Everything inside it is driven from here. */
+    var headerSection = document.querySelector('.section-header');
+    var logoEl = headerSection ? headerSection.querySelector('.custom-header__logo') : null;
+    var logoPanel = logoEl ? logoEl.querySelector('.custom-header__logo-panel') : null;
+    var logoMap = logoEl ? logoEl.querySelector('.custom-header__logo-map') : null;
+    var logoH = logoEl ? logoEl.querySelector('.custom-header__logo-h') : null;
+    var logoLines = logoEl ? logoEl.querySelectorAll('.custom-header__logo-line') : [];
+    var absoGuy = document.querySelector('.homepage-banner .abso-content #guy');
+    var absoTopLeft = document.querySelector('.homepage-banner .abso-content #top-left');
+    var absoTopRight = document.querySelector('.homepage-banner .abso-content #topright');
+    var absoBottomLeft = document.querySelector('.homepage-banner .abso-content #bottom-left');
+    var absoTag = document.querySelector('.homepage-banner .abso-content .abso-tag');
+    var absoTagLines = absoTag ? absoTag.querySelectorAll('.line') : [];
+    var absoEls = [absoGuy, absoTopLeft, absoTopRight, absoBottomLeft, absoTag].filter(Boolean);
+    if (!section) return;
+    if (!window.gsap || !window.ScrollTrigger) return;
+
+    var prev = ScrollTrigger.getById('homepage-bottom-pin');
+    if (prev) {
+      var prevAnim = prev.animation;
+      prev.kill();
+      if (prevAnim && prevAnim.kill) prevAnim.kill();
+    }
+    if (openingVideo) gsap.killTweensOf(openingVideo);
+    if (videoTextInners.length) gsap.killTweensOf(videoTextInners);
+    [logoEl, logoPanel, logoMap, logoH].forEach(function (el) { if (el) gsap.killTweensOf(el); });
+    if (logoLines.length) gsap.killTweensOf(logoLines);
+    if (absoEls.length) gsap.killTweensOf(absoEls);
+    if (absoTagLines.length) gsap.killTweensOf(absoTagLines);
+
+    if (absoTagLines.length) gsap.set(absoTagLines, { yPercent: 140 });
+    if (logoEl) gsap.set(logoEl, { autoAlpha: 0, xPercent: -50, yPercent: -50 }); // xPercent/yPercent centre it on the slot
+    if (logoPanel) gsap.set(logoPanel, { yPercent: 100 });
+    if (logoMap) gsap.set(logoMap, { yPercent: 135, backgroundColor: '#4e4e4e' });
+    if (logoH) gsap.set(logoH, { autoAlpha: 0, yPercent: 100 });
+    if (logoLines.length) gsap.set(logoLines, { yPercent: 110 }); // parked under their masks
+    if (absoGuy)
+      gsap.set(absoGuy, {
+        x: function () {
+          return window.innerWidth * 0.55;
+        },
+        y: function () {
+          return window.innerHeight * 0.65;
+        },
+      });
+    if (absoTopLeft)
+      gsap.set(absoTopLeft, {
+        rotation: -11.083,
+        x: function () {
+          return -window.innerWidth * 0.55;
+        },
+        y: function () {
+          return -window.innerHeight * 0.35;
+        },
+      });
+    if (absoTopRight)
+      gsap.set(absoTopRight, {
+        x: function () {
+          return window.innerWidth * 0.6;
+        },
+        y: function () {
+          return -window.innerHeight * 0.3;
+        },
+      });
+    if (absoBottomLeft)
+      gsap.set(absoBottomLeft, {
+        x: function () {
+          return -window.innerWidth * 0.55;
+        },
+        y: function () {
+          return window.innerHeight * 0.45;
+        },
+      });
+
+    var tl = gsap.timeline({
+      scrollTrigger: {
+        id: 'homepage-bottom-pin',
+        trigger: section,
+        start: 'bottom bottom',
+        end: '+=450%', // shrink, then the pill builds up (panel, globe, 'we change it together', white, H), the cutouts land, then the pill flies to the bar
+        pin: true,
+        pinSpacing: true,
+        scrub: 1,
+        invalidateOnRefresh: true,
+        onRefreshInit: setStageVar,
+      },
+      defaults: { ease: 'none' },
+    });
+
+    /* Mirrors the <= 1024px CSS block at the top of this file: below 1024 the
+       video is portrait and the pill it shrinks to (and the globe that takes
+       its place) are sized in --cu, the vw unit capped by 0.46vh. Function-based
+       so invalidateOnRefresh re-reads the breakpoint on resize / rotate. */
+    function isMobile() {
+      try { return matchMedia('(max-width: 1024px)').matches; } catch (e) { return false; }
+    }
+    /* Everything below is sized from the section's own height (100vh — the
+       large viewport), not innerHeight: on a phone innerHeight is the small
+       viewport until the address bar collapses, which would make the pill
+       smaller than the globe image the CSS sizes from vh. */
+    function sectionH() { return section.offsetHeight || window.innerHeight; }
+    function cu() { return Math.min(window.innerWidth / 100, sectionH() * 0.0046); }
+    function headerH() { return headerSection ? headerSection.offsetHeight : 0; }
+    /* viewport y of the pinned section's top — the pin starts at 'bottom bottom' */
+    function pinnedTop() { return window.innerHeight - sectionH(); }
+    /* The stage the composition lands on. The fixed header covers the top of
+       the pinned section, so on desktop it is the viewport below the bar; the
+       phone layout already lays itself out under its (much shorter) bar and
+       keeps centring on the section. */
+    function stageCenterY() { return isMobile() ? pinnedTop() + sectionH() / 2 : (window.innerHeight + headerH()) / 2; }
+    function stageTop() { return isMobile() ? 0 : headerH() - pinnedTop(); }
+    function setStageVar() { section.style.setProperty('--hero-stage-top', Math.round(stageTop()) + 'px'); }
+    setStageVar();
+    /* Park the pill with its centre on the stage centre. offsetTop is the
+       video's rest position (pad + vol line + gap). */
+    var pillY = function () {
+      var top = openingVideo ? openingVideo.offsetTop : 0;
+      return stageCenterY() - pinnedTop() - top - pillH() / 2;
+    };
+    /* Phone rest size of the video, in px. The CSS rest values are 97.917vw by
+       calc(100vh - pad - gap - vol); they're re-derived here (from parts that
+       don't tween, so they're stable mid-scrub and on refresh) because the
+       shrink tween below must run px -> px: GSAP 3.15 mis-converts a vw start
+       value when the end value is in px (97.917vw came out as ~0), which
+       collapsed the video to a sliver mid-shrink. */
+    function restBox() { return section.querySelector('.bottom'); }
+    function videoRestWidth() {
+      var b = restBox();
+      return Math.round(b ? b.clientWidth : window.innerWidth * 0.97917) + 'px';
+    }
+    /* pill width: 94cu, capped at the resting width so it never grows */
+    function pillW() {
+      var b = restBox();
+      return Math.round(Math.min(94 * cu(), b ? b.clientWidth : Infinity)) + 'px';
+    }
+    function videoRestHeight() {
+      var wrap = section.querySelector('.wrapper');
+      var vol = section.querySelector('.vol-wrapper');
+      var bottom = section.querySelector('.bottom');
+      var pad = wrap ? parseFloat(getComputedStyle(wrap).paddingTop) || 0 : 0;
+      var gap = bottom ? parseFloat(getComputedStyle(bottom).marginTop) || 0 : 0;
+      return Math.round(sectionH() - pad - (vol ? vol.offsetHeight : 0) - gap) + 'px';
+    }
+    function pillH() { return isMobile() ? 49 * cu() : (25.556 / 100) * window.innerWidth; }
+
+    /* ---- pill flight: stage centre -> header slot ----
+       Offset geometry rather than getBoundingClientRect for the vertical axis:
+       these re-run on every refresh, when the pin and the scrub's own
+       transforms may be live, and offsets ignore transforms. */
+    function offsetTopWithin(el, ancestor) {
+      var y = 0;
+      while (el && el !== ancestor) { y += el.offsetTop; el = el.offsetParent; }
+      return y;
+    }
+    function pillCenterX() { var r = openingVideo.getBoundingClientRect(); return r.left + r.width / 2; }
+    /* The pill's layout box is centred on the nav row (CSS translate
+       -50%/-50%), so its rest centre is simply its offset top. */
+    function logoRestCenterY() { return offsetTopWithin(logoEl, headerSection); }
+    function logoRestCenterX() { var r = logoEl.parentElement.getBoundingClientRect(); return r.left + r.width / 2; }
+    function logoDX() { return pillCenterX() - logoRestCenterX(); }
+    function logoDY() { return stageCenterY() - logoRestCenterY(); }
+    /* resting height in the bar: max(36px, 3.75vw) — mirrored in custom-header.liquid's comment */
+    function logoRestScale() { return Math.max(36, window.innerWidth * 0.0375) / Math.max(1, logoEl.offsetHeight); }
+
+    if (videoTextInners.length) {
+      tl.to(
+        videoTextInners,
+        {
+          yPercent: 140,
+          duration: 0.7,
+          ease: 'none',
+          stagger: 0.1,
+        },
+        '>0'
+      );
+      tl.set(videoText, { visibility: 'hidden' });
+    }
+
+    if (openingVideo) {
+      tl.fromTo(
+        openingVideo,
+        {
+          width: function () { return isMobile() ? videoRestWidth() : '97.917vw'; },
+          height: function () { return isMobile() ? videoRestHeight() : '45.833vw'; },
+          borderRadius: function () { return isMobile() ? '0px' : '0vw'; },
+          y: 0,
+        },
+        {
+          width: function () { return isMobile() ? pillW() : '48.958vw'; },
+          height: function () { return isMobile() ? Math.round(49 * cu()) + 'px' : '25.556vw'; },
+          borderRadius: function () { return isMobile() ? Math.round(24.5 * cu()) + 'px' : '21.944vw'; },
+          y: function () {
+            return pillY();
+          },
+          duration: 1,
+          immediateRender: false,
+        },
+        '>0'
+      );
+    }
+
+    /* STEP 2 — the dark pill builds up over the video, inside the header's
+       composite (parked over the video pill, clipped to the pill shape): the
+       #333 panel rides up, the continents a beat behind it, "we change it /
+       together" rises in over the grey globe and drops back out, the
+       continents go white, then the H rises in. The video underneath is
+       hidden once it is covered. */
+    if (logoEl) {
+      var t2 = tl.duration();
+      tl.set(logoEl, { autoAlpha: 1, xPercent: -50, yPercent: -50, x: logoDX, y: logoDY, scale: 1 }, t2);
+      if (logoPanel) tl.to(logoPanel, { yPercent: 0, duration: 1, ease: 'none' }, t2);
+      if (logoMap) tl.to(logoMap, { yPercent: 0, duration: 1, ease: 'none' }, t2 + 0.15);
+      if (openingVideo) tl.set(openingVideo, { autoAlpha: 0 }, t2 + 1);
+      if (logoLines.length) {
+        tl.to(logoLines, { yPercent: 0, duration: 0.4, ease: 'none', stagger: 0.08 }, t2 + 0.95);
+        tl.to(logoLines, { yPercent: 110, duration: 0.35, ease: 'none', stagger: 0.08 }, t2 + 1.9);
+      }
+      if (logoMap) tl.to(logoMap, { backgroundColor: '#ffffff', duration: 0.5, ease: 'none' }, t2 + 2.3);
+      if (logoH) {
+        /* No fade: the H is fully opaque from the start and rises up from
+           under the pill's bottom edge (the pill's overflow: hidden masks it). */
+        tl.fromTo(
+          logoH,
+          { autoAlpha: 1, yPercent: 100 },
+          { autoAlpha: 1, yPercent: 0, duration: 0.6, ease: 'none', immediateRender: false },
+          t2 + 2.7
+        );
+      }
+    }
+
+    /* STEP 3 — the cutouts land around the pill. */
+    if (absoEls.length) {
+      var t3 = tl.duration() + 0.1;
+      tl.set(absoEls, { visibility: 'visible' }, t3);
+      if (absoTopLeft) {
+        tl.to(absoTopLeft, { x: 0, y: 0, duration: 0.9, ease: 'expo.out' }, t3 + 0.3);
+      }
+      if (absoBottomLeft) {
+        tl.to(absoBottomLeft, { x: 0, y: 0, duration: 0.95, ease: 'power4.out' }, t3 + 0.3);
+      }
+      if (absoGuy) {
+        tl.to(absoGuy, { x: 0, y: 0, duration: 1.05, ease: 'power4.out' }, t3 + 0.52);
+      }
+      if (absoTopRight) {
+        tl.to(absoTopRight, { x: 0, y: 0, duration: 1.0, ease: 'circ.out' }, t3 + 0.52);
+      }
+      if (absoTagLines.length) {
+        tl.to(
+          absoTagLines,
+          {
+            yPercent: 0,
+            duration: 0.7,
+            ease: 'none',
+            stagger: 0.1,
+          },
+          t3 + 0.52
+        );
+      }
+    }
+
+    /* STEP 4 — the whole pill flies up into the bar and shrinks to rest. */
+    if (logoEl) {
+      tl.fromTo(
+        logoEl,
+        { xPercent: -50, yPercent: -50, x: logoDX, y: logoDY, scale: 1 },
+        { xPercent: -50, yPercent: -50, x: 0, y: 0, scale: logoRestScale, duration: 1.2, ease: 'none', immediateRender: false },
+        tl.duration() + 0.1
+      );
+    }
+
+    /* Small screens: hold the landed composition for the last ~20% of the pin
+       instead of releasing the instant the pill lands. */
+    if (isMobile()) tl.to({}, { duration: 1.2 });
+  })();
+
+  /* Idle wobble on the four corner cutouts: each rocks a degree or two on its
+     own clock so they never move in sync. Rotation only, on the cutout's first
+     child, so it stacks with the scroll scrub (x/y on the outer box) and the
+     mouse parallax (x/y on the img) without fighting either. */
+  (function absoShake() {
+    if (!window.gsap) return;
+    try {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    } catch (e) {}
+
+    var CFG = [
+      { sel: '#top-left', deg: 2, dur: 1.3 },
+      { sel: '#topright', deg: 1.6, dur: 1.55 },
+      { sel: '#bottom-left', deg: 2.2, dur: 1.2 },
+      { sel: '#guy', deg: 1.5, dur: 1.7 },
+    ];
+    CFG.forEach(function (c, i) {
+      var el = document.querySelector('.homepage-banner .abso-content ' + c.sel);
+      var target = el && el.firstElementChild;
+      if (!target) return;
+      gsap
+        .fromTo(
+          target,
+          { rotation: -c.deg },
+          { rotation: c.deg, duration: c.dur, ease: 'sine.inOut', repeat: -1, yoyo: true }
+        )
+        .seek(i * 0.45); // stagger the phase so the four never rock together
+    });
+  })();
+
+  (function absoParallax() {
+    if (!window.gsap) return;
+    var finePointer = false;
+    try {
+      finePointer = matchMedia('(pointer: fine)').matches;
+    } catch (e) {}
+    if (!finePointer) return;
+
+    var BASE = { x: 23, y: 17 };
+    var CFG = [
+      { sel: '.homepage-banner .abso-content #top-left', x: 1.05, y: 1.0, dur: 0.55, ease: 'power3.out' },
+      { sel: '.homepage-banner .abso-content #bottom-left', x: 1.1, y: 1.05, dur: 0.6, ease: 'power4.out' },
+      { sel: '.homepage-banner .abso-content #topright', x: 0.9, y: 0.85, dur: 0.55, ease: 'circ.out' },
+      { sel: '.homepage-banner .abso-content #guy', x: 0.75, y: 0.7, dur: 0.7, ease: 'power3.out' },
+    ];
+
+    var items = CFG.map(function (c) {
+      var el = document.querySelector(c.sel);
+      if (!el) return null;
+      var target = el.querySelector('img') || el;
+      target.style.willChange = 'transform';
+      return {
+        cfg: c,
+        xTo: gsap.quickTo(target, 'x', { duration: c.dur, ease: c.ease }),
+        yTo: gsap.quickTo(target, 'y', { duration: c.dur, ease: c.ease }),
+      };
+    }).filter(Boolean);
+    if (!items.length) return;
+
+    window.addEventListener(
+      'mousemove',
+      function (e) {
+        var nx = (e.clientX / Math.max(1, window.innerWidth) - 0.5) * 2;
+        var ny = (e.clientY / Math.max(1, window.innerHeight) - 0.5) * 2;
+        for (var i = 0; i < items.length; i++) {
+          items[i].xTo(nx * BASE.x * items[i].cfg.x);
+          items[i].yTo(ny * BASE.y * items[i].cfg.y);
+        }
+      },
+      { passive: true }
+    );
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Homepage hero",
+  "class": "homepage-hero",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Homepage hero"
+    }
+  ]
+}
+{% endschema %}

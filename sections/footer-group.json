@@ -1,41 +1,37 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.footer.name",
   "type": "footer",
   "sections": {
+    "footer_custom_D7Ueta": {
+      "type": "footer-custom",
+      "name": "Footer (Custom)",
+      "settings": {
+        "menu": "",
+        "newsletter_text": "<p>Stay in it. New drops, where your money went, and stories from the community. No spam.</p>",
+        "social_instagram": "https://www.instagram.com/humaniteesofficial/",
+        "social_linkedin": "https://www.linkedin.com/company/humanitees/",
+        "social_tiktok": "",
+        "copyright_text": "",
+        "tagline": "WEAR THE CHANGE"
+      }
+    },
     "footer": {
       "type": "footer",
-      "blocks": {
-        "footer-0": {
-          "type": "link_list",
-          "settings": {
-            "heading": "Quick links",
-            "menu": "footer"
-          }
-        },
-        "footer-1": {
-          "type": "link_list",
-          "settings": {
-            "heading": "Info",
-            "menu": "footer"
-          }
-        },
-        "footer-2": {
-          "type": "text",
-          "settings": {
-            "heading": "Our mission",
-            "subtext": "<p>Share contact information, store details, and brand content with your customers.<\/p>"
-          }
-        }
-      },
-      "block_order": [
-        "footer-0",
-        "footer-1",
-        "footer-2"
-      ],
+      "disabled": true,
       "settings": {
         "color_scheme": "scheme-1",
         "newsletter_enable": true,
         "newsletter_heading": "Subscribe to our emails",
+        "enable_follow_on_shop": true,
         "show_social": true,
         "enable_country_selector": false,
         "enable_language_selector": false,
@@ -48,6 +44,7 @@
     }
   },
   "order": [
+    "footer_custom_D7Ueta",
     "footer"
   ]
 }

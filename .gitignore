@@ -8,3 +8,8 @@
 ehthumbs.db
 Thumbs.db
 .shopify
+
+# Local tooling and downloads (not part of the theme)
+node_modules/
+.playwright-mcp/
+*.zip

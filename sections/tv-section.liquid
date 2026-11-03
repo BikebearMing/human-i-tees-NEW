@@ -1,0 +1,557 @@
+{%- comment -%}
+  TV — the 90s CRT, pinned and scroll-scrubbed: "Born in the 90s" masks up
+  over the screen, the nonprofit marquee blurs in, then the channels hard-cut
+  through the image stack as you scroll. Split out of brand-is-back.liquid;
+  the TV classes (.bib-tv*) and their CSS/JS moved here unchanged so the
+  shared rules in assets/custom.css (.bib-tv-marquee-sep) still apply.
+  Channel photos are "Channel" blocks; with none added, the original 7
+  stills show. The TV frame is still a raw CDN <img>; copy is section settings.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign heading_lines = s.heading | newline_to_br | split: '<br />'
+  assign marquee_items = s.marquee_text | newline_to_br | split: '<br />'
+  assign channels = 'https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_1.png?v=1779275845|https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_2.png?v=1779275858|https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_3.png?v=1779275869|https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_4.png?v=1779275880|https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_5.png?v=1779275894|https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_6.png?v=1779275905|https://cdn.shopify.com/s/files/1/0853/0673/6916/files/Rectangle_7.png?v=1779275914' | split: '|'
+-%}
+
+<section class="tvs" data-section-id="{{ section.id }}">
+  <div class="tvs-stage" data-tvs-stage>
+    {%- comment -%} TV setup: channel-flick stack + static + frame image + marquees {%- endcomment -%}
+    <div class="bib-tv" data-bib-tv>
+      <div class="bib-tv-channels" data-bib-channels>
+        {%- comment -%}
+          Channel stack — one <img> per channel, all absolutely stacked.
+          The scroll timeline (channelProxy / applyChannel below) hard-cuts
+          between them by moving .is-active down the stack as you scroll.
+        {%- endcomment -%}
+        {%- liquid
+          assign picked = 0
+          for block in section.blocks
+            if block.type == 'channel' and block.settings.image != blank
+              assign picked = picked | plus: 1
+            endif
+          endfor
+        -%}
+        {%- if picked > 0 -%}
+          {%- assign shown = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'channel' and block.settings.image != blank -%}
+              {%- liquid
+                if shown == 0
+                  assign channel_class = 'bib-tv-channel is-active'
+                  assign channel_loading = 'eager'
+                else
+                  assign channel_class = 'bib-tv-channel'
+                  assign channel_loading = 'lazy'
+                endif
+                assign shown = shown | plus: 1
+              -%}
+              {{
+                block.settings.image
+                | image_url: width: 1440
+                | image_tag:
+                  class: channel_class,
+                  widths: '720, 1080, 1440',
+                  sizes: '100vw',
+                  alt: '',
+                  loading: channel_loading
+              }}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- for src in channels -%}
+            <img
+              class="bib-tv-channel{% if forloop.first %} is-active{% endif %}"
+              src="{{ src }}"
+              alt=""
+              loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+              width="1440"
+              height="720"
+            >
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+
+      {%- comment -%}
+        TV static — sits inside .bib-tv between channels and the frame so
+        the frame bezel paints over it.
+      {%- endcomment -%}
+      <canvas class="bib-tv-static" data-bib-tv-static aria-hidden="true"></canvas>
+
+      <img
+        class="bib-tv-frame"
+        data-bib-frame
+        src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/tv-frame.png?v=1779087532"
+        alt=""
+        loading="lazy"
+        width="1440"
+        height="736"
+      >
+
+      {%- comment -%}
+        Two marquee rows at the bottom of the screen, opposite directions.
+        The CSS loop translates the track by -50%, so the items repeat an
+        even number of times for a seamless wrap.
+      {%- endcomment -%}
+      <div class="bib-tv-marquees" data-bib-marquees aria-hidden="true">
+        <div class="bib-tv-marquee bib-tv-marquee-ltr h3 dark">
+          <div class="bib-tv-marquee-track">
+            {%- for i in (1..4) -%}
+              {%- for item in marquee_items -%}
+                <span class="bib-tv-marquee-item h3 dark">{{ item | strip }}</span>
+                <span class="bib-tv-marquee-sep">/</span>
+              {%- endfor -%}
+            {%- endfor -%}
+          </div>
+        </div>
+        <div class="bib-tv-marquee bib-tv-marquee-rtl h3 dark">
+          <div class="bib-tv-marquee-track">
+            {%- for i in (1..4) -%}
+              {%- for item in marquee_items -%}
+                <span class="bib-tv-marquee-item h3 dark">{{ item | strip }}</span>
+                <span class="bib-tv-marquee-sep">/</span>
+              {%- endfor -%}
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Headline over the screen; it types itself out on scroll {%- endcomment -%}
+    <h2 class="tvs-headline" data-tvs-headline>
+      {%- for line in heading_lines -%}
+        <span class="tvs-headline-line"><span class="tvs-headline-line-inner">{{ line | strip }}</span></span>
+      {%- endfor -%}
+    </h2>
+  </div>
+</section>
+
+<style>
+  .tvs {
+    --bib-display-font: 'Futura', 'Helvetica Neue', Arial, sans-serif;
+    --bib-typewriter-font: var(--font-american-typewriter, 'Courier New', monospace);
+    position: relative;
+    width: 100%;
+    background: #0b0b0c;
+    color: #fff;
+    overflow-x: clip;
+    font-family: var(--bib-display-font);
+  }
+  .tvs *,
+  .tvs *::before,
+  .tvs *::after {
+    box-sizing: border-box;
+  }
+  .tvs img {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* The pinned slot: TV + headline */
+  .tvs-stage {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ----- TV -----
+     The whole frame shows, knobs included (the mock): full width at the
+     frame image's own 1440:736 ratio, centred on the dark stage. */
+  .bib-tv {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: auto;
+    aspect-ratio: 1440 / 736;
+    max-height: 100vh;
+    transform: translate(-50%, -50%);
+    transform-origin: 50% 50%;
+    will-change: transform, opacity;
+  }
+
+  /* TV static — procedural noise + scanlines + drifting bright band. */
+  .bib-tv-static {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 50% 50%;
+    z-index: 2;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    will-change: opacity, transform, filter;
+  }
+  .bib-tv-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 3;
+    pointer-events: none;
+  }
+  /* Channel image stack — positioned inside the TV screen area. */
+  .bib-tv-channels {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .bib-tv-channel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+  }
+  .bib-tv-channel.is-active {
+    opacity: 1;
+  }
+  /* Marquees: two rows at the bottom of the screen, opposite directions */
+  .bib-tv-marquees {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 10%; /* the frame's screen ends ~8% up; the rows sit on its bottom edge */
+    z-index: 2;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+  }
+  .bib-tv-marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    color: #fff;
+    font-weight: 800;
+    font-size: clamp(11px, 1.1vw, 16px);
+    letter-spacing: 0.06em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  .bib-tv-marquee-track {
+    display: inline-flex;
+    gap: 12px;
+    padding: 0 1vw;
+  }
+  .bib-tv-marquee-item,
+  .bib-tv-marquee-sep {
+    display: inline-block;
+  }
+  .bib-tv-marquee-ltr .bib-tv-marquee-track {
+    animation: bib-marq 22s linear infinite;
+  }
+  .bib-tv-marquee-rtl .bib-tv-marquee-track {
+    animation: bib-marq-rtl 26s linear infinite;
+  }
+  @keyframes bib-marq {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes bib-marq-rtl {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  /* ----- Headline over the screen (typewriter) ----- */
+  .tvs-headline {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48.056vw;
+    margin: 0;
+    z-index: 5;
+    text-align: center;
+    pointer-events: none;
+    font-family: var(--bib-typewriter-font);
+    font-weight: 400;
+    font-size: clamp(48px, 8vw, 120px);
+    line-height: 0.95;
+    color: #fff;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  }
+  /* One block per line; the letters inside are typed out by the scrub */
+  .tvs-headline-line {
+    display: block;
+    overflow: hidden;
+  }
+  .tvs-headline-line-inner {
+    display: block;
+    will-change: transform;
+  }
+
+  /* ===== TABLET + MOBILE (<= 1024px) ===== */
+  @media (max-width: 1024px) {
+    /* The CRT fills the screen, like desktop. Anything smaller showed the
+       frame's grey bezel as bands over the black stage above and below it.
+       The 16:10 frame image is object-fit: cover, so on a tall screen its side
+       bezels crop away and the curved top/bottom bezels become the backdrop. */
+    /* The pin holds the stage under the header bar (see the JS), so size it
+       to the screen left below the bar or the CRT's bottom runs off-screen. */
+    .tvs-stage {
+      height: calc(100vh - var(--header-height, 0px));
+    }
+    .bib-tv {
+      width: 100vw;
+      height: 100%;
+      max-height: none;
+    }
+    .bib-tv-marquees {
+      left: 0;
+      right: 0;
+      bottom: 22%;
+    }
+  }
+  @media (max-width: 768px) {
+    .tvs-headline {
+      width: 90vw;
+      font-size: clamp(34px, 11vw, 48px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bib-tv-marquee-ltr .bib-tv-marquee-track,
+    .bib-tv-marquee-rtl .bib-tv-marquee-track {
+      animation: none;
+    }
+  }
+</style>
+
+{%- comment -%} GSAP + ScrollTrigger come from layout/theme.liquid (one shared copy). {%- endcomment -%}
+<script>
+  (function () {
+    'use strict';
+
+    function init() {
+      if (!window.gsap || !window.ScrollTrigger) {
+        // GSAP not ready yet — retry once
+        return setTimeout(init, 60);
+      }
+      gsap.registerPlugin(ScrollTrigger);
+
+      var root = document.querySelector('.tvs');
+      if (!root) return;
+
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // Small screens (matches the 1024px CSS block): a shorter pin, same beats.
+      var phone = window.matchMedia('(max-width: 1024px)').matches;
+
+      var stage = root.querySelector('[data-tvs-stage]');
+      var channels = root.querySelectorAll('[data-bib-channels] .bib-tv-channel');
+      var marquees = root.querySelector('[data-bib-marquees]');
+      var tvStatic = root.querySelector('[data-bib-tv-static]');
+      var lines = root.querySelectorAll('[data-tvs-headline] .tvs-headline-line-inner');
+      var rows = marquees ? marquees.querySelectorAll('.bib-tv-marquee') : [];
+
+      // Initial state — the typewriter headline's letters switched off (it types
+      // itself out on the scrub), the marquee rows parked under their own bottom
+      // edge for a mask wipe. No fades. Static starts visible so the canvas
+      // effect is live the moment the section enters view.
+      var chars = [];
+      if (!reduceMotion && window.SplitText && lines.length) {
+        gsap.registerPlugin(SplitText);
+        chars = SplitText.create(lines, { type: 'chars' }).chars;
+        gsap.set(chars, { visibility: 'hidden' });
+      }
+      /* The track inside each row runs a CSS transform loop, so the wipe goes
+         on the row itself. */
+      if (rows.length && !reduceMotion) gsap.set(rows, { yPercent: 100, clipPath: 'inset(0% 0% 100% 0%)' });
+      if (tvStatic) gsap.set(tvStatic, { opacity: 0.22 });
+
+      if (reduceMotion) {
+        // Snap to end state — no scrub, no pin
+        if (tvStatic) gsap.set(tvStatic, { opacity: 0 });
+      } else if (stage) {
+        // Channel-flick: scrub-driven hard cut between stacked images.
+        // Use a proxy index var that snaps to whole numbers — onUpdate swaps .is-active.
+        var channelProxy = { i: 0 };
+        function applyChannel() {
+          var idx = Math.max(0, Math.min(channels.length - 1, Math.round(channelProxy.i)));
+          for (var i = 0; i < channels.length; i++) {
+            if (i === idx) channels[i].classList.add('is-active');
+            else channels[i].classList.remove('is-active');
+          }
+        }
+
+        /* The bar is fixed over the page, so pinning at 'top top' parked the
+           TV's top bezel under it. Pin as the stage meets the bar's bottom
+           edge instead, so the whole top of the TV shows. */
+        var headerEl = document.querySelector('.section-header');
+        var tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: stage,
+            start: function () {
+              return 'top top+=' + (headerEl ? headerEl.offsetHeight : 0);
+            },
+            end: phone ? '+=250%' : '+=300%',
+            scrub: 1,
+            pin: true,
+            pinSpacing: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        // 0.00 - 0.16 : OPENING REVEAL — headline types itself out + marquee rows wipe up
+        if (chars.length) {
+          tl.to(chars, { visibility: 'visible', duration: 0.001, stagger: 0.14 / chars.length, ease: 'none' }, 0);
+        }
+        if (rows.length) {
+          tl.to(rows, { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.12, ease: 'power3.out', stagger: 0.03 }, 0.02);
+        }
+
+        // 0.20 - 0.90 : channel-flick through the image stack
+        tl.to(
+          channelProxy,
+          {
+            i: channels.length - 1,
+            duration: 0.7,
+            ease: 'none',
+            snap: { i: 1 },
+            onUpdate: applyChannel,
+          },
+          0.2
+        );
+
+        // 0.90 - 1.00 : hold the last channel before the pin releases
+        tl.to({}, { duration: 0.1 }, 0.9);
+      }
+
+      /* ---------------- TV STATIC CANVAS (procedural noise + scanlines + roll) ----------------
+         Internal resolution is intentionally low so the upscale via CSS reads
+         as chunky CRT pixels. Loop only ticks while the section is in viewport. */
+      if (tvStatic) {
+        var sctx = tvStatic.getContext('2d');
+        var SW = 560;
+        var SH = 350; // 16:10 to match the TV box — lower res = coarser, sparser grain (less static)
+        tvStatic.width = SW;
+        tvStatic.height = SH;
+        var roll = 0;
+        var sRunning = false;
+
+        function renderStatic() {
+          if (!sRunning) return;
+          var img = sctx.createImageData(SW, SH);
+          var data = img.data;
+          for (var i = 0; i < data.length; i += 4) {
+            var v = (Math.random() * 255) | 0;
+            v = (v * v) >> 8; // bias darker so bright pixels read as flickers
+            data[i] = v;
+            data[i + 1] = v;
+            data[i + 2] = v;
+            data[i + 3] = 255;
+          }
+          sctx.putImageData(img, 0, 0);
+
+          sctx.globalCompositeOperation = 'multiply';
+          sctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+          for (var y = 0; y < SH; y += 2) sctx.fillRect(0, y, SW, 1);
+          sctx.globalCompositeOperation = 'source-over';
+
+          roll = (roll + 0.7) % (SH + 24);
+          var by = roll - 12;
+          var grad = sctx.createLinearGradient(0, by, 0, by + 24);
+          grad.addColorStop(0, 'rgba(255,255,255,0)');
+          grad.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+          grad.addColorStop(1, 'rgba(255,255,255,0)');
+          sctx.fillStyle = grad;
+          sctx.fillRect(0, by, SW, 24);
+
+          requestAnimationFrame(renderStatic);
+        }
+
+        try {
+          var sio = new IntersectionObserver(function (entries) {
+            for (var k = 0; k < entries.length; k++) {
+              if (entries[k].isIntersecting) {
+                if (!sRunning) {
+                  sRunning = true;
+                  requestAnimationFrame(renderStatic);
+                }
+              } else {
+                sRunning = false;
+              }
+            }
+          }, { rootMargin: '200px' });
+          sio.observe(stage || tvStatic);
+        } catch (e) {
+          sRunning = true;
+          requestAnimationFrame(renderStatic);
+        }
+      }
+
+      /* Sections further down the page create their ScrollTriggers while the
+         HTML parses, before this init runs — re-order by document position so
+         the pin's spacer is measured first. */
+      ScrollTrigger.sort();
+
+      window.addEventListener('load', function () {
+        ScrollTrigger.refresh();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "TV",
+  "class": "tv-section-wrap",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Headline",
+      "info": "One line per line break.",
+      "default": "Born in\nthe 90s"
+    },
+    {
+      "type": "textarea",
+      "id": "marquee_text",
+      "label": "Marquee names",
+      "info": "One name per line; they loop across the bottom of the screen.",
+      "default": "Wildlife Foundation\nBiodiversity Associates\nForest Watch\nCoastal Waters Project\nEarthtrust"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "channel",
+      "name": "Channel",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Photo",
+          "info": "Shown on the TV screen in block order as you scroll. Landscape 2:1, e.g. 1440 × 720. Once any channel has a photo, the channels replace the original 7."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "TV"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,272 @@
+{%- liquid
+  # Each card opens its collection (all products on a store without it); the section settings override.
+  assign nature_drop_url = section.settings.nature_drop_url | default: collections['1990-archive'].url | default: routes.all_products_collection_url
+  assign wildlife_url = section.settings.wildlife_url | default: collections['the-reawakening'].url | default: routes.all_products_collection_url
+-%}
+
+<section class="featured-shop">
+  <h5 class="featured-shop__subhead" data-reveal>More Impact. Less Price.</h5>
+
+  <div class="featured-shop__wrapper">
+    <a href="{{ nature_drop_url }}" class="featured-shop__category">
+      <div class="parallax-container">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/featured-section-nature-drop-bg.webp?v=1778908176"
+          alt=""
+          class="parallax-image"
+          width="1200"
+          height="1500"
+        >
+      </div>
+
+      <div class="featured-shop__top-title">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/cloth-title.webp?v=1778908175"
+          alt=""
+          class="featured-shop__tee-tag"
+          width="360"
+          height="120"
+        >
+        <h3 class="featured-shop__h3 h3" data-reveal>Nature Drop</h3>
+      </div>
+
+      <div class="featured-shop__content">
+        <p class="body featured-shop__body" data-reveal>This is a collection of 5 original Human-i-Tees designs that kickstarted our impact back in the 90s.</p>
+        <span class="featured-shop__button custom-button full-width"><span class="button-span body">VIEW</span></span>
+      </div>
+    </a>
+
+    <a href="{{ wildlife_url }}" class="featured-shop__category">
+      <div class="parallax-container">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/featured-section-wildlife-bg.webp?v=1778908176"
+          alt=""
+          class="parallax-image"
+          width="1200"
+          height="1500"
+        >
+      </div>
+
+      <div class="featured-shop__top-title">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/cloth-title.webp?v=1778908175"
+          alt=""
+          class="featured-shop__tee-tag"
+          width="360"
+          height="120"
+        >
+        <h3 class="featured-shop__h3 h3" data-reveal>The Wildlife Set</h3>
+      </div>
+
+      <div class="featured-shop__content">
+        <p class="body featured-shop__body" data-reveal>This collection coming first thing September will feature 5 new designs from the 90s. These designs are bigger and bolder. We cant wait for you to see them...</p>
+        <span class="featured-shop__button custom-button full-width"><span class="button-span body">VIEW</span></span>
+      </div>
+    </a>
+
+    <img
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/featured-drop.webp?v=1778908175"
+      alt="Featured Drop"
+      class="featured-shop__overlay"
+      width="400"
+      height="240"
+    >
+  </div>
+</section>
+
+<style>
+  .featured-shop {
+    --fs-eyebrow-bg: #e9e3d4;
+    --fs-eyebrow-color: #1a1a1a;
+    --fs-cta-bg: #e88742;
+    --fs-cta-color: #1a1a1a;
+    --fs-strip-bg: rgba(255, 255, 255, 0.78);
+    --fs-strip-color: #1a1a1a;
+    --fs-display-font: 'Futura', 'Helvetica Neue', Arial, sans-serif;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    font-family: var(--fs-display-font);
+    color: #fff;
+    overflow: hidden;
+  }
+  .featured-shop *,
+  .featured-shop *::before,
+  .featured-shop *::after { box-sizing: border-box; }
+
+  .featured-shop__subhead {
+    margin: 0;
+    padding: 10px 24px;
+    background: var(--fs-eyebrow-bg);
+    color: var(--fs-eyebrow-color);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  .featured-shop__wrapper {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+  }
+
+  .featured-shop__category {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    isolation: isolate;
+  }
+
+  .featured-shop__top-title {
+    position: absolute;
+    top: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    pointer-events: none;
+    /* In vw so the tag grows with its .h3 (2.778vw) — a px cap let the title
+       outgrow it on wide screens. 25vw = 360px at the 1440 design width. */
+    width: 25vw;
+  }
+  .featured-shop__tee-tag {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.22));
+  }
+  .featured-shop__h3 {
+    position: absolute;
+    top: 28%;
+    left: 0;
+    right: 0;
+    margin: 0;
+    text-align: center;
+  }
+
+  .featured-shop__content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 6%;
+    z-index: 3;
+  }
+  .featured-shop__body {
+    padding: max(5px, 0.347vw);
+    max-width: 23.889vw;
+    background: #E8E0D2;
+    color: #333;
+    text-align: center;
+    margin-bottom: 2.292vw !important;
+  }
+  /* Slide-up reveal on hover. Visual chrome (bg / border / radius / padding)
+     comes from .custom-button in custom.css — only positioning + animation
+     lives here. */
+  .featured-shop__button {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+    color: var(--fs-cta-color);
+    /* No fade: parked below the card's bottom edge, which clips it (the card
+       is overflow: hidden), and slides up into view. */
+    transform: translateY(120%);
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+                margin 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    margin-bottom: -56px;
+  }
+  .featured-shop__category:hover .featured-shop__button,
+  .featured-shop__category:focus-visible .featured-shop__button {
+    transform: translateY(0);
+    margin-bottom: 4vw;
+  }
+
+  .featured-shop__overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    pointer-events: none;
+    width: clamp(180px, 22vw, 360px);
+    height: auto;
+    filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.35));
+  }
+
+  @media (max-width: 1024px) {
+    /* Tall portrait cards (the mock's 222:390) instead of 100vh columns that
+       cropped the photos to slivers on a tablet. */
+    .featured-shop { height: auto; }
+    .featured-shop__category { height: auto; aspect-ratio: 222 / 390; }
+    /* .h3 bottoms out at 22px here, so the tag goes back to a share of the card */
+    .featured-shop__top-title { width: min(60%, 360px); }
+    .featured-shop__body {
+      max-width: 80%;
+      padding: 6px;
+      margin-bottom: 4vw !important;
+    }
+    .featured-shop__button {
+      transform: none;
+      margin-bottom: 6vw;
+    }
+  }
+  @media (max-width: 768px) {
+    /* Stacked; the cursive straddles the seam between the two cards. */
+    .featured-shop__wrapper { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+    /* Shorter than the tablet's 222:390 — stacked, those ran ~3.5 screens tall. */
+    .featured-shop__category { aspect-ratio: 4 / 5; }
+    .featured-shop__top-title { top: 8%; }
+    /* Second card's tag sits lower so the cursive has room above it. */
+    .featured-shop__category:nth-child(2) .featured-shop__top-title { top: 22%; }
+    .featured-shop__body { max-width: none; margin-bottom: 3vw !important; }
+    .featured-shop__button { margin-bottom: 8vw; }
+    /* Cursive hangs from the seam down over the second card, like the mock,
+       instead of sitting centred on it over the first card's VIEW button. */
+    .featured-shop__overlay { width: 42vw; transform: translate(-50%, -12%); }
+  }
+  /* Touch devices have no hover — keep the VIEW pill visible. */
+  @media (hover: none) {
+    .featured-shop__button {
+      transform: none;
+      margin-bottom: 4vw;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Featured Shop",
+  "settings": [
+    {
+      "type": "url",
+      "id": "nature_drop_url",
+      "label": "Nature Drop link",
+      "info": "Defaults to the 1990 Archive collection."
+    },
+    {
+      "type": "url",
+      "id": "wildlife_url",
+      "label": "The Wildlife Set link",
+      "info": "Defaults to The Reawakening collection."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Shop"
+    }
+  ]
+}
+{% endschema %}

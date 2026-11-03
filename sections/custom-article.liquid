@@ -1,0 +1,281 @@
+{%- comment -%}
+  Custom article (single blog post).
+
+  - Full-width header: BLOG crumb, big .h2 title, then a date band (rule above
+    AND below the date).
+  - Below: TWO columns split by a single centre line. Left = a per-category
+    cursive image (hidden until you add it in settings) + the featured image as
+    a polaroid. Right = the article body (.body) with a drop cap.
+
+  The cursive is tailored to the article's category (tag). There are two
+  category slots in the schema — set each category's tag name + cursive image.
+{%- endcomment -%}
+
+{%- comment -%} Pick the cursive image URL that matches this article's category tag. {%- endcomment -%}
+{%- assign cursive_url = '' -%}
+{%- assign cursive_alt = '' -%}
+{%- if section.settings.cat_a_name != blank and article.tags contains section.settings.cat_a_name -%}
+  {%- assign cursive_url = section.settings.cat_a_image -%}
+  {%- assign cursive_alt = section.settings.cat_a_name -%}
+{%- elsif section.settings.cat_b_name != blank and article.tags contains section.settings.cat_b_name -%}
+  {%- assign cursive_url = section.settings.cat_b_image -%}
+  {%- assign cursive_alt = section.settings.cat_b_name -%}
+{%- endif -%}
+
+{%- style -%}
+  #art-{{ section.id }} {
+    --art-line: #d9cdb8;
+    --art-muted: #9a8f7a;
+    --art-ink: var(--black, #282828);
+
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  /* No section padding-inline — the horizontal rules (date band) span the full
+     width. The title + date get their own left inset instead; the imagery does
+     not. */
+
+  /* ----- Header ----- */
+  #art-{{ section.id }} .art__head {
+    display: flex;
+    flex-direction: column;
+    gap: 1.042vw;            /* 15px @ 1440 */
+  }
+  #art-{{ section.id }} .art__crumb {
+    padding-left: 1.4vw;
+    color: var(--art-muted);
+  }
+  #art-{{ section.id }} .art__title {
+    color: var(--art-ink);   /* beat the global .h2 { color:#fff } */
+    padding-left: 1.4vw;
+    max-width: 41.181vw;     /* 593px @ 1440 */
+  }
+  /* Date band — a rule on top AND bottom, spanning the full width; text inset. */
+  #art-{{ section.id }} .art__date {
+    border-top: 1px solid var(--art-line);
+    border-bottom: 1px solid var(--art-line);
+    padding: 0.55vw 0 0.55vw 1.4vw;
+    color: var(--art-muted);
+  }
+
+  /* ----- Two-column body split by a single centre line ----- */
+  #art-{{ section.id }} .art__body {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 40vw;
+  }
+  #art-{{ section.id }} .art__body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--art-line);
+  }
+
+  /* ----- Left column: cursive + polaroid ----- */
+  #art-{{ section.id }} .art__left {
+    position: relative;
+    padding: 3vw 2vw 4vw;
+    min-height: 30vw;
+  }
+  /* Polaroid: white bg + padding, tilted. */
+  #art-{{ section.id }} .art__photo {
+    position: relative;
+    width: 20vw;
+    margin: 4.5vw 0 0 1vw;
+    background: #fff;
+    padding: 0.7vw 0.7vw 1.6vw;
+    transform: rotate(-3.076deg);
+    box-shadow: 0 1.2vw 2.4vw rgba(0, 0, 0, 0.16);
+  }
+  #art-{{ section.id }} .art__photo-img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  /* Cursive category label — pinned to the polaroid's top-right corner.
+     Counter-rotated so it sits level against the tilted polaroid. */
+  #art-{{ section.id }} .art__cursive {
+    position: absolute;
+    top: -4vw;
+    right: -10vw;
+    width: 13vw;
+    height: auto;
+    transform: rotate(3.076deg);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* ----- Right column: body copy ----- */
+  #art-{{ section.id }} .art__right {
+    padding: 3vw 2vw 4vw 2.5vw;
+  }
+  #art-{{ section.id }} .art__rte {
+    max-width: 30.486vw;   /* 439px @ 1440 */
+    color: var(--art-ink);
+  }
+  /* Re-add paragraph rhythm (custom.css zeroes p margins globally). */
+  #art-{{ section.id }} .art__rte p {
+    margin: 0 0 1.1em !important;
+  }
+  #art-{{ section.id }} .art__rte p:last-child {
+    margin-bottom: 0 !important;
+  }
+  /* Drop cap on the first paragraph. Sized to ~2 lines so the first-paragraph
+     indent stays small. */
+  #art-{{ section.id }} .art__rte > p:first-of-type::first-letter {
+    float: left;
+    font-family: var(--futura);
+    font-weight: 700;
+    font-size: 2.2em;
+    line-height: 0.78;
+    padding: 0.04em 0.08em 0 0;
+    text-transform: uppercase;
+  }
+
+  /* Article content is free-form merchant HTML — keep embeds, tables and long
+     URLs inside the column instead of widening the page. */
+  #art-{{ section.id }} .art__rte { overflow-wrap: anywhere; }
+  #art-{{ section.id }} .art__rte img,
+  #art-{{ section.id }} .art__rte video {
+    max-width: 100%;
+    height: auto;
+  }
+  #art-{{ section.id }} .art__rte iframe { max-width: 100%; }
+  #art-{{ section.id }} .art__rte table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 768px) {
+    /* The editor's top padding is sized for the desktop bar; on a phone it
+       left a big empty band, so clear the measured bar height instead. */
+    #art-{{ section.id }} .art__push { padding-top: calc(var(--header-height, 6rem) + 24px) !important; }
+    #art-{{ section.id }} .art__head { gap: 12px; }
+    #art-{{ section.id }} .art__crumb,
+    #art-{{ section.id }} .art__title { padding-left: 16px; }
+    #art-{{ section.id }} .art__title { max-width: none; padding-right: 16px; }
+    #art-{{ section.id }} .art__date { padding: 8px 16px; }
+    #art-{{ section.id }} .art__body { grid-template-columns: 1fr; min-height: 0; }
+    #art-{{ section.id }} .art__body::before { display: none; }
+    #art-{{ section.id }} .art__left { padding: 24px 16px 16px; min-height: 0; }
+    #art-{{ section.id }} .art__photo {
+      width: 64vw;
+      margin: 24px auto 0;
+      padding: 8px 8px 20px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+    }
+    #art-{{ section.id }} .art__cursive { width: 34vw; top: -6vw; right: -8vw; }
+    #art-{{ section.id }} .art__right { padding: 16px 16px 40px; }
+    #art-{{ section.id }} .art__rte { max-width: none; }
+  }
+{%- endstyle -%}
+
+<section class="art" id="art-{{ section.id }}">
+  <div
+    class="art__push"
+    style="padding-top:{{ section.settings.padding_top }}px;padding-bottom:{{ section.settings.padding_bottom }}px;"
+  >
+    <header class="art__head">
+      <p class="body art__crumb">{{ section.settings.crumb | escape }}</p>
+      <h1 class="h2-v2 art__title">{{ article.title }}</h1>
+      <div class="body art__date">{{ article.published_at | date: '%b %d %Y' | upcase }}</div>
+    </header>
+
+    <div class="art__body">
+      <div class="art__left">
+        {%- if article.image -%}
+          <div class="art__photo">
+            {{
+              article.image
+              | image_url: width: 900
+              | image_tag: class: 'art__photo-img', loading: 'lazy', widths: '300, 500, 900', sizes: '40vw', alt: article.title
+            }}
+            {%- if cursive_url != blank -%}
+              <img class="art__cursive" src="{{ cursive_url }}" alt="{{ cursive_alt | escape }}" loading="lazy">
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="art__right">
+        <div class="art__rte body rte">{{ article.content }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Custom article",
+  "tag": "section",
+  "class": "custom-article-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "crumb",
+      "label": "Top label",
+      "default": "BLOG"
+    },
+    {
+      "type": "header",
+      "content": "Category cursive images"
+    },
+    {
+      "type": "paragraph",
+      "content": "Each category (article tag) shows its own cursive image at the polaroid's top-right corner. Paste the image URL (e.g. a Shopify Files SVG)."
+    },
+    {
+      "type": "text",
+      "id": "cat_a_name",
+      "label": "Category A — tag name",
+      "default": "Behind the Seams"
+    },
+    {
+      "type": "text",
+      "id": "cat_a_image",
+      "label": "Category A — cursive image URL",
+      "default": "https://cdn.shopify.com/s/files/1/0928/2971/2677/files/Group_157.svg?v=1782379501"
+    },
+    {
+      "type": "text",
+      "id": "cat_b_name",
+      "label": "Category B — tag name"
+    },
+    {
+      "type": "text",
+      "id": "cat_b_image",
+      "label": "Category B — cursive image URL"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 130
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 0
+    }
+  ]
+}
+{% endschema %}

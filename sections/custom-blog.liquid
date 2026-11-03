@@ -1,0 +1,386 @@
+{%- comment -%}
+  Custom blog listing — left category rail + a 3-up grid of post cards, on the
+  same full-height .has-line triple-line grid as the FAQ page.
+
+  - The left rail lists blog CATEGORIES from a navigation menu (each link points
+    to a blog). The current blog's link is highlighted. Counts come from each
+    linked blog's articles_count.
+  - The grid shows the CURRENT blog's articles (blog.articles), paginated.
+
+  Typography: .h2 (BLOG), .h3 (categories), .h4 (card titles), .body (meta).
+{%- endcomment -%}
+
+{%- style -%}
+  #cblog-{{ section.id }} {
+    --cblog-line: #d9cdb8;     /* tan lines */
+    --cblog-orange: #ff944d;   /* active category + plus */
+    --cblog-muted: #b9a98f;    /* dates */
+    --cblog-ink: var(--black, #282828);
+
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+
+  #cblog-{{ section.id }} .cblog__push {
+    position: relative;
+    z-index: 1;
+  }
+
+  #cblog-{{ section.id }} .cblog__inner {
+    display: grid;
+    grid-template-columns: 1fr 3fr; /* category rail + 3 equal card cols, aligns to 25/50/75% lines */
+    align-items: start;
+  }
+
+  /* ----- Left category rail ----- */
+  #cblog-{{ section.id }} .cblog__side {
+    padding: 1.2vw 1.4vw;
+  }
+  /* The global .h2 rule (homepage-hero) forces color:#fff — beat it.
+     Scoped down from .h2's 12.5vw + nowrap so the word fits the rail on one
+     line (matches the mock). */
+  #cblog-{{ section.id }} .cblog__side .cblog__heading {
+    color: var(--cblog-ink);
+    font-size: max(40px, 7vw);
+    white-space: nowrap;
+    margin-bottom: 2.4vw;
+  }
+
+  #cblog-{{ section.id }} .cblog__viewing {
+    color: var(--cblog-muted);
+    margin-bottom: 0.8vw;
+  }
+
+  /* Push the "you're viewing" + category list down (36px ≈ 2.5vw). */
+  #cblog-{{ section.id }} .cblog__cats {
+    margin-top: 2.5vw;
+    border-bottom: 1px solid var(--cblog-line);
+    padding-bottom: 1.4vw;
+  }
+  #cblog-{{ section.id }} .cblog__cat-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  /* Categories are filter BUTTONS (no navigation). Negative side margins let
+     the active highlight span the full rail width. */
+  #cblog-{{ section.id }} .cblog__cat {
+    display: block;
+    width: calc(100% + 2.8vw);
+    margin: 0 -1.4vw;
+    padding: 0.35vw 1.4vw;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    color: var(--cblog-ink);
+    text-decoration: none;
+    font-family: var(--futura);
+    font-size: max(18px, 1.9vw);  /* scoped down from .h3's 2.778vw to suit the rail */
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  #cblog-{{ section.id }} .cblog__cat:hover { color: #000; }
+  #cblog-{{ section.id }} .cblog__cat.is-active {
+    background: var(--cblog-orange);
+    color: var(--cblog-ink);
+  }
+  #cblog-{{ section.id }} .cblog__cat-count {
+    color: inherit;
+    opacity: 0.7;
+    margin-left: 0.2vw;
+    vertical-align: super;
+    font-size: max(10px, 0.7vw);
+  }
+
+  /* ----- Card grid ----- */
+  #cblog-{{ section.id }} .cblog__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  /* Grid cell — a little padding AROUND the photocard. */
+  #cblog-{{ section.id }} .cblog__card {
+    display: block;
+    padding: 0.9vw;
+    text-decoration: none;
+    color: var(--cblog-ink);
+  }
+  #cblog-{{ section.id }} .cblog__card.is-hidden { display: none; }
+
+  /* The white "photocard" — image + meta on white with a little padding. */
+  #cblog-{{ section.id }} .cblog__card-inner {
+    background: #fff;
+    padding: 0.8vw;
+  }
+  #cblog-{{ section.id }} .cblog__media {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0.9vw;
+  }
+  #cblog-{{ section.id }} .cblog__media img,
+  #cblog-{{ section.id }} .cblog__media-ph svg {
+    display: block;
+    width: 100%;
+    height: 24.722vw;   /* = 356px @ 1440 */
+    object-fit: cover;
+  }
+  #cblog-{{ section.id }} .cblog__media-ph {
+    background: #ece4d7;
+  }
+
+  /* Reserve two title lines so every card is the same height regardless of how
+     long the title is (the image height is already fixed). */
+  #cblog-{{ section.id }} .cblog__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1vw;
+    min-height: 2.4vw; /* ~2 lines of .h4 (1.25vw * 0.95) */
+  }
+  #cblog-{{ section.id }} .cblog__card-title {
+    margin: 0;
+    flex: 1 1 auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #cblog-{{ section.id }} .cblog__date {
+    flex: 0 0 auto;
+    color: var(--cblog-muted);
+    white-space: nowrap;
+    padding-top: 0.15vw;
+  }
+
+  /* Orange + (decorative; the whole card is the link) */
+  #cblog-{{ section.id }} .cblog__plus {
+    margin-top: 1.2vw;
+    width: max(28px, 1.9vw);
+    height: max(28px, 1.9vw);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--cblog-orange);
+    color: #fff;
+    font-size: max(16px, 1.1vw);
+    line-height: 1;
+    transition: background-color 0.25s ease;
+  }
+  #cblog-{{ section.id }} .cblog__card:hover .cblog__plus { background: #e87d3a; }
+
+  #cblog-{{ section.id }} .cblog__empty {
+    padding: 2vw 1.4vw;
+    color: var(--cblog-muted);
+  }
+  #cblog-{{ section.id }} .cblog__pagination {
+    padding: 1.4vw;
+  }
+
+  @media (max-width: 1024px) {
+    #cblog-{{ section.id }} .cblog__grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    /* Single column; the 25/50/75 lines would cut through the cards. */
+    #cblog-{{ section.id }} > .line-overlay { display: none; }
+    /* The editor's top padding is sized for the desktop bar; on a phone it
+       left a big empty band, so clear the measured bar height instead. */
+    #cblog-{{ section.id }} .cblog__push { padding-top: calc(var(--header-height, 6rem) + 24px) !important; }
+    #cblog-{{ section.id }} .cblog__inner { grid-template-columns: 1fr; }
+    #cblog-{{ section.id }} .cblog__side { padding: 16px; }
+    #cblog-{{ section.id }} .cblog__heading { margin-bottom: 16px; }
+    #cblog-{{ section.id }} .cblog__cats { margin-top: 16px; padding-bottom: 12px; }
+    /* Categories become one swipeable row of pills, so a long tag list no
+       longer pushes the posts a screen down. Runs edge to edge, past the
+       rail padding, and the scrollbar is hidden. */
+    #cblog-{{ section.id }} .cblog__cat-list {
+      display: flex;
+      gap: 8px;
+      margin: 0 -16px;
+      padding: 0 16px 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    #cblog-{{ section.id }} .cblog__cat-list::-webkit-scrollbar { display: none; }
+    #cblog-{{ section.id }} .cblog__cat {
+      flex: 0 0 auto;
+      width: auto;
+      margin: 0;
+      padding: 8px 14px;
+      border: 1px solid var(--cblog-line);
+      border-radius: 10rem;
+      white-space: nowrap;
+    }
+    #cblog-{{ section.id }} .cblog__cat.is-active { border-color: var(--cblog-orange); }
+    #cblog-{{ section.id }} .cblog__grid { grid-template-columns: 1fr; }
+    #cblog-{{ section.id }} .cblog__card { padding: 12px 16px; }
+    #cblog-{{ section.id }} .cblog__card-inner { padding: 10px; }
+    #cblog-{{ section.id }} .cblog__media { margin-bottom: 12px; }
+    #cblog-{{ section.id }} .cblog__media img,
+    #cblog-{{ section.id }} .cblog__media-ph svg { height: 64vw; }
+    #cblog-{{ section.id }} .cblog__row { gap: 12px; min-height: 0; }
+    #cblog-{{ section.id }} .cblog__plus { margin-top: 14px; }
+  }
+{%- endstyle -%}
+
+<section class="cblog has-line" id="cblog-{{ section.id }}">
+  <div
+    class="cblog__push"
+    style="padding-top:{{ section.settings.padding_top }}px;padding-bottom:{{ section.settings.padding_bottom }}px;"
+  >
+    <div class="cblog__inner">
+      <aside class="cblog__side">
+        <h2 class="h2 cblog__heading">{{ section.settings.heading | escape }}</h2>
+
+        <div class="cblog__cats">
+          {%- if section.settings.viewing_label != blank -%}
+            <p class="body cblog__viewing">{{ section.settings.viewing_label | escape }}</p>
+          {%- endif -%}
+
+          {%- comment -%}
+            Categories = the existing article tags in this blog. They FILTER the
+            grid client-side (buttons, no navigation). The first tag is active on
+            load; counts are computed per tag.
+          {%- endcomment -%}
+          {%- assign active_tag = blog.all_tags.first -%}
+          <div class="cblog__cat-list">
+            {%- if blog.all_tags.size > 0 -%}
+              {%- for tag in blog.all_tags -%}
+                {%- assign tag_count = 0 -%}
+                {%- for article in blog.articles -%}
+                  {%- if article.tags contains tag -%}{%- assign tag_count = tag_count | plus: 1 -%}{%- endif -%}
+                {%- endfor -%}
+                <button
+                  type="button"
+                  class="h3 cblog__cat{% if forloop.first %} is-active{% endif %}"
+                  data-cblog-cat="{{ tag | escape }}"
+                >
+                  {{ tag }}
+                  <span class="body cblog__cat-count">({{ tag_count }})</span>
+                </button>
+              {%- endfor -%}
+            {%- else -%}
+              {%- comment -%} No tags — show the blog itself as the only (active) category. {%- endcomment -%}
+              <span class="h3 cblog__cat is-active">
+                {{ blog.title }}
+                <span class="body cblog__cat-count">({{ blog.articles_count }})</span>
+              </span>
+            {%- endif -%}
+          </div>
+        </div>
+      </aside>
+
+      <div class="cblog__main">
+        {%- if blog.articles.size > 0 -%}
+          <div class="cblog__grid" data-cblog-grid>
+            {%- for article in blog.articles -%}
+              {%- comment -%} Hidden on load unless it carries the active (first) tag. {%- endcomment -%}
+              {%- assign is_hidden = true -%}
+              {%- if active_tag == blank or article.tags contains active_tag -%}{%- assign is_hidden = false -%}{%- endif -%}
+              <a
+                class="cblog__card{% if is_hidden %} is-hidden{% endif %}"
+                href="{{ article.url }}"
+                data-cblog-tags="{{ article.tags | join: '||' | escape }}"
+              >
+                <div class="cblog__card-inner">
+                  <div class="cblog__media">
+                    {%- if article.image -%}
+                      {{
+                        article.image
+                        | image_url: width: 800
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '300, 500, 800',
+                          sizes: '(max-width: 768px) 100vw, (max-width: 1024px) 40vw, 25vw',
+                          alt: article.title
+                      }}
+                    {%- else -%}
+                      <div class="cblog__media-ph">{{ 'image' | placeholder_svg_tag }}</div>
+                    {%- endif -%}
+                  </div>
+
+                  <div class="cblog__row">
+                    <h4 class="h4 cblog__card-title">{{ article.title }}</h4>
+                    <span class="body cblog__date">{{ article.published_at | date: '%b %d %Y' | upcase }}</span>
+                  </div>
+
+                  <span class="cblog__plus" aria-hidden="true">+</span>
+                </div>
+              </a>
+            {%- endfor -%}
+          </div>
+        {%- else -%}
+          <p class="body cblog__empty">No posts in this blog yet.</p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('cblog-{{ section.id }}');
+    if (!root) return;
+    var buttons = Array.prototype.slice.call(root.querySelectorAll('[data-cblog-cat]'));
+    var cards = Array.prototype.slice.call(root.querySelectorAll('[data-cblog-tags]'));
+    if (!buttons.length) return;
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tag = btn.getAttribute('data-cblog-cat');
+        buttons.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+        cards.forEach(function (card) {
+          var tags = (card.getAttribute('data-cblog-tags') || '').split('||');
+          card.classList.toggle('is-hidden', tags.indexOf(tag) === -1);
+        });
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Custom blog",
+  "tag": "section",
+  "class": "custom-blog-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Blog"
+    },
+    {
+      "type": "text",
+      "id": "viewing_label",
+      "label": "Sub-label above categories",
+      "default": "YOU'RE VIEWING"
+    },
+    {
+      "type": "paragraph",
+      "content": "Categories are pulled automatically from your article tags in this blog. Tag your articles (e.g. \"Behind the Seams\") and they appear here as in-page filters."
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 130
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 240,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    }
+  ]
+}
+{% endschema %}

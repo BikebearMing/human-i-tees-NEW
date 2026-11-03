@@ -1,0 +1,267 @@
+{%- comment -%}
+  Custom site footer — matches the design mock.
+  Pill panel at top (nav columns + logo + newsletter + social row) over a
+  parallaxed mountain background, then "Wear What Matters" script and a
+  three-col bottom strip (copyright / WEAR THE CHANGE / payment methods).
+
+  Styles live in assets/custom.css under the SITE FOOTER block.
+{%- endcomment -%}
+
+<footer class="site-footer" data-section-id="{{ section.id }}">
+  <div class="parallax-container">
+    {%- if section.settings.background_image != blank -%}
+      <img
+        src="{{ section.settings.background_image | image_url: width: 2400 }}"
+        alt=""
+        class="parallax-image"
+        loading="lazy"
+        width="{{ section.settings.background_image.width }}"
+        height="{{ section.settings.background_image.height }}"
+      >
+    {%- else -%}
+      <img
+        src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/footer-bg.webp?v=1778908176"
+        alt=""
+        class="parallax-image"
+        loading="lazy"
+      >
+    {%- endif -%}
+  </div>
+
+  <div class="top-cylinder">
+    <div class="footer-logo">
+      {%- if section.settings.logo != blank -%}
+        <img
+          src="{{ section.settings.logo | image_url: width: 320 }}"
+          alt="{{ shop.name | escape }}"
+          loading="lazy"
+          width="{{ section.settings.logo.width }}"
+          height="{{ section.settings.logo.height }}"
+        >
+      {%- else -%}
+        <img
+          src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/footer-logo-icon.webp?v=1778908175"
+          alt="{{ shop.name | escape }}"
+          loading="lazy"
+        >
+      {%- endif -%}
+    </div>
+    <div class="top-content">
+      <nav class="footer-nav" aria-label="Footer">
+        {%- if section.settings.menu != blank -%}
+          {%- for link in section.settings.menu.links -%}
+            <a href="{{ link.url }}" class="h6 dark">{{ link.title | upcase }}</a>
+          {%- endfor -%}
+        {%- else -%}
+          {%- comment %} The launch pages only; choose a menu in the section settings to replace these. {%- endcomment %}
+          <a href="{{ routes.root_url }}" class="h6 dark">HOME</a>
+          <a href="{{ collections['shop'].url | default: routes.all_products_collection_url }}" class="h6 dark">SHOP ALL</a>
+          <a href="/pages/fundraising" class="h6 dark">FUNDRAISING</a>
+          <a href="/pages/contact" class="h6 dark">CONTACT</a>
+        {%- endif -%}
+      </nav>
+
+      <div class="newsletter-wrapper">
+        {%- comment -%}
+          <div> (not <p>) so the richtext setting's own <p> tag nests legally.
+          .body typography is inheritable so the inner <p> still picks it up.
+        {%- endcomment -%}
+        {%- if section.settings.newsletter_text != blank -%}
+          <div class="body newsletter-text" data-reveal>{{ section.settings.newsletter_text }}</div>
+        {%- else -%}
+          <div class="body newsletter-text" data-reveal>Stay in it. New drops, where your money went, and stories from the community. No spam.</div>
+        {%- endif -%}
+
+        {%- form 'customer', class: 'newsletter-form' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <input
+            type="email"
+            name="contact[email]"
+            id="NewsletterEmail-{{ section.id }}"
+            class="newsletter-input"
+            placeholder="Your email"
+            autocomplete="email"
+            required
+            {% if form.errors %}
+              autofocus
+              aria-invalid="true"
+              aria-describedby="NewsletterEmailError-{{ section.id }}"
+            {% endif %}
+          >
+          <button type="submit" class="newsletter-button custom-button" aria-label="Subscribe">
+            <span class="button-span body">SUBSCRIBE</span>
+          </button>
+
+          {%- if form.errors -%}
+            <small id="NewsletterEmailError-{{ section.id }}" class="newsletter-error">
+              {{ form.errors.translated_fields.email | capitalize }}
+              {{ form.errors.messages.email }}
+            </small>
+          {%- endif -%}
+          {%- if form.posted_successfully? -%}
+            <small class="newsletter-success">
+              {{- 'newsletter.success' | t | default: 'Thanks for subscribing!' -}}
+            </small>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+    </div>
+
+    <ul class="footer-social">
+      {%- if section.settings.social_instagram != blank -%}
+        <li>
+          <a href="{{ section.settings.social_instagram }}" class="h6 dark" target="_blank" rel="noopener">INSTAGRAM</a>
+        </li>
+      {%- endif -%}
+      {%- if section.settings.social_linkedin != blank -%}
+        <li>
+          <a href="{{ section.settings.social_linkedin }}" class="h6 dark" target="_blank" rel="noopener">LINKED IN</a>
+        </li>
+      {%- endif -%}
+      {%- if section.settings.social_tiktok != blank -%}
+        <li>
+          <a href="{{ section.settings.social_tiktok }}" class="h6 dark" target="_blank" rel="noopener">TIK TOK</a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </div>
+
+  {%- if section.settings.wear_matters_image != blank -%}
+    <img
+      class="wear-matters"
+      src="{{ section.settings.wear_matters_image | image_url: width: 1200 }}"
+      alt="Wear What Matters"
+      loading="lazy"
+      width="{{ section.settings.wear_matters_image.width }}"
+      height="{{ section.settings.wear_matters_image.height }}"
+    >
+  {%- else -%}
+    <img
+      class="wear-matters"
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/footer-wear-what-matters.webp?v=1778908175"
+      alt="Wear What Matters"
+      loading="lazy"
+    >
+  {%- endif -%}
+
+  <div class="copyright-wrapper">
+    <p class="body dark" data-reveal>
+      {%- if section.settings.copyright_text != blank -%}
+        {{ section.settings.copyright_text }}
+      {%- else -%}
+        © {{ 'now' | date: '%Y' }} Human-i-Tees.
+      {%- endif -%}
+    </p>
+
+    <h3 class="h3 dark" data-reveal>{{ section.settings.tagline | default: 'WEAR THE CHANGE' }}</h3>
+
+    {%- if section.settings.payment_methods_image != blank -%}
+      <img
+        class="payment-methods"
+        src="{{ section.settings.payment_methods_image | image_url: width: 600 }}"
+        alt=""
+        loading="lazy"
+        width="{{ section.settings.payment_methods_image.width }}"
+        height="{{ section.settings.payment_methods_image.height }}"
+      >
+    {%- else -%}
+      <img
+        class="payment-methods"
+        src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/footer-payment-methods.webp?v=1778908175"
+        alt=""
+        loading="lazy"
+      >
+    {%- endif -%}
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer (Custom)",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    {
+      "type": "header",
+      "content": "Top panel"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "info": "Shown as two-column nav inside the pill. Falls back to Home / Shop all / Fundraising / Contact if blank."
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Center logo"
+    },
+    {
+      "type": "richtext",
+      "id": "newsletter_text",
+      "label": "Newsletter copy",
+      "default": "<p>Stay in it. New drops, where your money went, and stories from the community. No spam.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Social"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram",
+      "label": "Instagram"
+    },
+    {
+      "type": "url",
+      "id": "social_linkedin",
+      "label": "LinkedIn"
+    },
+    {
+      "type": "url",
+      "id": "social_tiktok",
+      "label": "TikTok"
+    },
+    {
+      "type": "header",
+      "content": "Bottom"
+    },
+    {
+      "type": "image_picker",
+      "id": "wear_matters_image",
+      "label": "\"Wear What Matters\" script image"
+    },
+    {
+      "type": "richtext",
+      "id": "copyright_text",
+      "label": "Copyright text",
+      "info": "Leave blank for © <current year> Human-i-Tees."
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline",
+      "default": "WEAR THE CHANGE"
+    },
+    {
+      "type": "image_picker",
+      "id": "payment_methods_image",
+      "label": "Payment methods image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer (Custom)"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  }
+}
+{% endschema %}
