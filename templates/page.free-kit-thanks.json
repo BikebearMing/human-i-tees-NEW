@@ -14,7 +14,7 @@
         "next2": {
           "type": "step",
           "settings": {
-            "tag": "In about a week",
+            "tag": "7-9 business days",
             "title": "Your kit arrives",
             "text": "<p>Your sample tee and catalogs for your team, ready to show at your next meeting.</p>"
           }
