@@ -164,8 +164,8 @@ These were pushed without anyone looking at them on the page:
 - [ ] **Blog:** "The 90s Archive Returns" has no featured image. This only matters if the blog goes live.
 
 ### Before going live on the real store (aa3fab-4)
-- [ ] **Acorn model:** `acorn-web.glb` lives in **bikebeardemo's** Files. Re-upload it to the real store and update `ACORN_URL` in `sections/brand-is-back.liquid`.
-- [ ] **Artwork:** the 18 artworks were only added to **bikebeardemo** products. Repeat the upload on the real store. The handles differ there, e.g. `bear-us-in-mind-2374349`. Set alt text to "<Title> artwork" so they get the framed slot.
+- [x] **Acorn model:** uploaded to the real store's Files; `ACORN_URL` updated (3 Nov).
+- [ ] **Artwork:** uploaded to the real store's Files with alt text (3 Nov). Attaching them to products waits for the switch, since the old theme would show them in its galleries. See section 6.
 - [ ] **Leftover test-store file:** `sections/custom-article.liquid` still points at a test-store CDN image (`Group_157.svg`). It's unused at launch, since the blog is off.
 - [ ] **Settings file:** don't push `config/settings_data.json` blindly. It sets cart type and other settings; use `--ignore config/settings_data.json` unless you mean to overwrite them.
 - [ ] **Header menu:** keep the header's menu setting blank. The real store's `main-menu` lists all 7 old pages.
@@ -184,7 +184,22 @@ These were pushed without anyone looking at them on the page:
 - Spam protection is already on (hCaptcha on contact/comment forms and login pages). Nothing to change.
 - Their Flow "Fundraiser order needs tethering": order created → if any custom attribute value includes "no code" → tag `needs-tethering` + email support@humanitees.com. Our card's values match.
 - Ambassador codes: discount "Humanitees Ambassador Codes", 0% off entire order, no minimum, no usage limits, combines with product/order/shipping, 306 codes made by the "Ambassador Code's 2.0" app. On the preview, `HUMAN-AMB-10` + `TREEHUGGER` (20% off) stack, the green note shows, the status saves, the $0.00 line is hidden, and `/discount/HUMAN-AMB-10` share links land with the green note. The test code the client sent, `LANHIG001`, isn't a valid code yet (also tried O/0 variants).
-- Still to do before publish: upload the 17 editor images + acorn GLB to their Files (all names are free), add the 18 artworks to products, Free Kit pages, spam protection, hide/redirect Our Story, Our Impact and "fundraiser" pages (empty under our theme). Order note box: left out until the client asks.
+- Order note box: left out until the client asks.
+
+**Done on 3 Nov (nothing customers can see on the live site):**
+- **Files:** the 17 editor images and `acorn-web.glb` are in their Files under the same names. The preview's home, fundraising and free-kit images all load from their store. Files filed the GLB as a 3D model, so it lives at `cdn.shopify.com/3d/models/o/9fb1e9e5932f50af/acorn-web.glb`. `ACORN_URL` in `sections/brand-is-back.liquid` now points there, for both stores.
+- **Artworks:** the 18 artworks are in their Files as `<real handle>-artwork.png`, with alt text "<Title> artwork". They're not attached to products yet.
+- **Pages:** "Free Starter Kit" (`/pages/free-kit`) and "Your Kit Is On The Way" (`/pages/free-kit-thanks`) are created, visible, on the default template. The admin picker only lists templates from the published theme, so `free-kit` / `free-kit-thanks` can't be chosen until after the switch. Tested on the preview with `?view=free-kit`.
+- **Redirects (dormant):** `/pages/our-story` → `/` and `/pages/our-impact` → `/pages/fundraising`. Shopify only follows a redirect once the page is gone, so they do nothing until the pages are hidden. Checked: both pages still return 200 on the live site. Their older redirects (`about-us` → our-story, `steward-partners` → our-impact) will chain through these.
+- **`/pages/fundraiser` must NOT be hidden or redirected.** It's the landing page for fundraiser share links. It reads `?first=`, `?campaign=`, `?end=`, `?img=` (img from their Supabase `campaign-images`), and lists the `our-fundraiser-catalog` collection. It uses their template `page.fundraisers` (two Custom Liquid sections; copy in the scratchpad `their-live/templates/page.fundraisers.json`). Our theme has no `page.fundraisers`, so after the switch it would show a blank page. **Blocker: add `templates/page.fundraisers.json` to our theme before publishing.**
+- FAQ and the contact thank-you page render fine under our theme; leave them.
+
+**Switch-day checklist (in this order):**
+1. Publish "Human-i-Tees Launch (preview)" #194528936212. The old theme stays in the library for rollback.
+2. Pages → Free Starter Kit → Template `free-kit`; Your Kit Is On The Way → `free-kit-thanks`.
+3. Pages → hide Our Story and Our Impact (the redirects kick in).
+4. Products → each of the 18 → Media → add existing file `<handle>-artwork` (alt is already set). Optional enhancement: our product page works without it.
+5. Spot-check: home, shop, a product, cart + fundraiser card, `/pages/free-kit`, `/pages/fundraiser?first=Test&campaign=Test`, and an `/discount/HUMAN-AMB-10` share link.
 
 **Earlier blocker (resolved):** `ming@bikebear.com.my` doesn't see aa3fab-4 in its store list (Active or Inactive) and gets "doesn't have permission". Someone had access before (the "theme-export-www-humanitees-com-bike-bear-deve…" theme on bikebeardemo is an export of their theme). Either another login has it, or the client must re-add access under Settings → Users (staff, or collaborator for Bike Bear Sdn Bhd) with **Themes, Files, Products, Pages, Online Store preferences**.
 
