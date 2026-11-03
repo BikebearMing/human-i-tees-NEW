@@ -1,14 +1,14 @@
 # Human-i-Tees theme handover
 
-Status as of **30 Oct 2026**. For whoever continues the launch fixes. The older `handoff.md` covers how the Brand Is Back section is built; this file covers where things stand now.
+Status as of **3 Nov 2026**. For whoever continues the launch. The older `handoff.md` covers how the Brand Is Back section is built; this file covers where things stand now.
 
 ---
 
 ## 1. Read this first
 
-- **Work target is bikebeardemo, not local dev.** Every change so far has been pushed straight to the **live** theme on the staging store.
-- **Nothing is committed to git.** Around 80 modified and 90 new files sit uncommitted on `master`. The only copies are this folder and the live theme on bikebeardemo. **Commit and push to GitHub before anything else.**
-- **Several recent changes were pushed without a visual check.** `theme dev` had stopped, and the storefront is password-protected. See section 5.
+- **Next job: switch the real store (aa3fab-4) to this theme.** The client feedback rounds are done and live on bikebeardemo. The plan and its blocker are in **section 6**.
+- **Everything is committed and pushed to GitHub** (`master`). The bikebeardemo live theme matches `master`.
+- **Workflow the user wants:** make changes in the `theme dev` preview first, let the user check, then push to the bikebeardemo live theme when they say "push".
 
 ---
 
@@ -103,7 +103,16 @@ npx shopify store execute -s acutabovetest.myshopify.com -j --query-file q.graph
 **Fundraising page**
 - Hero cards in the order: NO UPFRONT COST (no icon), $5 PER TEE (middle), 100% ONLINE. Card titles accept `[br]`.
 - Steps: now "4 Simple steps", with step 04 "Built for students".
-- All "Start fundraising" buttons go to `/pages/contact?subject=fundraising`. That opens the contact form on the "About fundraising" tab.
+- Both "Start fundraising" buttons (hero, "$5 on every shirt sold") go to `https://humaniteesfundraising.com/get-started`. The "Ready to launch now? Start your campaign" lines under them are removed.
+- The Make an Impact button reads "Free Starter Kit" and goes to `/pages/free-kit`.
+
+**Free-kit thank-you page:** "Your kit ships within 7-9 business days" (final). Cards follow the client's wireframe: We reach out / Your kit arrives (tag "7-9 business days") / You launch.
+
+**3 Nov fixes (live on bikebeardemo):**
+- Hero: the vol line ("Vol. 02 — The Revival…") hides with one quick tween after 20px of scroll instead of a scrub. The scrub left it half-masked whenever the scroll stopped in its band, which the client saw as a glitch.
+- Hero: the tee's orange dot has a pulsing ring so people see it's clickable.
+- TV: pins just under the header bar (`top top+=<header height>`), so the top of the TV shows. On ≤1024px the stage is `100vh - header`.
+- TV channels are editable in the theme editor (Channel blocks). Channel photos are in bikebeardemo's Files as `tv-channel-*.jpg` plus one screenshot the user swapped in.
 - The FAQ "View all" button is hidden.
 
 **Contact page**
@@ -160,3 +169,31 @@ These were pushed without anyone looking at them on the page:
 - [ ] **Leftover test-store file:** `sections/custom-article.liquid` still points at a test-store CDN image (`Group_157.svg`). It's unused at launch, since the blog is off.
 - [ ] **Settings file:** don't push `config/settings_data.json` blindly. It sets cart type and other settings; use `--ignore config/settings_data.json` unless you mean to overwrite them.
 - [ ] **Header menu:** keep the header's menu setting blank. The real store's `main-menu` lists all 7 old pages.
+
+---
+
+## 6. Go-live on the real store (aa3fab-4): plan as of 3 Nov
+
+**Blocker: no access yet.** `ming@bikebear.com.my` doesn't see aa3fab-4 in its store list (Active or Inactive) and gets "doesn't have permission". Someone had access before (the "theme-export-www-humanitees-com-bike-bear-deve…" theme on bikebeardemo is an export of their theme). Either another login has it, or the client must re-add access under Settings → Users (staff, or collaborator for Bike Bear Sdn Bhd) with **Themes, Files, Products, Pages, Online Store preferences**.
+
+**What we already know (from the public storefront, no login):**
+- 18 tees, $24 USD, each with Color (1) + Size (6), **one image each** (no artwork image yet).
+- `/pages/fundraising` and `/pages/contact` exist (old site pages). `/pages/free-kit` and `/pages/free-kit-thanks` don't.
+- `/collections/shop` exists.
+
+**Steps, in order:**
+1. **Pull first** from the bikebeardemo live theme (`templates/*.json`, `sections/*.json`, `config/settings_data.json`) in case the user edited in the theme editor, and commit.
+2. **Push as a new unpublished theme:** `npx shopify theme push --store aa3fab-4.myshopify.com --unpublished`. Customers see nothing until Publish. Include `settings_data.json` (it's a new theme, nothing to overwrite).
+3. **Copy 17 editor-picked images** into aa3fab-4's Files **with the same file names**. Theme-editor images are stored as `shopify://shop_images/<name>` and resolve against the store's own Files, so they're blank until uploaded. Check aa3fab-4's Files for name clashes first; if a name exists with a different image, upload under a new name and update the template. Current list:
+   `Rectangle_35.png`, `Rectangle_38.jpg`, `Rectangle_39_1.png`, `Rectangle_921.jpg`, `Rectangle_921_1.jpg`, `Rectangle_923.jpg`, `Rectangle_926.jpg`, `Screenshot2025-12-12at12.30.08AM17.png`, `Screenshot_2026-11-03_112535.png`, `archive.jpg`, `step1.jpg`, `tag_1.png`, `tv-channel-1-90s-kids.jpg`, `tv-channel-2-booth.jpg`, `tv-channel-3-donation-check.jpg`, `tv-channel-5-older-90s-kids.jpg`, `tv-channel-6-kaw.jpg`.
+   Regenerate it with: `grep -rhoE 'shopify://shop_images/[^"\\]+' templates sections config/settings_data.json | sort -u`.
+   The 48 hardcoded CDN links already point at the real store's CDN (`0853/0673/6916`), and `assets/` files travel with the push.
+4. **Acorn GLB:** upload `acorn-web.glb` to aa3fab-4 Files and update `ACORN_URL` in `sections/brand-is-back.liquid`. It still loads from bikebeardemo's CDN, but breaks if that store closes.
+5. **Our Tees (homepage):** in the copy for the real store, set the product handles to `nature-can-t-be-restocked`, `bear-us-in-mind-2374349`, `losing-ground`. Blank slots fall back to the shop collection.
+6. **Check the unpublished theme** through its preview link (`?preview_theme_id=…`). The real store has no password, so Playwright can check every page with the real products.
+7. **At switch time only** (these affect the current live site):
+   - Assign templates: Fundraising page → `page.fundraising`, Contact → `page.contact`. Until the switch, the old theme may not have these templates and would show those pages in its default layout.
+   - Add the 18 artwork images to the products, with alt text "<Title> artwork". The old theme would show them in its galleries.
+   - Create the Free Kit (`page.free-kit`) and Free Kit Thanks (`page.free-kit-thanks`) pages. These are safe any time.
+   - Online Store → Preferences: spam protection on contact forms. Store email: support@humanitees.com (kit requests go there).
+   - Publish. The old theme stays in the library for a one-click rollback.
