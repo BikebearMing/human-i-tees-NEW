@@ -1458,5 +1458,16 @@
         "default": 100
       }
     ]
+  },
+  {
+    "name": "Tracking",
+    "settings": [
+      {
+        "type": "text",
+        "id": "gtm_id",
+        "label": "Google Tag Manager container ID",
+        "info": "e.g. GTM-XXXXXXX. Leave blank on test stores so their visits stay out of the live analytics."
+      }
+    ]
   }
 ]

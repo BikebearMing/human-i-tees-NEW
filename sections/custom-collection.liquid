@@ -8,8 +8,8 @@
     Description and sort are optional, under the list.
   - Right (75%): the shared tee card (snippets/tee-card.liquid, styled by
     assets/section-our-tees.css) in 3 columns with rules between cells —
-    image centred, title + price pinned to the cell bottom. NEW badge follows
-    the product's `new` tag.
+    image centred, title + price pinned to the cell bottom. NEW badge: the
+    product's `new` tag, or membership of the New Arrivals collection.
 {%- endcomment -%}
 
 {{ 'section-our-tees.css' | asset_url | stylesheet_tag }}
@@ -341,8 +341,15 @@
 
     <section class="ccoll__grid" aria-label="{{ collection.title | escape }}">
       {%- for product in collection.products -%}
-        {%- assign is_new = false -%}
-        {%- if product.tags contains 'new' -%}{%- assign is_new = true -%}{%- endif -%}
+        {%- liquid
+          # NEW = tagged "new", or in the New Arrivals collection (the real
+          # store's products carry no tags; it keeps its new tees there)
+          assign is_new = false
+          assign product_collections = product.collections | map: 'handle'
+          if product.tags contains 'new' or product_collections contains 'new-arrivals'
+            assign is_new = true
+          endif
+        -%}
         {%- render 'tee-card', product: product, show_badge: is_new, heading_tag: 'h2', show_view: false -%}
       {%- else -%}
         <div class="ccoll__empty">

@@ -174,7 +174,16 @@ These were pushed without anyone looking at them on the page:
 
 ## 6. Go-live on the real store (aa3fab-4): plan as of 3 Nov
 
-**Blocker: no access yet.** `ming@bikebear.com.my` doesn't see aa3fab-4 in its store list (Active or Inactive) and gets "doesn't have permission". Someone had access before (the "theme-export-www-humanitees-com-bike-bear-deve…" theme on bikebeardemo is an export of their theme). Either another login has it, or the client must re-add access under Settings → Users (staff, or collaborator for Bike Bear Sdn Bhd) with **Themes, Files, Products, Pages, Online Store preferences**.
+**Update, 3 Nov afternoon: access granted (staff, limited), preview theme pushed.**
+- Preview theme on the real store: **"Human-i-Tees Launch (preview)", #194528936212, unpublished.** Preview: `https://aa3fab-4.myshopify.com/?preview_theme_id=194528936212`. Their live theme ("Fundraising Focused Site (cart recommendations)", #194370699540) was not touched.
+- Built with `python tools/build_realstore.py <dir>` (adds Klaviyo + Essential Preorder app embeds, GTM-N7C289PK, real Our Tees handles). Single-file fixes can go to the preview with `--theme 194528936212 --only <file>`, but never push `config/settings_data.json` or `templates/index.json` from the repo there: that wipes the overrides.
+- Tested on the preview with their real products: home, shop (15 per page, NEXT to page 2), product page (Color + Size S–3XL, $24), add to cart, drawer, cart page, fundraiser card (attributes save, bad code rejected), checkout opens with the right lines and $ total. GTM, Klaviyo and Preorder load.
+- Their Fundraising and Contact pages already use templates named `fundraising` and `contact`, so they switch with the theme. No reassigning needed.
+- Their free-shipping threshold is $100, same as ours.
+- Access we have: Themes (full), Pages, Files, Products, Content. Missing: Online Store Preferences (spam protection), Apps (Flow, API uploads), Settings, Discounts. Asked the client for more.
+- Still to do before publish: upload the 17 editor images + acorn GLB to their Files (all names are free), add the 18 artworks to products, Free Kit pages, spam protection, hide/redirect Our Story, Our Impact and "fundraiser" pages (empty under our theme). Order note box: left out until the client asks.
+
+**Earlier blocker (resolved):** `ming@bikebear.com.my` doesn't see aa3fab-4 in its store list (Active or Inactive) and gets "doesn't have permission". Someone had access before (the "theme-export-www-humanitees-com-bike-bear-deve…" theme on bikebeardemo is an export of their theme). Either another login has it, or the client must re-add access under Settings → Users (staff, or collaborator for Bike Bear Sdn Bhd) with **Themes, Files, Products, Pages, Online Store preferences**.
 
 **What we already know (from the public storefront, no login):**
 - 18 tees, $24 USD, each with Color (1) + Size (6), **one image each** (no artwork image yet).

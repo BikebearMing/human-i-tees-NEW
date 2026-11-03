@@ -52,7 +52,12 @@
     flex-direction: column;
     background: #f9f7f3;
     border-left: 1px solid var(--bag-line);
-    overflow: hidden;
+    /* On a short screen (landscape phone, small or zoomed laptop) the head,
+       the shipping bar and the foot with the fundraiser card open don't all
+       fit: the whole bag scrolls then, so Checkout can always be reached. */
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     transform: translateX(100%);
     transition: transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);
   }
@@ -151,7 +156,8 @@
   cart-drawer-items.bag__items {
     display: block;
     flex: 1 1 auto;
-    min-height: 0;
+    /* shrinks to make room for the foot, but always keeps a line item in view */
+    min-height: min(140px, 30vh);
     overflow: auto;
     scrollbar-width: thin;
     padding: max(18px, 1.25vw) var(--bag-pad) 0;
@@ -436,12 +442,18 @@
 <cart-drawer class="drawer bag-drawer{% if cart == empty %} is-empty{% endif %}">
   <div id="CartDrawer" class="bag-drawer__wrap">
     <div id="CartDrawer-Overlay" class="cart-drawer__overlay"></div>
+    {%- comment -%}
+      data-lenis-prevent: Lenis is stopped while the bag is open and would
+      otherwise swallow wheel/touch scrolling inside it (the item list, and
+      the whole bag on a short screen).
+    {%- endcomment -%}
     <div
       class="drawer__inner"
       role="dialog"
       aria-modal="true"
       aria-label="{{ 'sections.cart.title' | t }}"
       tabindex="-1"
+      data-lenis-prevent
     >
       <div class="bag__head">
         <h2 class="bag__title">Bag</h2>

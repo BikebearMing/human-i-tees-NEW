@@ -1,6 +1,18 @@
 <!doctype html>
 <html class="js" lang="{{ request.locale.iso_code }}">
   <head>
+    {%- comment -%}
+      Google Tag Manager, carried over from the old live theme. The container
+      ID is a theme setting (Theme settings > Tracking), blank on test stores
+      so their visits stay out of the live analytics.
+    {%- endcomment -%}
+    {%- if settings.gtm_id != blank -%}
+      <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer',{{ settings.gtm_id | strip | json }});</script>
+    {%- endif -%}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -312,6 +324,9 @@
   </head>
 
   <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
+    {%- if settings.gtm_id != blank -%}
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ settings.gtm_id | strip | url_encode }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    {%- endif -%}
     <div class="noise-overlay" aria-hidden="true">&nbsp;</div>
 
     {%- comment -%}

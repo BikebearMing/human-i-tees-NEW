@@ -38,11 +38,16 @@
     assign cursive_src = 'pdp-cursive.png' | asset_url
   endif
 
+  # 'tag' mode: tagged "new", or in the New Arrivals collection (the real
+  # store's products carry no tags; it keeps its new tees there)
   assign show_badge = false
+  assign product_collections = product.collections | map: 'handle'
   if section.settings.badge_mode == 'always'
     assign show_badge = true
-  elsif section.settings.badge_mode == 'tag' and product.tags contains 'new'
-    assign show_badge = true
+  elsif section.settings.badge_mode == 'tag'
+    if product.tags contains 'new' or product_collections contains 'new-arrivals'
+      assign show_badge = true
+    endif
   endif
 -%}
 
@@ -632,7 +637,7 @@
       "label": "Show NEW badge",
       "options": [
         { "value": "off", "label": "Never" },
-        { "value": "tag", "label": "When product is tagged \"new\"" },
+        { "value": "tag", "label": "When tagged \"new\" or in New Arrivals" },
         { "value": "always", "label": "Always" }
       ],
       "default": "tag"
