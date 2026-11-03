@@ -47,8 +47,7 @@
         "heading": "GOOD TEES.\nGREAT CAUSES.",
         "text": "<p>Big ideas deserve big support. Raise funds for what matters with T-shirts people actually want to wear. <strong>No upfront costs, no inventory,</strong> just good tees doing good things.</p>",
         "button_label": "Start fundraising",
-        "button_link": "/pages/free-kit",
-        "secondary_text": "Ready to launch now? <a href=\"https://humaniteesfundraising.com/get-started\">Start your campaign</a>"
+        "button_link": "https://humaniteesfundraising.com/get-started"
       }
     },
     "steps": {
@@ -110,8 +109,7 @@
         "heading": "ON EVERY\nSHIRT SOLD.",
         "text": "<p>Sell 200 shirts and your group raises $1,000. No upfront cost. No inventory. No boxes to sort. Zero risk.</p>",
         "button_label": "Start fundraising",
-        "button_link": "/pages/free-kit",
-        "secondary_text": "Ready to launch now? <a href=\"https://humaniteesfundraising.com/get-started\">Start your campaign</a>",
+        "button_link": "https://humaniteesfundraising.com/get-started",
         "tee_right": "shopify://shop_images/Screenshot2025-12-12at12.30.08AM17.png"
       }
     },
@@ -240,8 +238,8 @@
         "image_left": "shopify://shop_images/archive.jpg",
         "image_right": "shopify://shop_images/Rectangle_38.jpg",
         "text": "<p>Every great movement starts somewhere. Yours could start with a T-shirt. Bring your people together, spread the word and turn every tee into something meaningful.</p>",
-        "button_label": "Start your fundraiser",
-        "button_link": "",
+        "button_label": "Free Starter Kit",
+        "button_link": "/pages/free-kit",
         "contact": "<p>Questions first? <a href=\"/pages/contact\">Contact us.</a></p>"
       }
     }

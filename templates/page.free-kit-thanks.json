@@ -14,8 +14,8 @@
         "next2": {
           "type": "step",
           "settings": {
-            "tag": "Kit delivery",
-            "title": "Your kit arrives",
+            "tag": "7-9 business days",
+            "title": "Your kit ships",
             "text": "<p>A sample tee, color catalogs for everyone selling and a one-page guide to how your group earns.</p>"
           }
         },
@@ -35,7 +35,7 @@
       ],
       "settings": {
         "heading": "Your kit is\non its way",
-        "text": "Thanks[name]. We've got your request for [group].\nWe'll be in touch within 2 business days.",
+        "text": "Thanks[name]. We've got your request for [group].\nYour kit ships within 7-9 business days.",
         "browse_text": "While you wait, see the designs your supporters will choose from.",
         "button_label": "Browse the tees",
         "support": "<p>Questions? Email <a href=\"mailto:support@humanitees.com\">support@humanitees.com</a></p>"
