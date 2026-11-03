@@ -424,6 +424,13 @@
     cursor: not-allowed;
     filter: none;
   }
+  /* fundraiser card between the total and Checkout */
+  .bag__foot .fr-toggle {
+    margin-top: max(14px, 0.972vw);
+  }
+  .bag__foot .fr-toggle + .bag__checkout {
+    margin-top: max(14px, 0.972vw);
+  }
 </style>
 
 <cart-drawer class="drawer bag-drawer{% if cart == empty %} is-empty{% endif %}">
@@ -519,7 +526,9 @@
                         <p class="bag-item__meta">{{ item.selling_plan_allocation.selling_plan.name | escape }}</p>
                       {%- endif -%}
                       {%- for discount in item.line_level_discount_allocations -%}
-                        <p class="bag-item__meta">{{ discount.discount_application.title | escape }}</p>
+                        {%- if discount.amount > 0 -%}
+                          <p class="bag-item__meta">{{ discount.discount_application.title | escape }}</p>
+                        {%- endif -%}
                       {%- endfor -%}
                     </div>
 
@@ -603,10 +612,21 @@
       </div>
 
       <div class="cart-drawer__footer bag__foot">
-        {%- if cart.cart_level_discount_applications.size > 0 -%}
+        {%- comment -%} A $0.00 line is the ambassador code; the fundraiser card's green note covers it. {%- endcomment -%}
+        {%- liquid
+          assign shown_discounts = 0
+          for discount in cart.cart_level_discount_applications
+            if discount.total_allocated_amount > 0
+              assign shown_discounts = shown_discounts | plus: 1
+            endif
+          endfor
+        -%}
+        {%- if shown_discounts > 0 -%}
           <ul class="bag__discounts" role="list" aria-label="{{ 'customer.order.discount' | t }}">
             {%- for discount in cart.cart_level_discount_applications -%}
-              <li>{{ discount.title | escape }} (-{{ discount.total_allocated_amount | money }})</li>
+              {%- if discount.total_allocated_amount > 0 -%}
+                <li>{{ discount.title | escape }} (-{{ discount.total_allocated_amount | money }})</li>
+              {%- endif -%}
             {%- endfor -%}
           </ul>
         {%- endif -%}
@@ -614,6 +634,7 @@
           <span class="bag__total-label body">Total</span>
           <span class="bag__total-value">{{ cart.total_price | money }}</span>
         </div>
+        {%- render 'fundraiser-toggle', context: 'drawer' -%}
         <button
           type="submit"
           id="CartDrawer-Checkout"

@@ -248,7 +248,9 @@
                 {%- endif -%}
               {%- endfor -%}
               {%- for discount in item.line_level_discount_allocations -%}
-                <p class="body ccart__meta">{{ discount.discount_application.title | escape }}</p>
+                {%- if discount.amount > 0 -%}
+                  <p class="body ccart__meta">{{ discount.discount_application.title | escape }}</p>
+                {%- endif -%}
               {%- endfor -%}
 
               <div class="ccart__controls">
@@ -280,10 +282,21 @@
       </ul>
 
       <aside class="ccart__summary">
-        {%- if cart.cart_level_discount_applications.size > 0 -%}
+        {%- comment -%} A $0.00 line is the ambassador code; the fundraiser card's green note covers it. {%- endcomment -%}
+        {%- liquid
+          assign shown_discounts = 0
+          for discount in cart.cart_level_discount_applications
+            if discount.total_allocated_amount > 0
+              assign shown_discounts = shown_discounts | plus: 1
+            endif
+          endfor
+        -%}
+        {%- if shown_discounts > 0 -%}
           <ul class="body ccart__discounts" role="list">
             {%- for discount in cart.cart_level_discount_applications -%}
-              <li>{{ discount.title | escape }} (-{{ discount.total_allocated_amount | money }})</li>
+              {%- if discount.total_allocated_amount > 0 -%}
+                <li>{{ discount.title | escape }} (-{{ discount.total_allocated_amount | money }})</li>
+              {%- endif -%}
             {%- endfor -%}
           </ul>
         {%- endif -%}
@@ -292,6 +305,7 @@
           <span class="h3">{{ cart.total_price | money }}</span>
         </div>
         <p class="body ccart__note">{{ section.settings.note | escape }}</p>
+        {%- render 'fundraiser-toggle', context: 'page' -%}
         <button type="submit" name="checkout" class="custom-button full-width">
           <span class="button-span body">CHECKOUT</span>
         </button>

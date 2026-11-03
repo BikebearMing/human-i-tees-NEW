@@ -1,0 +1,119 @@
+{%- comment -%}
+  "Supporting a fundraiser?" card, right above Checkout in the bag drawer and
+  on the cart page. Ported from the old live theme's hit-fundraiser-toggle.
+
+  The answers are saved as cart attributes, which land on the order under
+  Additional details. A Shopify Flow workflow tags orders whose status
+  contains "no code" as needs-tethering, so these keys and values must stay
+  word for word:
+    Supporting a fundraiser    = Yes
+    Fundraiser status          = Ambassador code applied
+                               | Name given, no code
+                               | Said yes, no code or name
+    Fundraiser name (no code)  = whatever the shopper typed
+
+  Ambassador codes are 0%-off discount codes, so any applied code worth
+  nothing is the ambassador code. When one is on the cart (e.g. from a
+  /discount/CODE share link) the card becomes a green note instead.
+
+  The stylesheet and script are output even when the card itself isn't (an
+  empty cart), so the drawer still works when it re-renders with items.
+  Behaviour: assets/fundraiser-toggle.js.
+
+  Usage: {% render 'fundraiser-toggle', context: 'drawer' %} (or 'page')
+{%- endcomment -%}
+
+{{ 'fundraiser-toggle.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'fundraiser-toggle.js' | asset_url }}" defer="defer"></script>
+
+{%- if cart != empty -%}
+  {%- liquid
+    assign ctx = context | default: 'page'
+    assign amb_code = ''
+    for app in cart.discount_applications
+      if app.type == 'discount_code' and app.value == 0
+        assign amb_code = app.title
+        break
+      endif
+    endfor
+    assign fr_on = false
+    if cart.attributes['Supporting a fundraiser'] == 'Yes'
+      assign fr_on = true
+    endif
+    assign fr_name = cart.attributes['Fundraiser name (no code)']
+  -%}
+
+  <fundraiser-toggle
+    class="fr-toggle"
+    data-context="{{ ctx }}"
+    data-amb="{{ amb_code | escape }}"
+    data-status="{{ cart.attributes['Fundraiser status'] | escape }}"
+  >
+    {%- if amb_code != blank -%}
+      <div class="fr-toggle__card fr-toggle__card--applied" role="status">
+        <p class="body">
+          Fundraiser code <strong>{{ amb_code | escape }}</strong> applied. Thank you! This order counts toward their goal.
+        </p>
+        <button type="button" class="body fr-toggle__link" data-hit="remove" data-code="{{ amb_code | escape }}">
+          Remove
+        </button>
+      </div>
+    {%- else -%}
+      <div class="fr-toggle__card">
+        <div class="fr-toggle__row">
+          <div>
+            <p class="body fr-toggle__title" id="{{ ctx }}-frt-label">Supporting a fundraiser?</p>
+            <p class="body fr-toggle__muted">Add their code so they get credit.</p>
+          </div>
+          <button
+            type="button"
+            class="fr-toggle__switch"
+            role="switch"
+            aria-checked="{{ fr_on }}"
+            aria-labelledby="{{ ctx }}-frt-label"
+            data-hit="toggle"
+          >
+            <span class="fr-toggle__knob" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="fr-toggle__panel" data-hit-panel {% unless fr_on %}hidden{% endunless %}>
+          <label class="body fr-toggle__muted" for="{{ ctx }}-frt-code">Ambassador code</label>
+          <div class="fr-toggle__code-row">
+            <input
+              class="fr-toggle__input"
+              id="{{ ctx }}-frt-code"
+              type="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="e.g. JONDOE123"
+              data-hit-code
+            >
+            <button type="button" class="custom-button fr-toggle__apply" data-hit="apply">
+              <span class="button-span body">APPLY</span>
+            </button>
+          </div>
+          <p class="body fr-toggle__msg" data-hit-msg aria-live="polite"></p>
+
+          <button type="button" class="body fr-toggle__link" data-hit="noname" {% if fr_name != blank %}hidden{% endif %}>
+            Don&rsquo;t have it?
+          </button>
+          <div class="fr-toggle__name" data-hit-name-wrap {% if fr_name == blank %}hidden{% endif %}>
+            <label class="body fr-toggle__muted" for="{{ ctx }}-frt-name">Student + school/club</label>
+            <input
+              class="fr-toggle__input"
+              id="{{ ctx }}-frt-name"
+              type="text"
+              maxlength="120"
+              placeholder="e.g. Jon Doe, Westfield High Key Club"
+              value="{{ fr_name | escape }}"
+              data-hit-name
+            >
+            <p class="body fr-toggle__muted">No problem! Check out as usual and we&rsquo;ll make sure the credit lands.</p>
+          </div>
+        </div>
+      </div>
+    {%- endif -%}
+  </fundraiser-toggle>
+{%- endif -%}

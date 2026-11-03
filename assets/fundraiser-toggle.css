@@ -1,0 +1,162 @@
+/* "Supporting a fundraiser?" card (snippets/fundraiser-toggle.liquid).
+   Text uses .body; the field and the white card copy the free-kit form's
+   inputs (sections/free-kit.liquid), the switch on-state the .custom-button
+   orange. Spacing around the card is set by whoever renders it. */
+
+.fr-toggle {
+  display: block;
+  width: 100%;
+  color: var(--black);
+}
+
+.fr-toggle__card {
+  padding: max(12px, 0.833vw);
+  background: #fff;
+  border: 1px solid var(--beige);
+  border-radius: max(6px, 0.556vw);
+}
+
+.fr-toggle__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fr-toggle__title {
+  text-transform: uppercase;
+}
+.fr-toggle__muted {
+  color: #9a8f7a; /* the utility pages' muted text (section-utility-page.css) */
+}
+
+/* ----- On / off switch ----- */
+.fr-toggle__switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--black);
+  border-radius: 999px;
+  background: #e5ddd3;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+.fr-toggle__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 1px solid var(--black);
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s ease;
+}
+.fr-toggle__switch[aria-checked='true'] {
+  background: #ff944d; /* .custom-button */
+}
+.fr-toggle__switch[aria-checked='true'] .fr-toggle__knob {
+  transform: translateX(18px);
+}
+.fr-toggle__switch:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+/* ----- Panel: code, then "Don't have it?" -> name ----- */
+.fr-toggle__panel,
+.fr-toggle__name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fr-toggle__panel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--beige);
+}
+.fr-toggle__name {
+  margin-top: 6px;
+}
+.fr-toggle [hidden] {
+  display: none !important;
+}
+
+.fr-toggle__code-row {
+  display: flex;
+  gap: 8px;
+}
+.fr-toggle__input {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding-inline: 12px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid var(--beige);
+  border-radius: max(6px, 0.556vw);
+  color: var(--black);
+  font-family: var(--geist);
+  font-size: 16px; /* 16px floor: iOS Safari zooms the page on focus below 16px */
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.fr-toggle__input:focus {
+  border-color: var(--black);
+}
+.fr-toggle__input::placeholder {
+  color: #9a8f7a;
+  opacity: 0.6;
+}
+.fr-toggle__apply {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  height: 44px; /* level with the field */
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.fr-toggle__apply[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.fr-toggle__msg:empty {
+  display: none;
+}
+.fr-toggle__msg--error {
+  color: #c0392b; /* the site's error red */
+}
+.fr-toggle__msg--ok {
+  color: #2f6b3a;
+}
+
+.fr-toggle__link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--black);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ----- Ambassador code already on the cart ----- */
+.fr-toggle__card--applied {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: #e8f1e5;
+  border-color: #b9d4b1;
+  color: #24502e;
+}
+.fr-toggle__card--applied .fr-toggle__link {
+  flex: 0 0 auto;
+  color: inherit;
+}
