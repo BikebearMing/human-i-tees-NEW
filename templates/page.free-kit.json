@@ -77,16 +77,16 @@
           "type": "step",
           "settings": {
             "number": "02",
-            "title": "Request\nyour kit",
-            "text": "<p>Tell us about your group. We ship a sample tee and enough catalogs for everyone selling.</p>"
+            "title": "Plan it\nwith us",
+            "text": "<p>Someone from our team reaches out to pick your dates and set a goal that fits your group.</p>"
           }
         },
         "step3": {
           "type": "step",
           "settings": {
             "number": "03",
-            "title": "Request\nyour kit",
-            "text": "<p>Tell us about your group. We ship a sample tee and enough catalogs for everyone selling.</p>"
+            "title": "Launch\nand share",
+            "text": "<p>When you're ready, your online store opens. Supporters order from anywhere and we ship to their door.</p>"
           }
         }
       },
@@ -107,7 +107,7 @@
         "item1": {
           "type": "item",
           "settings": {
-            "text": "A sample tee in the design and size you pick"
+            "text": "A sample tee in the design and size you pick*"
           }
         },
         "item2": {
@@ -137,6 +137,7 @@
       ],
       "settings": {
         "heading": "What's in\nyour free kit",
+        "footnote": "*Complimentary sample T-shirts are available to qualifying fundraising groups. Eligibility requirements apply.",
         "button_label": "Get my free kit",
         "button_link": "#free-kit-form",
         "image": "shopify://shop_images/Rectangle_926.jpg"

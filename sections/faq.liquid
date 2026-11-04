@@ -109,6 +109,12 @@
     max-width: 24vw;
   }
   #faq-{{ section.id }} .faq__a-inner > * { color: var(--faq-ink); }
+  /* links in an answer (e.g. the return policy) — ink, underlined, not browser blue */
+  #faq-{{ section.id }} .faq__a-inner a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
   #faq-{{ section.id }} .faq__item.is-open .faq__a { grid-template-rows: 1fr; }
 
   /* Orange + toggle, pinned to the bottom-left of the cell */

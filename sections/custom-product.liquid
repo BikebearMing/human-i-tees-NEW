@@ -164,6 +164,28 @@
     max-height: 70vh;
     object-fit: contain;
   }
+  /* Phone-only slide dots (the gallery is a swipe row there). Each button is
+     a 20px tap target around a 7px dot. */
+  #pdp-{{ section.id }} .pdp__dots { display: none; }
+  #pdp-{{ section.id }} .pdp__dot {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  #pdp-{{ section.id }} .pdp__dot::before {
+    content: '';
+    display: block;
+    width: 7px;
+    height: 7px;
+    margin: auto;
+    border-radius: 50%;
+    background: var(--pdp-line);
+    transition: background 0.2s ease;
+  }
+  #pdp-{{ section.id }} .pdp__dot[aria-current="true"]::before { background: var(--pdp-ink); }
 
   /* ---------- RIGHT rail (sticky) ---------- */
   #pdp-{{ section.id }} .pdp__right {
@@ -352,26 +374,27 @@
       margin-bottom: 12px;
     }
 
-    /* Gallery: one swipeable row instead of every image stacked above the
-       buy box. Each slide is 86% wide so the next one peeks in as a cue. */
+    /* Gallery: one swipeable row of full-width square slides, edge to edge.
+       The store's product shots are square photos on white, so the first one
+       fills its slide with no panel padding (padding made it read as a small
+       thumbnail in an empty box). Dots below show there's more to swipe. */
     #pdp-{{ section.id }} .pdp__media {
+      /* full width: the grid's align-items: start would shrink the row to one
+         image's own width (a single-photo product left a gap on the right) */
+      align-self: stretch;
       display: flex;
-      gap: 8px;
-      padding: 0 16px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
-      scroll-padding-inline: 16px;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
     #pdp-{{ section.id }} .pdp__media::-webkit-scrollbar { display: none; }
     #pdp-{{ section.id }} .pdp__media-item {
-      flex: 0 0 86%;
-      aspect-ratio: 4 / 5;
+      flex: 0 0 100%;
+      aspect-ratio: 1 / 1;
       overflow: hidden;
       scroll-snap-align: start;
     }
-    #pdp-{{ section.id }} .pdp__media-item:only-child { flex-basis: 100%; }
     #pdp-{{ section.id }} .pdp__media-item img,
     #pdp-{{ section.id }} .pdp__media-item video,
     #pdp-{{ section.id }} .pdp__media-item iframe,
@@ -380,11 +403,21 @@
       height: 100%;
       object-fit: cover;
     }
-    /* the first shot sits on the beige panel, so show all of it */
+    /* Show all of the first shot (a non-square one gets beige bands, never a
+       crop) and all of the artwork. */
     #pdp-{{ section.id }} .pdp__media-item--panel img,
     #pdp-{{ section.id }} .pdp__media-item--art img { object-fit: contain; max-height: none; }
-    #pdp-{{ section.id }} .pdp__media-item--panel,
-    #pdp-{{ section.id }} .pdp__media-item--art { padding: 24px 24px 20px; }
+    #pdp-{{ section.id }} .pdp__media-item--panel { padding: 0; }
+    /* artwork is a transparent print file, so it keeps a frame of page colour */
+    #pdp-{{ section.id }} .pdp__media-item--art { padding: 24px; }
+    #pdp-{{ section.id }} .pdp__dots {
+      order: 1; /* right under the gallery */
+      align-self: center; /* the grid's align-items: start would pin them left */
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 12px;
+    }
     #pdp-{{ section.id }} .pdp__sizes { gap: 10px; margin-bottom: 12px; }
     #pdp-{{ section.id }} .pdp__guide { margin-bottom: 20px; }
     #pdp-{{ section.id }} .pdp__qty { margin-bottom: 12px; }
@@ -438,7 +471,7 @@
                 {{
                   media
                   | image_url: width: 1400
-                  | image_tag: loading: 'lazy', widths: '400, 700, 1000, 1400', sizes: '(max-width: 768px) 86vw, 50vw', alt: media.alt | default: product.title
+                  | image_tag: loading: 'lazy', widths: '400, 700, 1000, 1400', sizes: '(max-width: 768px) 100vw, 50vw', alt: media.alt | default: product.title
                 }}
               {%- else -%}
                 {{ media | media_tag }}
@@ -451,6 +484,13 @@
           </div>
         {%- endif -%}
       </div>
+      {%- if product.media.size > 1 -%}
+        <div class="pdp__dots" data-pdp-dots>
+          {%- for media in product.media -%}
+            <button type="button" class="pdp__dot" aria-label="Image {{ forloop.index }} of {{ forloop.length }}"{% if forloop.first %} aria-current="true"{% endif %}></button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
 
       {%- comment -%} ---------------- RIGHT rail ---------------- {%- endcomment -%}
       <div class="pdp__right">
@@ -608,6 +648,26 @@
         if (e && e.source === 'product-form') errEl.textContent = e.message || (e.errors && e.errors.toString()) || '';
       });
       subscribe(PUB_SUB_EVENTS.cartUpdate, function () { errEl.textContent = ''; });
+    }
+
+    /* ----- phone gallery dots: follow the swipe, tap a dot to jump ----- */
+    var media = root.querySelector('.pdp__media');
+    var dots = root.querySelectorAll('.pdp__dot');
+    if (media && dots.length) {
+      var current = 0;
+      media.addEventListener('scroll', function () {
+        if (!media.clientWidth) return;
+        var i = Math.min(dots.length - 1, Math.round(media.scrollLeft / media.clientWidth));
+        if (i === current) return;
+        dots[current].removeAttribute('aria-current');
+        dots[i].setAttribute('aria-current', 'true');
+        current = i;
+      }, { passive: true });
+      dots.forEach(function (dot, i) {
+        dot.addEventListener('click', function () {
+          media.scrollTo({ left: i * media.clientWidth, behavior: 'smooth' });
+        });
+      });
     }
 
     /* ----- collapsibles ----- */

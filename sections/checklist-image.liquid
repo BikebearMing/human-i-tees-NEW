@@ -31,6 +31,14 @@
   #cli-{{ section.id }} .cli__list {
     padding-top: 1.528vw;
   }
+  /* "*Complimentary sample T-shirts…" under the list: muted so it reads as a
+     note. Padding, not margin: custom.css zeroes p margins with !important. */
+  #cli-{{ section.id }} .cli__footnote {
+    max-width: max(320px, 30vw);
+    padding-top: 1.111vw;
+    color: var(--black);
+    opacity: 0.7;
+  }
   /* 83 from the list to the button */
   #cli-{{ section.id }} .cli__cta {
     display: inline-block;
@@ -58,6 +66,7 @@
     }
     #cli-{{ section.id }} .cli__copy { padding: 48px 16px 40px; }
     #cli-{{ section.id }} .cli__list { padding-top: 20px; }
+    #cli-{{ section.id }} .cli__footnote { max-width: none; padding-top: 14px; }
     #cli-{{ section.id }} .cli__cta { margin-top: 32px; }
     #cli-{{ section.id }} .cli__media { aspect-ratio: 4 / 3; }
   }
@@ -78,6 +87,10 @@
           </li>
         {%- endfor -%}
       </ul>
+    {%- endif -%}
+
+    {%- if section.settings.footnote != blank -%}
+      <p class="body cli__footnote">{{ section.settings.footnote | escape }}</p>
     {%- endif -%}
 
     {%- if section.settings.button_label != blank -%}
@@ -147,6 +160,12 @@
       "label": "Heading",
       "info": "Each new line starts a new line of the headline.",
       "default": "What's in\nyour free kit"
+    },
+    {
+      "type": "textarea",
+      "id": "footnote",
+      "label": "Footnote",
+      "info": "Small print under the list, e.g. for an item ending in *."
     },
     {
       "type": "text",

@@ -65,8 +65,8 @@
     letter-spacing: -0.03em;
     color: var(--black);
   }
+  /* the big .custom-button.large pill (snippets/button-large) — it sets its own display */
   #fr-earn-{{ section.id }} .fr-earn__cta {
-    display: inline-block;
     margin-top: 1.389vw;
   }
   /* "Ready to launch now? Start your campaign" — small link line under the CTA */
@@ -159,9 +159,8 @@
     {%- endif -%}
 
     {%- if section.settings.button_label != blank -%}
-      <a class="custom-button fr-earn__cta" href="{{ section.settings.button_link | default: '/pages/contact?subject=fundraising' }}">
-        <span class="button-span body uppercase">{{ section.settings.button_label | escape }}</span>
-      </a>
+      {%- assign earn_cta_href = section.settings.button_link | default: '/pages/contact?subject=fundraising' -%}
+      {%- render 'button-large', href: earn_cta_href, label: section.settings.button_label, class: 'fr-earn__cta' -%}
     {%- endif -%}
 
     {%- if section.settings.secondary_text != blank -%}

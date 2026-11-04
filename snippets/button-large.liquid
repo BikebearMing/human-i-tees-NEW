@@ -1,0 +1,25 @@
+{%- comment -%}
+  The big CTA pill (.custom-button.large in custom.css): a beige logo badge on
+  the left and a Futura .h3 label, as on the fundraising page's closing
+  "Free Starter Kit" button.
+
+  Params:
+    href   — the link
+    label  — the button text (escaped here)
+    class  — optional extra classes for section positioning
+    attrs  — optional extra attributes, e.g. 'data-fr-anim'
+
+  {% render 'button-large', href: url, label: text, class: 'my-section__cta' %}
+{%- endcomment -%}
+<a class="custom-button large{% if class != blank %} {{ class }}{% endif %}" href="{{ href }}"{% if attrs != blank %} {{ attrs }}{% endif %}>
+  <span class="button-badge" aria-hidden="true">
+    <img
+      src="https://cdn.shopify.com/s/files/1/0853/0673/6916/files/footer-logo-icon.webp?v=1778908175"
+      alt=""
+      width="121"
+      height="76"
+      loading="lazy"
+    >
+  </span>
+  <span class="button-span h3">{{ label | escape }}</span>
+</a>

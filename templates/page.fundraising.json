@@ -46,8 +46,8 @@
         "eyebrow": "Fundraising",
         "heading": "GOOD TEES.\nGREAT CAUSES.",
         "text": "<p>Big ideas deserve big support. Raise funds for what matters with T-shirts people actually want to wear. <strong>No upfront costs, no inventory,</strong> just good tees doing good things.</p>",
-        "button_label": "Start fundraising",
-        "button_link": "https://humaniteesfundraising.com/get-started"
+        "button_label": "Free Starter Kit",
+        "button_link": "/pages/free-kit"
       }
     },
     "steps": {
@@ -211,13 +211,29 @@
             "question": "Who prints and ships the shirts?",
             "answer": "<p>We do. We print, pack and ship every order, so there are no boxes to sort.</p>"
           }
+        },
+        "q5": {
+          "type": "qa",
+          "settings": {
+            "question": "Can we sell to friends and family anywhere in the United States?",
+            "answer": "<p>Absolutely! Your fundraiser isn't limited to your school or local community. Friends, family, and supporters anywhere in the United States can purchase shirts online and have their orders shipped directly to them.</p>"
+          }
+        },
+        "q6": {
+          "type": "qa",
+          "settings": {
+            "question": "What is your return or exchange policy?",
+            "answer": "<p>Please refer to our <a href=\"/policies/refund-policy\" title=\"Return & Exchange Policy\">Return & Exchange Policy</a> for information about eligible returns, exchanges, damaged items, or incorrect orders.</p>"
+          }
         }
       },
       "block_order": [
         "q1",
         "q2",
         "q3",
-        "q4"
+        "q4",
+        "q5",
+        "q6"
       ],
       "settings": {
         "title": "FAQ",

@@ -27,7 +27,7 @@
           width="360"
           height="120"
         >
-        <h3 class="featured-shop__h3 h3" data-reveal>Nature Drop</h3>
+        <h3 class="featured-shop__h3 h3" data-reveal>The 1990<span class="featured-shop__lc">s</span> Archive</h3>
       </div>
 
       <div class="featured-shop__content">
@@ -55,7 +55,7 @@
           width="360"
           height="120"
         >
-        <h3 class="featured-shop__h3 h3" data-reveal>The Wildlife Set</h3>
+        <h3 class="featured-shop__h3 h3" data-reveal>The Reawakening</h3>
       </div>
 
       <div class="featured-shop__content">
@@ -153,6 +153,8 @@
     margin: 0;
     text-align: center;
   }
+  /* .h3 is all caps; "1990s" keeps its small s so it doesn't read as "1990S" */
+  .featured-shop__lc { text-transform: none; }
 
   .featured-shop__content {
     position: absolute;
@@ -253,13 +255,13 @@
     {
       "type": "url",
       "id": "nature_drop_url",
-      "label": "Nature Drop link",
+      "label": "The 1990s Archive link",
       "info": "Defaults to the 1990 Archive collection."
     },
     {
       "type": "url",
       "id": "wildlife_url",
-      "label": "The Wildlife Set link",
+      "label": "The Reawakening link",
       "info": "Defaults to The Reawakening collection."
     }
   ],

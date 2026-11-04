@@ -144,7 +144,8 @@
             width="2000"
             height="600"
           >
-          <a href="{{ s.field_cta_url | default: '/pages/fundraising' }}" class="custom-button" data-reveal><span class="button-span body">{{ s.field_cta_label }}</span></a>
+          {%- assign field_cta_href = s.field_cta_url | default: '/pages/fundraising' -%}
+          {%- render 'button-large', href: field_cta_href, label: s.field_cta_label, attrs: 'data-reveal' -%}
         </div>
       </div>
     </div>
@@ -424,15 +425,17 @@
     bottom: -7vw; /* covers the flower-stage's -10% scroll parallax lift (64.375vw * 0.1 = 6.44vw); was -88px, which fell short above ~1440px wide */
     z-index: 2;
   }
-  /* START YOUR JOURNEY button — visual chrome owned by .custom-button
-     (assets/custom.css). Only its absolute placement inside the soil stage
-     lives here. */
+  /* EXPLORE FUNDRAISING — the big .custom-button.large pill (snippets/
+     button-large; chrome in assets/custom.css). Only its absolute placement
+     inside the soil stage lives here. nowrap: left:50% leaves it only half
+     the stage to size into, which would wrap the label on phones. */
   .mountain-section .soil-stage > .custom-button {
     position: absolute;
     bottom: 3vw;
     left: 50%;
     transform: translateX(-50%);
     z-index: 4;
+    white-space: nowrap;
   }
 
   /* ===== ACORN 3D (scroll-driven) =====
