@@ -15,7 +15,8 @@ Status as of **4 Nov 2026**, for the next chat, which handles post-launch fixes.
   5. Commit and push to GitHub.
 
   Never push to the real store without the user's go-ahead.
-- **Both live themes match GitHub `master`** (last code commit `3c55b10`, the favicon). The one difference is the real store's own settings (section 3).
+- **Both live themes match GitHub `master`** (last code commit `1dcd1ac`, post-launch fixes batch 3). The one difference is the real store's own settings (section 3).
+- **The client's post-launch fix list (PDF, 3 Nov)** is worked through: every visual fix that didn't need something from the client is live (section 4). What's left is in section 5.
 - **Rules:**
   - Client (Jason Tan): never edit or delete any of their discount codes. Applying a code to a test cart is fine.
   - User: never type passwords or login codes. The user logs in and approves CLI device codes themselves.
@@ -45,10 +46,10 @@ Status as of **4 Nov 2026**, for the next chat, which handles post-launch fixes.
 ## 3. How to ship a fix
 
 **This PC can't reach Shopify over IPv6.** Every CLI command needs the IPv4 setting first:
-- bash: `NODE_OPTIONS=--dns-result-order=ipv4first`
-- PowerShell: `$env:NODE_OPTIONS = '--dns-result-order=ipv4first'`
+- bash: `NODE_OPTIONS="--dns-result-order=ipv4first --no-network-family-autoselection"`
+- PowerShell: `$env:NODE_OPTIONS = '--dns-result-order=ipv4first --no-network-family-autoselection'`
 
-Timeouts and "fetch failed" still happen now and then; just retry. When the CLI login expires, the user approves the device code.
+Timeouts, "fetch failed" and the odd 502 on the preview still happen now and then; just retry or refresh. When the CLI login expires, the user approves the device code.
 
 **Preview** (on bikebeardemo; the user enters the storefront password):
 ```
@@ -61,6 +62,8 @@ To check something against the real products before it goes live, ask the user f
 npx shopify theme push --store bikebeardemo.myshopify.com --theme 193350926629 --allow-live --only <file> --only <file>
 npx shopify theme push --store aa3fab-4.myshopify.com    --theme 194528936212 --allow-live --only <file> --only <file>
 ```
+- **When a template uses a new section setting, push the section first and the template second.** If the template lands before the schema that defines the setting, Shopify silently drops that setting's value.
+- **Afterwards, pull the pushed files back from both themes and diff them against the repo.** That's the quickest proof the push landed.
 
 **Real-store rules:**
 - **Never push `config/settings_data.json` or `templates/index.json` from the repo to the real store.** The real store's copies carry settings bikebeardemo must not have, applied by `tools/build_realstore.py`:
@@ -82,6 +85,7 @@ npx shopify theme push --store aa3fab-4.myshopify.com    --theme 194528936212 --
 **Tools:**
 - **Playwright uploads** only work from inside the workspace. Copy files into `.playwright-mcp/` first; it's git-ignored.
 - **Don't run `sed -i` in the theme folder while `theme dev` runs.** Its temp files get uploaded and break the preview until it's restarted.
+- **`theme dev` sometimes misses a save** when one file is edited twice in quick succession. If the preview doesn't show a change, re-save the file (a trivial edit is enough) and check the served HTML.
 - **bikebeardemo Admin API:** `npx shopify store execute -s acutabovetest.myshopify.com -j --query-file q.graphql [--allow-mutations]`, with read/write products and files. The real store has no API access; use the admin in the browser.
 
 **Real-store admin access** (staff login "Ming Law", ming@bikebear.com.my):
@@ -149,24 +153,45 @@ npx shopify theme push --store aa3fab-4.myshopify.com    --theme 194528936212 --
 
 **Favicon (4 Nov):** the full globe-H logo, built from the header logo's parts: the dark pill (705×368), the `assets/globe.svg` continents and the H path from `sections/custom-header.liquid`. The PNGs were rendered from that SVG in Playwright and downscaled with PIL; the script was a temp file.
 
+**Post-launch fixes from the client's PDF (4 Nov, live on both stores):**
+
+| Fix | Where | Commit |
+|---|---|---|
+| Product gallery on phones: a swipeable full-width slider with dots, instead of stacked photos | `sections/custom-product.liquid` | `4af53df` |
+| Drop titles "The 1990s Archive" (lowercase s) and "The Reawakening" | `sections/featured-shop.liquid` | `4af53df` |
+| Bigger CTAs with the globe badge on the fundraising hero, the fundraising earn section and the acorn section's EXPLORE FUNDRAISING | new `snippets/button-large.liquid` | `4af53df` |
+| Fundraising hero button now "Free Starter Kit" → `/pages/free-kit` | `templates/page.fundraising.json` | `4af53df` |
+| FAQ 05 (selling across the US) and 06 (returns, linking `/policies/refund-policy`); answer links are underlined | `page.fundraising.json`, `sections/faq.liquid` | `4af53df` |
+| Free-kit steps 2–3 retitled with the client's copy, and a footnote on the sample tee | `templates/page.free-kit.json`, new `footnote` setting in `sections/checklist-image.liquid` | `4af53df` |
+| Homepage marquee replaced by a static "FUNDRAISING FOR A CAUSE" headline (setting "Fundraising headline", `[br]` for the line break) | `sections/brand-is-back.liquid`, plus each store's own `templates/index.json`, pulled and edited per store | `f1e8880` |
+| Product pages show the artwork as an extra slide, found in Files by `<handle>-artwork.png` | `sections/custom-product.liquid` | `f1e8880` |
+| Mobile hero: the four collage cut-outs sit fully on screen; the globe pill lines up with the video pill; the tagline appears in the middle after the globe has flown up, so they never overlap; the iOS Safari toolbar no longer pushes things under the header | `sections/homepage-hero.liquid` | `1dcd1ac` |
+
+We also checked every FREE STARTER KIT, START FUNDRAISING and orange button on 13 live pages: all of them go to the right place.
+
 ---
 
 ## 5. Open items
 
 ### Waiting on the client
-- [ ] **Artworks on products.** The 18 `<handle>-artwork.png` files are in their Files with alt text "<Title> artwork", but they aren't attached to products, because our login can't edit products. The user wants to leave this for later.
-  - Once someone has edit access: product → Media → Select existing. Add each one *after* the photo, so the main image stays the same.
-  - The product page frames any media whose alt text contains "artwork".
+- [ ] **Full logo in the header** on pages other than the homepage (fix list). Needs the official "Human-i-Tees" wordmark file, the "full logo" attachment in David's 3 Nov email. Neither the repo nor the old theme has it.
+- [ ] **TV on mobile** (fix list: "TV not in frame"). **On hold until the client sends a new TV image for phones.** A full-width-TV CSS version was built on 4 Nov, but the user had it reverted because the 1440×736 frame is only about 200px tall at phone width. Don't redo it; build the mobile TV around their new image (`sections/tv-section.liquid`).
+- [ ] **White backgrounds on product photos** (fix list). The transparent versions exist on bikebeardemo's products. Swapping them needs product edit access, which our login doesn't have, so either the client does it or they give us access.
+- [ ] **Artworks on products.** The 18 `<handle>-artwork.png` files are in their Files with alt text "<Title> artwork". They aren't attached to products, because our login can't edit products.
+  - **For now the theme fills the gap:** when a product has no media with "artwork" in its alt text, `custom-product.liquid` looks up `<handle>-artwork.png` in Files and shows it as the last slide. All 18 live products show it.
+  - Attaching them properly (product → Media → Select existing, *after* the photo) is still the cleaner fix. The fallback then switches itself off for that product.
+  - A product whose handle changes loses the fallback slide until it's attached or the file is renamed.
+- [ ] **FAQ count.** The PDF says to add "the nine below" but only gives 05 and 06, and both are live. Ask whether more are coming.
 - [ ] **`LANHIG001`**, the test code Jason sent, isn't a valid code on their store.
 - [ ] **Free kit:**
-  - The tee dropdown still shows the placeholders "Design 1 / Design 2 / Design 3" (theme editor → free-kit page → tee options). The other dropdowns are real.
+  - The sample-tee picker (fix list) should show the three designs with images. It still shows the placeholders "Design 1 / Design 2 / Design 3" (theme editor → free-kit page → tee options) until the client says which three tees they're giving away. The other dropdowns are real.
   - The Supabase endpoint is still to come.
 - [ ] **Decisions:**
   - Does the Wildlife Set card's link to `the-reawakening` stay?
   - The "Coral Reefs" artwork has no product: create one, or drop it?
   - The size guide link is hidden. The FAQ page exists on the real store and renders under our theme, so it could point there again.
   - Order number is required on the contact form's "Product related" tab. Is that intended?
-  - Should the marquee keep scrolling or go static? The client is checking with Jayden.
+- [ ] **Desktop collage.** The hero cut-outs still bleed off the edges on desktop by design. The fix list only flagged mobile, which is fixed.
 - [ ] **Hero pill bug, not reproduced.** The client once saw the dark globe pill about 530px above the video at 1906×909. It tracked within 2px in every test. We need from them:
   - whether it fixes itself on scroll;
   - whether the window was resized or zoomed;
@@ -175,10 +200,17 @@ npx shopify theme push --store aa3fab-4.myshopify.com    --theme 194528936212 --
 
   The code is `bottomPin()` in `sections/homepage-hero.liquid`. The homepage `load` event can take over 30s (two MP4s plus the GLB), and some refreshes wait for it.
 
+### Skipped from the fix list (new pages and features; the user's call, 4 Nov)
+- [ ] **Contact thank-you page.** For now the contact form shows a small inline confirmation. The same item asks to check that enquiries reach the right inbox and to send an automatic reply; that's Klaviyo or Flow on their side, not the theme.
+- [ ] **Policy pages:**
+  - Privacy, Terms, Refund & Exchange and Shipping as pages, linked from the footer and the forms.
+  - Replacing `treehugger@` with the public support address.
+  - Needs their policy PDF and the public address. The text lives in Settings → Policies, which our login may not reach.
+
 ### Check by eye on the live site (never checked on a real page)
+- [ ] The mobile hero on a real iPhone, with Safari's toolbar showing and hidden. It passed a simulated toolbar, but that's the case the client hit.
 - [ ] Fundraising hero cards: the new order, and the two-line "NO UPFRONT / COST" title on desktop and mobile.
 - [ ] The Step 04 card on a phone. Its text is twice as long as the other steps, and it reuses the step 1 photo.
-- [ ] Where the marquee sits on the mountain ridge now that its text is smaller.
 - [ ] Contact form: the asterisks, and that an empty submit is blocked.
 - [ ] The homepage without the announcement bar, including the hero pill's flight up to the header.
 
@@ -235,7 +267,8 @@ If the old theme is ever deleted, there's a full copy (479 files) at `Desktop\hu
 - The picker is hidden on products without options.
 - Details / Care / Shipping & Returns copy comes from the old site.
 - The cursive label is `assets/pdp-cursive.png`.
-- Media whose alt text contains "artwork" gets a framed, height-capped slot (`pdp__media-item--art`). bikebeardemo's products have their artworks attached.
+- Media whose alt text contains "artwork" gets a framed, height-capped slot (`pdp__media-item--art`). bikebeardemo's products have their artworks attached. On the real store the slide comes from Files instead (section 5).
+- On phones (≤768px) the media is a scroll-snap slider with dot buttons; desktop keeps the stacked column.
 
 **Product cards and grids**
 - Every tee card is `snippets/tee-card.liquid`, and the grid is `assets/section-our-tees.css`.
@@ -246,9 +279,10 @@ If the old theme is ever deleted, there's a full copy (479 files) at `Desktop\hu
   - The GSAP pill flies up into the header logo.
   - The vol line hides with one quick tween after 20px of scroll.
   - The tee's orange dot has a pulsing ring.
+  - On phones and tablets (≤1024px), the collage sizes come from `--ku` = `min(--cu, --hero-band / 62)`. `--hero-band` is set in JS: half of the screen height left over after the header and the pill. That way the cut-outs shrink on short screens. The layout centres on `innerHeight`, not the section, so the iOS toolbar can't push it up. The tagline reveals after the logo flight, not in step 3.
 - **Mountain and soil:** the soil overhang scales with screen width (`-7vw` / `-16vw`), and `.mountain-section` has `clip-path: inset(-200vw 0 0 0)`.
 - **TV** pins just under the header. Its channels are editable as Channel blocks, and the photos are `tv-channel-*.jpg` in Files.
-- **Marquee** ("Fundraising for a cause"): 7vw text, a steady leftward drift with a capped scroll boost.
+- **"FUNDRAISING FOR A CAUSE"** headline (`.bib-cause` in `sections/brand-is-back.liquid`): static, centred, 9vw (12vw on phones). It replaced the scrolling marquee on 4 Nov; the setting keeps its old id, `marquee_text`.
 - **Acorn** (`sections/brand-is-back.liquid`, which `handoff.md` explains).
 - **FAQ "View all"** button is hidden.
 
@@ -289,4 +323,6 @@ If the old theme is ever deleted, there's a full copy (479 files) at `Desktop\hu
      - The redirects work.
      - The share link lands personalised with the code in the bag.
      - Products show $24, add to cart works, and checkout opens.
-- **4 Nov:** new favicon pushed to both stores.
+- **4 Nov:**
+  - New favicon pushed to both stores.
+  - Client's post-launch fix list: three batches of visual fixes pushed to both stores, pulled back and diffed, and checked live (section 4).
