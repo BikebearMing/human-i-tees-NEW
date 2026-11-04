@@ -452,6 +452,29 @@
       </div>
 
       {%- comment -%} ---------------- CENTRE media ---------------- {%- endcomment -%}
+      {%- liquid
+        # Each tee's artwork sits in the store's Files as <handle>-artwork.png, but it
+        # can only become product media with edit access to products. Until a product
+        # has its own artwork media (alt text containing "artwork"), the gallery adds
+        # the Files copy as an artwork slide; once it does, that media wins.
+        assign files_art = blank
+        assign has_art_media = false
+        for media in product.media
+          assign media_alt = media.alt | downcase
+          if media_alt contains 'artwork'
+            assign has_art_media = true
+            break
+          endif
+        endfor
+        unless has_art_media
+          assign art_file = product.handle | append: '-artwork.png'
+          assign files_art = images[art_file]
+        endunless
+        assign slide_count = product.media.size
+        if files_art != blank
+          assign slide_count = slide_count | plus: 1
+        endif
+      -%}
       <div class="pdp__media">
         {%- if product.media.size > 0 -%}
           {%- for media in product.media -%}
@@ -483,11 +506,21 @@
             {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
           </div>
         {%- endif -%}
+        {%- if files_art != blank -%}
+          {%- assign files_art_alt = product.title | append: ' artwork' -%}
+          <div class="pdp__media-item pdp__media-item--art">
+            {{
+              files_art
+              | image_url: width: 1400
+              | image_tag: loading: 'lazy', widths: '400, 700, 1000, 1400', sizes: '(max-width: 768px) 100vw, 50vw', alt: files_art.alt | default: files_art_alt
+            }}
+          </div>
+        {%- endif -%}
       </div>
-      {%- if product.media.size > 1 -%}
+      {%- if slide_count > 1 -%}
         <div class="pdp__dots" data-pdp-dots>
-          {%- for media in product.media -%}
-            <button type="button" class="pdp__dot" aria-label="Image {{ forloop.index }} of {{ forloop.length }}"{% if forloop.first %} aria-current="true"{% endif %}></button>
+          {%- for i in (1..slide_count) -%}
+            <button type="button" class="pdp__dot" aria-label="Image {{ i }} of {{ slide_count }}"{% if forloop.first %} aria-current="true"{% endif %}></button>
           {%- endfor -%}
         </div>
       {%- endif -%}

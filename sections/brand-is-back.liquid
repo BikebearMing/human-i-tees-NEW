@@ -1,7 +1,7 @@
 {%- comment -%}
   Brand Is Back — scroll-driven collage: the people cutouts rise into place
   over the sky (no headline — the mock has none), then the 3D-cloud mountains,
-  the fundraising marquee, the field copy and the soil CTA. The 90s TV intro
+  the fundraising headline, the field copy and the soil CTA. The 90s TV intro
   lives in sections/tv-section.liquid. Copy and links are section settings;
   images are still raw CDN <img> tags.
 {%- endcomment -%}
@@ -85,16 +85,16 @@
         >
       </div>
 
-      {%- comment -%} Text-only marquee on the ridge; the JS clones the track once for a seamless loop {%- endcomment -%}
-      <div class="text-marquee-wrapper" aria-hidden="true">
-        <div class="text-marquee-track">
-          {%- for i in (1..6) -%}
-            <div class="text-marquee">
-              <h1 class="h1 dark">{{ s.marquee_text }}</h1>
-            </div>
-          {%- endfor -%}
+      {%- comment -%}
+        The fundraising headline on the ridge: static, centred, on two lines. It
+        used to be a scrolling marquee, which always ran part of the phrase off
+        screen (client fix list, Nov 3). "[br]" in the setting breaks the line.
+      {%- endcomment -%}
+      {%- if s.marquee_text != blank -%}
+        <div class="bib-cause">
+          <h2 class="h1 dark bib-cause__title" data-reveal>{{ s.marquee_text | escape | replace: '[br]', '<br>' }}</h2>
         </div>
-      </div>
+      {%- endif -%}
 
       <div class="flower-stage">
         <img
@@ -189,16 +189,6 @@
   /* .has-line-white is on the outer .bib — theme.liquid auto-injects a
      .line-overlay with three <i> lines; they show from the start. */
 
-  /* Keyframes for the mountain marquee's no-JS / reduced-motion fallback. */
-  @keyframes bib-marq {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
   /* ----- People cutouts — in-flow collage block above the mountains -----
      Cutouts are position:absolute at the mock's offsets (vw, so the
      composition scales with the page), width-only so the photos keep their
@@ -237,7 +227,7 @@
     z-index: 3;
   }
 
-  /* ===== STAGE D + E: MOUNTAIN SECTION (mountains, marquee, flowers, soil) ===== */
+  /* ===== STAGE D + E: MOUNTAIN SECTION (mountains, headline, flowers, soil) ===== */
   .mountain-section {
     height: 103.819vw;
     width: 100%;
@@ -298,43 +288,32 @@
     right: 0;
   }
 
-  /* --- Marquee: between mountains and flowers --- */
-  .mountain-section .text-marquee-wrapper {
+  /* --- "FUNDRAISING / FOR A CAUSE": static and centred on the mountain ridge.
+     z:5 puts it above the flower stage (z:4), so the field's edge never cuts
+     into the second line. --- */
+  .mountain-section .bib-cause {
     position: absolute;
     left: 0;
     right: 0;
-    top: 30vw; /* tune to sit on the mountain ridge */
-    width: 100%;
-    overflow: hidden;
-    z-index: 3; /* above clouds (z:2), below flowers (z:4) */
+    top: 24vw;
+    z-index: 5;
+    padding-inline: 4vw;
+    text-align: center;
     pointer-events: none;
   }
-  .mountain-section .text-marquee-track {
-    display: inline-flex;
-    align-items: center;
-    gap: max(32px, 4.5vw); /* between repeats: about twice a word space, so each phrase reads on its own */
-    white-space: nowrap;
-    /* JS drives transform (scroll-interactive). CSS animation is the no-JS / reduced-motion fallback. */
-    animation: bib-marq 70s linear infinite;
-    will-change: transform;
-  }
-  .mountain-section .text-marquee {
-    display: inline-flex;
-    align-items: center;
-    gap: 1vw;
-    flex-shrink: 0;
-  }
-  .mountain-section .text-marquee h1 {
+  .mountain-section .bib-cause__title {
     margin: 0;
-    line-height: 1;
-    /* .h1 is 12.5vw — only a word or two fit on screen, so the phrase couldn't
-       be read as it scrolled (client feedback). Size only; the rest stays .h1. */
-    font-size: max(40px, 7vw);
-    /* .h1's -0.9vw tracking is tuned for its 12.5vw size; at this size it ran the
-       letters together. In em so it scales with the size; a touch of word spacing
-       keeps "FOR A" from reading as one word. */
+    /* .h1 is 12.5vw, too wide for "FUNDRAISING" with room to spare; size only,
+       the rest stays .h1. */
+    font-size: 9vw;
+    line-height: 0.9;
+    /* .h1's -0.9vw tracking is tuned for its 12.5vw size and runs the letters
+       together smaller; in em so it scales, with a touch of word spacing so
+       "FOR A" doesn't read as one word. */
     letter-spacing: -0.04em;
     word-spacing: 0.04em;
+    /* same lift as the field heading below, so it reads on the bright grass */
+    text-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
   }
 
   /* --- Flower stage (covers bottom portion, overlays mountain base) --- */
@@ -344,7 +323,7 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    z-index: 4; /* above clouds and marquee — flower covers the bottom portion */
+    z-index: 4; /* above the clouds; the fundraising headline (z:5) stays on top */
   }
   .mountain-section .flower-stage > img {
     height: 100%;
@@ -499,7 +478,7 @@
   /* ===== MOBILE TUNING (<= 768px) — follows the phone mock ===== */
   @media (max-width: 768px) {
     /* Mountain / flower / soil block, top to bottom like the mock: peaks with
-       the clouds, the marquee on the ridge, the heading in the field,
+       the clouds, the fundraising headline on the ridge, the heading in the field,
        the copy, the sprout, the soil with the CTA on it. */
     .mountain-section {
       height: 200vw;
@@ -507,15 +486,13 @@
     .mountain-section .mountains {
       height: 90vw;
     }
-    .mountain-section .text-marquee-wrapper {
-      top: 44vw;
-      z-index: 5; /* the marquee reads whole on the field's edge instead of half under it */
-    }
+    .mountain-section .bib-cause { top: 38vw; }
+    .mountain-section .bib-cause__title { font-size: 12vw; }
     .mountain-section .flower-stage {
       height: 150vw; /* overlaps the mountain base like desktop does */
     }
-    /* Heading + copy sit lower than the mock so the marquee (z:5, above the
-       whole flower stage) clears them. */
+    /* Heading + copy sit lower than the mock so the fundraising headline
+       (z:5, above the whole flower stage) clears them. */
     .mountain-section .flower-stage .content {
       top: 44vw;
       width: 90%;
@@ -565,11 +542,6 @@
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .mountain-section .text-marquee-track {
-      animation: none;
-    }
-  }
 </style>
 
 
@@ -855,86 +827,6 @@
             .fromTo(el, { rotation: -c.deg }, { rotation: c.deg, duration: c.dur, ease: 'sine.inOut', repeat: -1, yoyo: true })
             .seek(i * 0.35); // stagger the phase so they never rock together
         });
-      }
-
-      /* ---------------- MOUNTAIN TEXT MARQUEE — scroll-interactive, seamless ----------------
-         Clones children once so the track is [originals][identical clones] — wrap at scrollWidth/2
-         is now invisible (fixes the visible "snap" at loop). Velocity = base drift + smoothed
-         window scroll speed (capped), so scrolling nudges it along but never whips or reverses it. */
-      var marqueeWrapper = root.querySelector('.mountain-section .text-marquee-wrapper');
-      var marqueeTrack = root.querySelector('.mountain-section .text-marquee-track');
-      if (marqueeTrack && marqueeWrapper && !reduceMotion) {
-        marqueeTrack.style.animation = 'none';
-
-        var originalCount = marqueeTrack.children.length;
-        for (var mqi = 0; mqi < originalCount; mqi++) {
-          marqueeTrack.appendChild(marqueeTrack.children[mqi].cloneNode(true));
-        }
-
-        var halfWidth = 0;
-        function measureMarquee() {
-          halfWidth = marqueeTrack.scrollWidth / 2;
-        }
-        measureMarquee();
-        window.addEventListener('resize', measureMarquee);
-        window.addEventListener('load', measureMarquee);
-
-        var BASE_SPEED = -50;     // px/sec base leftward drift
-        var SCROLL_GAIN = 0.03;   // how strongly scroll speed (either direction) nudges it along
-        var MAX_BOOST = 50;       // px/sec cap on that nudge, so a fast scroll never whips it past
-        var SMOOTH = 0.12;        // 0..1; lower = smoother / laggier
-
-        var marqueeOffset = 0;
-        var scrollBoost = 0;
-        var prevScroll = window.scrollY || window.pageYOffset;
-        var prevTime = performance.now();
-        var marqueeRunning = false;
-
-        function marqueeTick(now) {
-          if (!marqueeRunning) return;
-          var dt = Math.min(0.05, Math.max(0.001, (now - prevTime) / 1000));
-          prevTime = now;
-
-          var curScroll = window.scrollY || window.pageYOffset;
-          var instVelocity = (curScroll - prevScroll) / dt;
-          prevScroll = curScroll;
-
-          scrollBoost += (instVelocity - scrollBoost) * SMOOTH;
-
-          // always leftward: scrolling only speeds it up a little (it used to reverse, which
-          // made the text impossible to read)
-          var totalVelocity = BASE_SPEED - Math.min(MAX_BOOST, Math.abs(scrollBoost) * SCROLL_GAIN);
-          marqueeOffset += totalVelocity * dt;
-
-          if (halfWidth > 0) {
-            marqueeOffset = marqueeOffset % halfWidth;
-            if (marqueeOffset > 0) marqueeOffset -= halfWidth;
-          }
-
-          marqueeTrack.style.transform = 'translate3d(' + marqueeOffset.toFixed(2) + 'px, 0, 0)';
-          requestAnimationFrame(marqueeTick);
-        }
-
-        try {
-          var mqio = new IntersectionObserver(function (entries) {
-            for (var k = 0; k < entries.length; k++) {
-              if (entries[k].isIntersecting) {
-                if (!marqueeRunning) {
-                  marqueeRunning = true;
-                  prevTime = performance.now();
-                  prevScroll = window.scrollY || window.pageYOffset;
-                  requestAnimationFrame(marqueeTick);
-                }
-              } else {
-                marqueeRunning = false;
-              }
-            }
-          }, { rootMargin: '200px' });
-          mqio.observe(marqueeWrapper);
-        } catch (e) {
-          marqueeRunning = true;
-          requestAnimationFrame(marqueeTick);
-        }
       }
 
       /* ---------------- STAGE E: MOUNTAIN + FLOWER Y PARALLAX (depth on scroll) ---------------- */
@@ -1260,8 +1152,9 @@
     {
       "type": "text",
       "id": "marquee_text",
-      "label": "Marquee text",
-      "default": "FUNDRAISING FOR A CAUSE"
+      "label": "Fundraising headline",
+      "info": "Centred on the mountain ridge. [br] starts the second line.",
+      "default": "FUNDRAISING[br]FOR A CAUSE"
     },
     {
       "type": "header",
