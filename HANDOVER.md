@@ -207,12 +207,14 @@ We also checked every FREE STARTER KIT, START FUNDRAISING and orange button on 1
   - Replacing `treehugger@` with the public support address.
   - Needs their policy PDF and the public address. The text lives in Settings → Policies, which our login may not reach.
 
-### Check by eye on the live site (never checked on a real page)
+### Check by eye on the live site
 - [ ] The mobile hero on a real iPhone, with Safari's toolbar showing and hidden. It passed a simulated toolbar, but that's the case the client hit.
-- [ ] Fundraising hero cards: the new order, and the two-line "NO UPFRONT / COST" title on desktop and mobile.
-- [ ] The Step 04 card on a phone. Its text is twice as long as the other steps, and it reuses the step 1 photo.
-- [ ] Contact form: the asterisks, and that an empty submit is blocked.
-- [ ] The homepage without the announcement bar, including the hero pill's flight up to the header.
+
+Checked on humanitees.com on 4 Nov, all fine:
+- [x] Fundraising hero cards: right order, and "NO UPFRONT / COSTS" on two lines at 1440 and 390.
+- [x] The Step 04 card at 390: fits the screen and has its own students photo.
+- [x] Contact form: every field is marked *, and an empty submit is blocked ("Please fill out this field").
+- [x] The homepage without the announcement bar: the desktop pill appears on the video within 2px, including at the client's 1906×909, and lands in the header.
 
 ### Tech debt
 - [ ] Three.js loads twice on the homepage (UMD for the clouds, ES module for the acorn), which triggers a "Multiple instances" warning.
