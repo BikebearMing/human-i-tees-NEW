@@ -283,18 +283,22 @@
      with half the screen empty. Below 1024 the section is exactly one viewport
      tall and follows the mobile mock: vol line under the header, a portrait
      video filling the rest; after the scrub the video pill sits mid-screen with
-     the shirt + group photo above it and the tag, polaroid and guy below.
+     the shirt + group photo above it and the polaroid and guy below; the tag
+     rises in the middle once the pill has flown up to the bar.
 
      --cu is the unit everything here is sized in: 1vw, capped so it also
      shrinks on short/landscape screens (0.46vh). bottomPin() below computes
-     the same unit for the pill + globe tween — keep the two in step. */
+     the same unit for the pill + globe tween — keep the two in step.
+
+     --ku sizes the landed cutouts: --cu, shrunk on short screens so the room
+     above and below the parked pill (--hero-band, published by bottomPin())
+     holds 62ku each — the collage was designed into that much. */
   @media (max-width: 1024px) {
     .homepage-banner {
       --cu: min(1vw, 0.46vh);
+      --ku: min(var(--cu), var(--hero-band, 999px) / 62);
       /* side inset of the vol line + video; the wrapper reads it below */
       --hero-pad: var(--sidepadding-xs);
-      /* the shrunk pill is centred on the section (pillY() below) */
-      --hero-pill-bottom: calc(50vh + 24.5 * var(--cu));
       /* 100vh, not svh: the section is pinned for most of the hero, and by
          then the phone's address bar has collapsed to the large viewport. */
       height: 100vh !important;
@@ -338,43 +342,58 @@
       padding: 0;
       background: transparent;
     }
-    /* Above the pill: shirt top-left, group photo top-right. */
+    /* The landed collage sits wholly on screen (client fix list, Nov 3: the
+       photos hung off the edges). .abso-content is the visible stage — the
+       screen below the bar — and every offset below keeps a cutout's ROTATED
+       footprint at least 2ku inside it (the idle wobble adds ~1ku).
+       Above the pill: shirt top-left, group photo top-right. */
     .homepage-banner .abso-content #top-left {
-      width: calc(54 * var(--cu));
-      height: calc(49 * var(--cu));
-      top: calc(var(--hero-top-pad) - 12 * var(--cu));
-      left: calc(-6 * var(--cu));
+      /* -11.083deg (set by the JS): footprint 53.2 x 50ku */
+      width: calc(46 * var(--ku));
+      height: calc(42 * var(--ku));
+      top: calc(6.5 * var(--ku));
+      left: calc(6 * var(--ku));
     }
     .homepage-banner .abso-content #top-left .top-left-cta {
-      width: 28px;
-      height: 28px;
-      bottom: calc(8 * var(--cu));
+      /* 28px, but no bigger than the shirt allows (a landscape phone's
+         collage is small and the dot hid the shirt) */
+      width: min(28px, calc(9 * var(--ku)));
+      height: min(28px, calc(9 * var(--ku)));
+      bottom: calc(7 * var(--ku));
     }
     .homepage-banner .abso-content #topright {
-      width: calc(34 * var(--cu));
-      height: calc(52 * var(--cu));
-      top: calc(var(--hero-top-pad) - 4 * var(--cu));
-      right: 0;
+      /* -86.384deg (the base rule): lies on its side, footprint 47.8 x 32.8ku */
+      width: calc(30 * var(--ku));
+      height: calc(46 * var(--ku));
+      top: calc(5 * var(--ku));
+      right: calc(11 * var(--ku));
     }
-    /* Below the pill: tag, then polaroid bottom-left, guy bottom-right. */
-    .homepage-banner .abso-content .abso-tag {
-      top: calc(var(--hero-pill-bottom) + 4 * var(--cu));
-      bottom: auto;
-      left: calc(3 * var(--cu));
-      width: calc(58 * var(--cu));
-      text-align: left;
-    }
+    /* Below the pill: polaroid bottom-left, guy bottom-right. */
     .homepage-banner .abso-content #bottom-left {
-      width: calc(50 * var(--cu));
-      height: calc(39 * var(--cu));
-      bottom: calc(-5 * var(--cu));
-      left: calc(-4 * var(--cu));
+      /* 6.098deg: footprint 51.7 x 41.9ku */
+      width: calc(48 * var(--ku));
+      height: calc(37 * var(--ku));
+      bottom: calc(4.5 * var(--ku));
+      left: calc(4 * var(--ku));
     }
     .homepage-banner .abso-content #guy {
-      width: calc(38 * var(--cu));
-      height: calc(70 * var(--cu));
-      bottom: calc(-18 * var(--cu));
-      right: calc(-3 * var(--cu));
+      /* -6.098deg: footprint 35.7 x 57.9ku */
+      width: calc(30 * var(--ku));
+      height: calc(55 * var(--ku));
+      bottom: calc(3.5 * var(--ku));
+      right: calc(5 * var(--ku));
+    }
+    /* The tag rises in the middle of the stage after the pill has flown up to
+       the bar (bottomPin() below), so it never shares the screen with it —
+       under the pill it read as crowded / covered (client fix list). */
+    .homepage-banner .abso-content .abso-tag {
+      top: 50%;
+      bottom: auto;
+      left: 50%;
+      translate: -50% -50%;
+      width: max-content;
+      max-width: calc(100% - 8 * var(--ku));
+      text-align: center;
     }
   }
   @media (max-width: 768px) {
@@ -877,13 +896,27 @@
     function headerH() { return headerSection ? headerSection.offsetHeight : 0; }
     /* viewport y of the pinned section's top — the pin starts at 'bottom bottom' */
     function pinnedTop() { return window.innerHeight - sectionH(); }
-    /* The stage the composition lands on. The fixed header covers the top of
-       the pinned section, so on desktop it is the viewport below the bar; the
-       phone layout already lays itself out under its (much shorter) bar and
-       keeps centring on the section. */
-    function stageCenterY() { return isMobile() ? pinnedTop() + sectionH() / 2 : (window.innerHeight + headerH()) / 2; }
-    function stageTop() { return isMobile() ? 0 : headerH() - pinnedTop(); }
-    function setStageVar() { section.style.setProperty('--hero-stage-top', Math.round(stageTop()) + 'px'); }
+    /* The stage the composition lands on: the viewport below the fixed bar,
+       on every screen. Phones used to centre on the section instead, but on
+       an iPhone the section (100vh, the large viewport) is taller than the
+       window while Safari's toolbar shows, so that pushed the pill and the
+       top cutouts up under the bar (client fix list, Nov 3). */
+    function stageCenterY() { return (window.innerHeight + headerH()) / 2; }
+    function stageTop() { return headerH() - pinnedTop(); }
+    function setStageVar() {
+      section.style.setProperty('--hero-stage-top', Math.round(stageTop()) + 'px');
+      /* Phones: the room above / below the parked pill, which the CSS fits
+         the landed cutouts into (--ku). */
+      var band = (window.innerHeight - headerH() - pillH()) / 2;
+      section.style.setProperty('--hero-band', Math.max(0, Math.round(band)) + 'px');
+      /* The dark globe pill builds up ON the video pill, so on phones it takes
+         that pill's exact px size; its own CSS cap (100vw minus the header's
+         inset) left it a few px wider each side. */
+      if (logoEl) {
+        logoEl.style.width = isMobile() ? pillW() : '';
+        logoEl.style.height = isMobile() ? Math.round(49 * cu()) + 'px' : '';
+      }
+    }
     setStageVar();
     /* Park the pill with its centre on the stage centre. offsetTop is the
        video's rest position (pad + vol line + gap). */
@@ -1018,7 +1051,8 @@
       if (absoTopRight) {
         tl.to(absoTopRight, { x: 0, y: 0, duration: 1.0, ease: 'circ.out' }, t3 + 0.52);
       }
-      if (absoTagLines.length) {
+      /* Desktop: the tag lands with the cutouts. Phones: after the flight (below). */
+      if (absoTagLines.length && !isMobile()) {
         tl.to(
           absoTagLines,
           {
@@ -1033,13 +1067,20 @@
     }
 
     /* STEP 4 — the whole pill flies up into the bar and shrinks to rest. */
+    var t4 = tl.duration() + 0.1;
     if (logoEl) {
       tl.fromTo(
         logoEl,
         { xPercent: -50, yPercent: -50, x: logoDX, y: logoDY, scale: 1 },
         { xPercent: -50, yPercent: -50, x: 0, y: 0, scale: logoRestScale, duration: 1.2, ease: 'none', immediateRender: false },
-        tl.duration() + 0.1
+        t4
       );
+    }
+
+    /* Phones: the tag rises in the middle of the stage (the CSS centres it)
+       once the pill is well on its way up, so the two never meet. */
+    if (isMobile() && absoTagLines.length) {
+      tl.to(absoTagLines, { yPercent: 0, duration: 0.7, ease: 'none', stagger: 0.1 }, t4 + 0.5);
     }
 
     /* Small screens: hold the landed composition for the last ~20% of the pin
