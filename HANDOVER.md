@@ -15,7 +15,7 @@ Status as of **4 Nov 2026**, for the next chat, which handles post-launch fixes.
   5. Commit and push to GitHub.
 
   Never push to the real store without the user's go-ahead.
-- **Both live themes match GitHub `master`** (last code commit `1dcd1ac`, post-launch fixes batch 3). The one difference is the real store's own settings (section 3).
+- **Both live themes match GitHub `master`** (last code commit `e684eac`, the iPhone toolbar fix for the hero). The one difference is the real store's own settings (section 3).
 - **The client's post-launch fix list (PDF, 3 Nov)** is worked through: every visual fix that didn't need something from the client is live (section 4). What's left is in section 5.
 - **Rules:**
   - Client (Jason Tan): never edit or delete any of their discount codes. Applying a code to a test cart is fine.
@@ -166,6 +166,7 @@ npx shopify theme push --store aa3fab-4.myshopify.com    --theme 194528936212 --
 | Homepage marquee replaced by a static "FUNDRAISING FOR A CAUSE" headline (setting "Fundraising headline", `[br]` for the line break) | `sections/brand-is-back.liquid`, plus each store's own `templates/index.json`, pulled and edited per store | `f1e8880` |
 | Product pages show the artwork as an extra slide, found in Files by `<handle>-artwork.png` | `sections/custom-product.liquid` | `f1e8880` |
 | Mobile hero: the four collage cut-outs sit fully on screen; the globe pill lines up with the video pill; the tagline appears in the middle after the globe has flown up, so they never overlap; the iOS Safari toolbar no longer pushes things under the header | `sections/homepage-hero.liquid` | `1dcd1ac` |
+| Mobile hero on a real iPhone: the globe pill landed about 110px below the video pill when Safari's toolbar collapsed mid-scroll (5 Nov) | `sections/homepage-hero.liquid` | `e684eac` |
 
 We also checked every FREE STARTER KIT, START FUNDRAISING and orange button on 13 live pages: all of them go to the right place.
 
@@ -208,7 +209,7 @@ We also checked every FREE STARTER KIT, START FUNDRAISING and orange button on 1
   - Needs their policy PDF and the public address. The text lives in Settings → Policies, which our login may not reach.
 
 ### Check by eye on the live site
-- [ ] The mobile hero on a real iPhone, with Safari's toolbar showing and hidden. It passed a simulated toolbar, but that's the case the client hit.
+- [ ] The mobile hero on a real iPhone, with Safari's toolbar showing and hidden. The 5 Nov fix passes a test that reproduced the bug (113px before, 1px after), but it hasn't been confirmed on a real phone yet. The `dvh` rule for the toolbar coming back can't be tested in Chromium.
 
 Checked on humanitees.com on 4 Nov, all fine:
 - [x] Fundraising hero cards: right order, and "NO UPFRONT / COSTS" on two lines at 1440 and 390.
@@ -281,7 +282,9 @@ If the old theme is ever deleted, there's a full copy (479 files) at `Desktop\hu
   - The GSAP pill flies up into the header logo.
   - The vol line hides with one quick tween after 20px of scroll.
   - The tee's orange dot has a pulsing ring.
-  - On phones and tablets (≤1024px), the collage sizes come from `--ku` = `min(--cu, --hero-band / 62)`. `--hero-band` is set in JS: half of the screen height left over after the header and the pill. That way the cut-outs shrink on short screens. The layout centres on `innerHeight`, not the section, so the iOS toolbar can't push it up. The tagline reveals after the logo flight, not in step 3.
+  - On phones and tablets (≤1024px), the collage sizes come from `--ku` = `min(--cu, --hero-band / 62)`. `--hero-band` is set in JS: half of the screen height left over after the header and the pill. That way the cut-outs shrink on short screens. The tagline reveals after the logo flight, not in step 3.
+  - **Phones must never read `innerHeight` for a position.** Safari's toolbar changes it after the pin is measured, which put the pin and the globe about 110px apart on a real iPhone. Phones pin at `'top top'` and `stageH()` returns the section's own height (100vh, which the toolbar doesn't change). The cutouts' bottom edge uses `dvh`, so it follows the toolbar.
+  - **To test this in Chromium:** keep the window at the collapsed height so 100vh is right, override the `window.innerHeight` getter to report the smaller height, then switch it to the larger one *after* the `intro:done` event and before scrolling. Switching earlier hides the bug, because the theme re-measures the pin at `intro:done`.
 - **Mountain and soil:** the soil overhang scales with screen width (`-7vw` / `-16vw`), and `.mountain-section` has `clip-path: inset(-200vw 0 0 0)`.
 - **TV** pins just under the header. Its channels are editable as Channel blocks, and the photos are `tv-channel-*.jpg` in Files.
 - **"FUNDRAISING FOR A CAUSE"** headline (`.bib-cause` in `sections/brand-is-back.liquid`): static, centred, 9vw (12vw on phones). It replaced the scrolling marquee on 4 Nov; the setting keeps its old id, `marquee_text`.
