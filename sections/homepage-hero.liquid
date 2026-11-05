@@ -329,6 +329,12 @@
       width: 100%;
       height: calc(100vh - var(--hero-top-pad) - var(--hero-vol-gap) - 3rem);
     }
+    /* The stage is 100vh, the toolbar-collapsed height. While the toolbar shows
+       it covers the bottom of the section, so the cutouts' bottom edge follows
+       the real window (dvh tracks the toolbar; no-dvh browsers keep bottom: 0). */
+    .homepage-banner .abso-content {
+      bottom: calc(100vh - 100dvh);
+    }
     /* One white box, centred on the video, holding both lines. */
     .homepage-banner .bottom .opening-video .video-text {
       top: 50%;
@@ -869,7 +875,9 @@
       scrollTrigger: {
         id: 'homepage-bottom-pin',
         trigger: section,
-        start: 'bottom bottom',
+        /* Phones: from the top, so where the pin sits never depends on
+           innerHeight (see stageH). */
+        start: function () { return isMobile() ? 'top top' : 'bottom bottom'; },
         end: '+=450%', // shrink, then the pill builds up (panel, globe, 'we change it together', white, H), the cutouts land, then the pill flies to the bar
         pin: true,
         pinSpacing: true,
@@ -894,20 +902,23 @@
     function sectionH() { return section.offsetHeight || window.innerHeight; }
     function cu() { return Math.min(window.innerWidth / 100, sectionH() * 0.0046); }
     function headerH() { return headerSection ? headerSection.offsetHeight : 0; }
-    /* viewport y of the pinned section's top — the pin starts at 'bottom bottom' */
-    function pinnedTop() { return window.innerHeight - sectionH(); }
-    /* The stage the composition lands on: the viewport below the fixed bar,
-       on every screen. Phones used to centre on the section instead, but on
-       an iPhone the section (100vh, the large viewport) is taller than the
-       window while Safari's toolbar shows, so that pushed the pill and the
-       top cutouts up under the bar (client fix list, Nov 3). */
-    function stageCenterY() { return (window.innerHeight + headerH()) / 2; }
+    /* Height of the stage the composition lands on. Phones must not read
+       innerHeight here: Safari's toolbar changes it mid-scroll, after the pin
+       has been measured and before these values are first read, and the pin
+       (at the old height) and the globe (at the new one) landed ~110px apart
+       on a real iPhone. So phones pin at 'top top' and the stage is the
+       section itself: the same numbers whatever the toolbar is doing. */
+    function stageH() { return isMobile() ? sectionH() : window.innerHeight; }
+    /* viewport y of the pinned section's top */
+    function pinnedTop() { return stageH() - sectionH(); }
+    /* centre of the stage below the fixed bar */
+    function stageCenterY() { return (stageH() + headerH()) / 2; }
     function stageTop() { return headerH() - pinnedTop(); }
     function setStageVar() {
       section.style.setProperty('--hero-stage-top', Math.round(stageTop()) + 'px');
       /* Phones: the room above / below the parked pill, which the CSS fits
          the landed cutouts into (--ku). */
-      var band = (window.innerHeight - headerH() - pillH()) / 2;
+      var band = (stageH() - headerH() - pillH()) / 2;
       section.style.setProperty('--hero-band', Math.max(0, Math.round(band)) + 'px');
       /* The dark globe pill builds up ON the video pill, so on phones it takes
          that pill's exact px size; its own CSS cap (100vw minus the header's
